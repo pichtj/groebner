@@ -1,5 +1,3 @@
-#include <gmp.h>
-
 #define VAR_COUNT 75
 
 template<class E>
