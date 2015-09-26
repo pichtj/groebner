@@ -7,7 +7,7 @@ all: moGVW
 moGVW: main.o
 	$(CPP) -o $@ $^ -lgmp
 
-main.o: main.c polynomial.h lmonomial.h
+main.o: main.cpp polynomial.h lmonomial.h
 	$(CPP) -c -o $@ $<
 
 clean:
