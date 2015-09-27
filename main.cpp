@@ -4,31 +4,7 @@
 #include "LabelledMonomial.h"
 using namespace std;
 
-void print(int i) {
-  printf("%i", i);
-}
-
-template<class E>
-void print(const Exponent<E>& exp) {
-  printf("{");
-  for (int i = 0; i < VAR_COUNT; ++i) {
-    print(exp[i]);
-    if (i < VAR_COUNT - 1) printf(" ");
-  }
-  printf("}");
-}
-
-template<class C, class E>
-void print(const Term<C, E>& t) {
-  print(t.coeff);
-  printf("*x^");
-  print(t.exp);
-}
-
-template<class C, class E>
-void print(const Polynomial<C, E>& p) {
-  
-}
+#include "print.h"
 
 int main(int argc, char* argv[]) {
   mpir_ui a;
@@ -37,12 +13,12 @@ int main(int argc, char* argv[]) {
   auto exp2 = exp * exp;
   print(exp2/exp/exp);
   printf("\n");
-  printf("sizeof(mpz_t) = %i\n", sizeof(mpz_t));
-  printf("sizeof(mpz_class) = %i\n", sizeof(mpz_class));
-  printf("sizeof(Polynomial<mpz_class, char>) = %i\n", sizeof(Polynomial<mpz_class, char>));
-  printf("sizeof(Polynomial<mpz_class, short>) = %i\n", sizeof(Polynomial<mpz_class, short>));
-  printf("sizeof(Polynomial<mpz_class, int>) = %i\n", sizeof(Polynomial<mpz_class, int>));
-  printf("sizeof(Polynomial<mpz_class, long>) = %i\n", sizeof(Polynomial<mpz_class, long>));
+  printf("sizeof(mpz_t) = %li\n", sizeof(mpz_t));
+  printf("sizeof(mpz_class) = %li\n", sizeof(mpz_class));
+  printf("sizeof(Polynomial<mpz_class, char>) = %li\n", sizeof(Polynomial<mpz_class, char>));
+  printf("sizeof(Polynomial<mpz_class, short>) = %li\n", sizeof(Polynomial<mpz_class, short>));
+  printf("sizeof(Polynomial<mpz_class, int>) = %li\n", sizeof(Polynomial<mpz_class, int>));
+  printf("sizeof(Polynomial<mpz_class, long>) = %li\n", sizeof(Polynomial<mpz_class, long>));
 
   Term<int,char> t;
   t.coeff = 23;

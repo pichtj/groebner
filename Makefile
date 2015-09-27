@@ -1,5 +1,5 @@
 BUILDDIR := $(shell pwd)
-CFLAGS := -m64 -I$(BUILDDIR)/include -L$(BUILDDIR)/lib -std=c++11
+CFLAGS := -m64 -g -I$(BUILDDIR)/include -L$(BUILDDIR)/lib -std=c++11
 CPPFLAGS :=
 CC := $(shell which gcc-mp-4.9 || echo gcc)
 CXX := $(shell which g++-mp-4.9 || echo g++)
@@ -33,14 +33,14 @@ $(GTEST).zip:
 	wget https://googletest.googlecode.com/files/$(GTEST).zip
 
 $(GTEST): $(GTEST).zip
-	unzip $<
+	test -e $@ || unzip $<
 
 libs: lib/libmpir.a
 
 test: test-runner
 	./test-runner
 
-%Test.o: %Test.cpp $(GTEST)
+%Test.o: %Test.cpp %.h $(GTEST)
 	$(CXX) -c -o $@ $< -isystem $(GTEST)/include
 
 gtest-all.o: $(GTEST)/src/gtest-all.cc

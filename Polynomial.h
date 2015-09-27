@@ -1,81 +1,141 @@
-#define VAR_COUNT 75
+#include "Term.h"
 
-template<class E>
-class Exponent {
-public:
-  inline Exponent() : exp() {}
-  inline E& operator[](const unsigned int& index) { return exp[index]; }
-  inline const E& operator[](const unsigned int& index) const { return exp[index]; }
+template<class C, class E> class Polynomial;
+#include "print.h"
 
-  inline unsigned int degree() {
-    unsigned int result = 0;
-    unsigned int i;
-    for (i = 0; i < VAR_COUNT; ++i) {
-      result += exp.exp[i];
-    }
-    return result;
-  }
-
-  inline Exponent<E> operator*(const Exponent<E>& other) const {
-    Exponent<E> result;
-    for (unsigned int i = 0; i < VAR_COUNT; ++i) {
-      result.exp[i] = exp[i] + other.exp[i];
-    }
-    return result;
-  }
-
-  inline Exponent<E> operator/(const Exponent<E>& other) const {
-    Exponent<E> result;
-    for (unsigned int i = 0; i < VAR_COUNT; ++i) {
-      //assert(a.exp[i] < b.exp[i]);
-      result.exp[i] = exp[i] - other.exp[i];
-    }
-    return result;
-  }
-
-  bool operator<(const Exponent<E>& other) const;
-  inline bool operator==(const Exponent<E>& other) const {
-    for (unsigned int i = 0; i < VAR_COUNT; ++i) {
-      if (exp[i] != other[i]) {
-        return false;
-      }
-      return true;
-    }
-  }
-  inline bool operator!=(const Exponent<E>& other) const { return !(*this == other); }
-  inline bool isZero() const {
-    for (unsigned int i = 0; i < VAR_COUNT; ++i) {
-      if (exp[i] != 0) {
-        return false;
-      }
-      return true;
-    }
-  }
-private:
-  E exp[VAR_COUNT];
-};
-
-template<class C, class E>
-class Term {
-public:
-  C coeff;
-  Exponent<E> exp;
-  inline unsigned int degree() { return exp.degree(); }
-};
-
-template<class C, class E>
+template<class C = int, class E = char>
 class Polynomial {
 public:
-  inline Term<C, E> lterm() const { return term; }
-  inline C lc() const { return term.coeff; }
-  inline E lm() const { return term.exp; }
+  Polynomial() : pd(0) {}
+  Polynomial(const C& c) : pd(new PolynomialData(Term<C, E>(c))) {}
+  ~Polynomial() {
+    deleteAll();
+  }
+  Term<C, E> lterm() const { return pd->term; }
+  C lc() const { if (pd) { return pd->term.coeff; } else { return C(); } }
+  Exponent<E> lm() const { if (pd) { return pd->term.exp; } else { return Exponent<E>(); } }
+  Polynomial<C, E>& operator+=(const Term<C, E>& t) {
+    if (pd == 0 || pd->term.exp < t.exp) {
+      PolynomialData* new_pd = new PolynomialData(t);
+      new_pd->next = pd;
+      pd = new_pd;
+      return *this;
+    }
+
+    PolynomialData* current = pd;
+    PolynomialData* before = 0;
+
+    while (current->term.exp > t.exp && current->next) {
+      before = current;
+      current = current->next;
+    }
+
+    if (current->term.exp == t.exp) {
+      current->term.coeff += t.coeff;
+      if (current->term.coeff == C()) {
+        if (before) {
+          before->next = current->next;
+          delete current;
+        } else {
+          PolynomialData* old_pd = pd;
+          pd = pd->next;
+          delete old_pd;
+        }
+      }
+    } else {
+      PolynomialData* after = current->next;
+      current->next = new PolynomialData(t);
+      current->next->next = after;
+    }
+    
+    return *this;
+  }
   Polynomial<C, E> operator+(const Polynomial<C, E>& other) const;
   Polynomial<C, E>& operator+=(const Polynomial<C, E>& other);
-  Polynomial<C, E> operator*(const Polynomial<C, E>& other) const;
-  Polynomial<C, E>& operator*=(const Polynomial<C, E>& other);
-  Polynomial<C, E>& operator*=(const C& c);
+  Polynomial<C, E>& operator*=(const C& c) {
+    if (c == C()) {
+      deleteAll();
+      return *this;
+    }
+    PolynomialData* current = pd;
+    while (current) {
+      current->term.coeff *= c;
+      current = current->next;
+    }
+    return *this;
+  }
+  Polynomial<C, E>& operator*=(const Term<C, E>& t) {
+    PolynomialData* current = pd;
+    while (current) {
+      current->term *= t;
+      current = current->next;
+    }
+    return *this;
+  }
+  Polynomial<C, E> operator*(const Term<C, E>& t) const {
+    Polynomial<C, E> result;
+    result += *this;
+    result *= t;
+    return result;
+  }
+  Polynomial<C, E>& operator*=(const Polynomial<C, E>& other) {
+    Polynomial<C, E> newMe = *this * other;
+    deleteAll();
+    *this += newMe;
+  }
+  Polynomial<C, E> operator*(const Polynomial<C, E>& other) const {
+    Polynomial<C, E> result;
+    PolynomialData* current = other.pd;
+    while (current) {
+      Polynomial<C, E> p = *this * current->term;
+      result += p;
+      current = current->next;
+    }
+    return result;
+  }
   bool operator==(const Polynomial<C, E>& other) const;
+  void doPrint() const { if (pd) pd->doPrint(); else printf("0"); }
 private:
-  Polynomial* next;
-  Term<C, E> term;
+  void deleteAll() {
+    PolynomialData* last = pd;
+    while (last) {
+      PolynomialData* p = last->next;
+      delete last;
+      last = p;
+    }
+    pd = 0;
+  }
+  struct PolynomialData {
+    PolynomialData(const Term<C, E>& t) : next(0), term(t) {}
+    PolynomialData* next;
+    Term<C, E> term;
+    void doPrint() {
+      print(term);
+      if (next) {
+        printf("+");
+        next->doPrint();
+      }
+    }
+  };
+
+  Polynomial(PolynomialData* polynomialData) : pd(polynomialData) {}
+  PolynomialData* pd;
 };
+
+template<class C, class E>
+Polynomial<C, E>& Polynomial<C, E>::operator+=(const Polynomial<C, E>& other) {
+  const PolynomialData* b = other.pd;
+  while (b) {
+    operator+=(b->term);
+    b = b->next;
+  }
+  return *this;
+}
+
+template<class C, class E>
+Polynomial<C, E> Polynomial<C, E>::operator+(const Polynomial<C, E>& other) const {
+  Polynomial<C, E> result = Polynomial<C, E>();
+  result += *this;
+  result += other;
+  return result;
+}
