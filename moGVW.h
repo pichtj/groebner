@@ -12,13 +12,19 @@ using namespace std;
 #define INPUT_COUNT 33
 
 template<class C, class E>
-bool rejectedByLCMCriterion(const LabelledMonomial<C, E>& m);
+bool rejectedByLCMCriterion(const LabelledMonomial<C, E>& m) {
+  return false;
+}
 
 template<class C, class E>
-bool rejectedBySyzygyCriterion(const LabelledMonomial<C, E>& m);
+bool rejectedBySyzygyCriterion(const LabelledMonomial<C, E>& m) {
+  return false;
+}
 
 template<class C, class E>
-bool rejectedByRewrittenCriterion(const LabelledMonomial<C, E>& m);
+bool rejectedByRewrittenCriterion(const LabelledMonomial<C, E>& m) {
+  return false;
+}
 
 template<class C, class E>
 set<MM<C, E> > lift(const unordered_set<LabelledMonomial<C, E> >& todo, unordered_set<LabelledMonomial<C, E> >& GG) {

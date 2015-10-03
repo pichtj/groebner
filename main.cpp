@@ -10,10 +10,10 @@ int main(int argc, char* argv[]) {
   for (auto it = input.begin(); it != input.end(); ++it) {
     cout << *it << endl;
   }
-//  auto output = moGVW(input);
+  auto output = moGVW(input);
   cout << "Output:" << endl;
-//  for (auto it = output.begin(); it != output.end(); ++it) {
-//    cout << *it << endl;
-//  }
+  for (auto it = output.begin(); it != output.end(); ++it) {
+    cout << *it << endl;
+  }
   return 0;
 }

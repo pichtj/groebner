@@ -1,3 +1,6 @@
+#ifndef LABELLED_MONOMIAL_H
+#define LABELLED_MONOMIAL_H
+
 #include "style.h"
 #include "Exponent.h"
 #include "Polynomial.h"
@@ -40,13 +43,20 @@ public:
   }
 
   template<class LMSet>
-  bool reducible(const LMSet& B) const;
+  bool reducible(const LMSet& BB) const;
 
   template<class LMSet>
-  void reduce(const LMSet& B);
+  void reduce(const LMSet& BB);
 
   template<class LMSet>
-  void mutualReduce(LMSet& b);
+  bool isCoveredBy(const LMSet& BB) const;
+
+  template<class LMSet>
+  void mutualReduce(LMSet& BB);
+
+  bool operator==(const LabelledMonomial<C, E>& other) const {
+    return m == other.m && u == other.u && f == other.f;
+  }
 };
 
 namespace std {
@@ -60,4 +70,20 @@ namespace std {
 }
 
 template<class C, class E>
-LabelledMonomial<C, E> operator*(const Exponent<E>& exp, const LabelledMonomial<C, E>& lmon);
+template<class LMSet>
+void LabelledMonomial<C, E>::reduce(const LMSet& BB) {
+}
+
+template<class C, class E>
+template<class LMSet>
+void LabelledMonomial<C, E>::mutualReduce(LMSet& BB) {
+}
+
+template<class C, class E>
+LabelledMonomial<C, E> operator*(const Exponent<E>& exp, const LabelledMonomial<C, E>& lmon) {
+  LabelledMonomial<C, E> result(lmon);
+  result.m *= exp;
+  return result;
+}
+
+#endif // LABELLED_MONOMIAL_H

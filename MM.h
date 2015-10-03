@@ -32,9 +32,23 @@ public:
   }
 
   MM<C, E> jPair(const MM<C, E>& other);
+
+  MM<C, E>& operator*=(const Exponent<E>& e) {
+    u *= e;
+    f *= e;
+    return *this;
+  }
+
+  MM<C, E> operator*(const Exponent<E>& e) const {
+    MM<C, E> result(*this);
+    result *= e;
+    return result;
+  }
 };
 
 template<class C, class E>
-MM<C, E> operator*(const Exponent<E>& e, const MM<C, E>& m);
+MM<C, E> operator*(const Exponent<E>& e, const MM<C, E>& m) {
+  return m * e;
+}
 
 #endif // MM_H

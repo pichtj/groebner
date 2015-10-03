@@ -21,6 +21,20 @@ public:
     }
     return Exponent<E>();
   }
+  bool operator==(const lm_R_l<C, E>& other) const {
+    for (uint i = 0; i < INPUT_COUNT; ++i) {
+      if (lm_u[i] != other[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+  lm_R_l<C, E>& operator*=(const Exponent<E>& e) {
+    for (uint i = 0; i < INPUT_COUNT; ++i) {
+      lm_u[i] *= e;
+    }
+    return *this;
+  }
 private:
   Term<C, E> lm_u[INPUT_COUNT];
 };
