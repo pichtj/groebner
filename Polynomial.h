@@ -1,21 +1,27 @@
-#include "Term.h"
+#ifndef POLYNOMIAL_H
+#define POLYNOMIAL_H
 
-template<class C, class E> class Polynomial;
-#include "print.h"
+#include <ostream>
+
+#include "Term.h"
 
 template<class C = int, class E = char>
 class Polynomial {
 public:
   Polynomial() : pd(0) {}
   Polynomial(const C& c) : pd(new PolynomialData(Term<C, E>(c))) {}
+  Polynomial(const Term<C, E>& t) : pd(new PolynomialData(t)) {}
+  Polynomial(const Polynomial<C, E>& other) : pd(0) {
+    *this += other;
+  }
   ~Polynomial() {
     deleteAll();
   }
   Term<C, E> lterm() const { return pd->term; }
-  C lc() const { if (pd) { return pd->term.coeff; } else { return C(); } }
-  Exponent<E> lm() const { if (pd) { return pd->term.exp; } else { return Exponent<E>(); } }
+  C lc() const { if (pd) { return pd->term.coefficient(); } else { return C(); } }
+  Exponent<E> lm() const { if (pd) { return pd->term.exponent(); } else { return Exponent<E>(); } }
   Polynomial<C, E>& operator+=(const Term<C, E>& t) {
-    if (pd == 0 || pd->term.exp < t.exp) {
+    if (pd == 0 || pd->term.exponent() < t.exponent()) {
       PolynomialData* new_pd = new PolynomialData(t);
       new_pd->next = pd;
       pd = new_pd;
@@ -25,14 +31,14 @@ public:
     PolynomialData* current = pd;
     PolynomialData* before = 0;
 
-    while (current->term.exp > t.exp && current->next) {
+    while (current->term.exponent() > t.exponent() && current->next) {
       before = current;
       current = current->next;
     }
 
-    if (current->term.exp == t.exp) {
-      current->term.coeff += t.coeff;
-      if (current->term.coeff == C()) {
+    if (current->term.exponent() == t.exponent()) {
+      current->term.coefficient() += t.coefficient();
+      if (current->term.coefficient() == 0) {
         if (before) {
           before->next = current->next;
           delete current;
@@ -59,7 +65,7 @@ public:
     }
     PolynomialData* current = pd;
     while (current) {
-      current->term.coeff *= c;
+      current->term *= c;
       current = current->next;
     }
     return *this;
@@ -94,7 +100,8 @@ public:
     return result;
   }
   bool operator==(const Polynomial<C, E>& other) const;
-  void doPrint() const { if (pd) pd->doPrint(); else printf("0"); }
+  template<class C1, class E1>
+  friend std::ostream& operator<<(std::ostream& out, const Polynomial<C1, E1>& p);
 private:
   void deleteAll() {
     PolynomialData* last = pd;
@@ -109,11 +116,10 @@ private:
     PolynomialData(const Term<C, E>& t) : next(0), term(t) {}
     PolynomialData* next;
     Term<C, E> term;
-    void doPrint() {
-      print(term);
-      if (next) {
-        printf("+");
-        next->doPrint();
+    friend std::ostream& operator<<(std::ostream& out, const PolynomialData& pd) {
+      out << pd.term;
+      if (pd.next) {
+        out << "+" << *(pd.next);
       }
     }
   };
@@ -139,3 +145,43 @@ Polynomial<C, E> Polynomial<C, E>::operator+(const Polynomial<C, E>& other) cons
   result += other;
   return result;
 }
+
+template<class C, class E>
+Polynomial<C, E> operator+(const Term<C, E>& a, const Term<C, E>& b) {
+  Polynomial<C, E> result(a);
+  result += b;
+  return result;
+}
+
+template<class C, class E>
+Polynomial<C, E> operator+(const Term<C, E>& a, const C& b) {
+  Polynomial<C, E> result(a);
+  result += Term<C, E>(b);
+  return result;
+}
+
+template<class C, class E>
+bool Polynomial<C, E>::operator==(const Polynomial<C, E>& other) const {
+  PolynomialData* ca = pd;
+  PolynomialData* cb = other.pd;
+  while (ca != 0 && cb != 0) {
+    if (ca->term != cb->term) {
+      return false;
+    }
+    ca = ca->next;
+    cb = cb->next;
+  }
+  return ca == 0 && cb == 0;
+}
+
+template<class C, class E>
+std::ostream& operator<<(std::ostream& out, const Polynomial<C, E>& p) {
+  if (p.pd) {
+    out << *(p.pd);
+  } else {
+    out << "0";
+  }
+  return out;
+}
+
+#endif // POLYNOMIAL_H

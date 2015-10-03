@@ -41,15 +41,15 @@ test: test-runner
 	./test-runner
 
 %Test.o: %Test.cpp %.h $(GTEST)
-	$(CXX) -c -o $@ $< -isystem $(GTEST)/include
+	$(CXX) $(CFLAGS) -c -o $@ $< -isystem $(GTEST)/include
 
 gtest-all.o: $(GTEST)/src/gtest-all.cc
-	$(CXX) -isystem $(GTEST)/include -I$(GTEST) -pthread -c $<
+	$(CXX) $(CFLAGS) -isystem $(GTEST)/include -I$(GTEST) -pthread -c $<
 
 gtest_main.o: $(GTEST)/src/gtest_main.cc
-	$(CXX) -isystem $(GTEST)/include -I$(GTEST) -pthread -c $<
+	$(CXX) $(CFLAGS) -isystem $(GTEST)/include -I$(GTEST) -pthread -c $<
 
 TEST_OBJECTS := $(shell ls *Test.cpp | sed -e s/cpp$$/o/g)
 
 test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o
-	$(CXX) -o test-runner $^ -pthread
+	$(CXX) $(CFLAGS) -o test-runner $^ -pthread

@@ -1,39 +1,35 @@
+#include "style.h"
+#include "Exponent.h"
 #include "Polynomial.h"
+#include "MM.h"
+#include "lm_R_l.h"
 
 #include <set>
+#include <unordered_set>
+#include <limits>
 using namespace std;
 
 #define INPUT_COUNT 33
 
-template<class E>
-class lm_R_l {
-public:
-  Exponent<E> lm_u[INPUT_COUNT];
-  Exponent<E> lm() const;
-};
-
-template<class C, class E>
-class M {
-public:
-  lm_R_l<E> u;
-  Polynomial<C, E> f;
-
-  M<C, E> jPair(const M<C, E>& other);
-};
-
-template<class C, class E>
+template<class C = int, class E = char>
 class LabelledMonomial {
 public:
+  LabelledMonomial(const Exponent<E>& e, const MM<C, E>& g) : m(e), u(g.u), f(g.f), wasLifted(false) {}
+  LabelledMonomial(const Exponent<E>& e, const lm_R_l<C, E>& v, const Polynomial<C, E>& g) : m(e), u(v), f(g), wasLifted(false) {}
   Exponent<E> m;
-  M<C, E> generator;
-  inline Exponent<E> monomial() const { return m; }
-  inline unsigned int degree() const { return m.degree(); }
-  inline Exponent<E> signature() {
-    Exponent<E> t = m / generator.f.lm();
-    return t * generator.u.lm();
+  lm_R_l<C, E> u;
+  Polynomial<C, E> f;
+  bool wasLifted;
+  uint degree() const { return m.degree(); }
+  MM<C, E> signature() {
+    Exponent<E> t = m / f.lm();
+    return MM<C, E>(u, Term<C, E>(t));
+  }
+  bool isPrimitive() const {
+    return m == f.lm();
   }
 
-  inline bool collidesWith(const LabelledMonomial<C, E>& other) {
+  bool collidesWith(const LabelledMonomial<C, E>& other) {
     if (m != other.m) {
       return false;
     }
@@ -50,23 +46,18 @@ public:
   void reduce(const LMSet& B);
 
   template<class LMSet>
-  void mutual_reduce(LMSet& b);
+  void mutualReduce(LMSet& b);
 };
 
+namespace std {
+  template<class C, class E>
+  struct hash<LabelledMonomial<C, E> > {
+    size_t operator()(const LabelledMonomial<C, E>& lm) const {
+      hash<Exponent<E> > h;
+      return h(lm.m);
+    }
+  };
+}
+
 template<class C, class E>
-LabelledMonomial<C, E> operator*(Exponent<E> exp, LabelledMonomial<C, E> lmon);
-
-template<class C, class E, class LMSet>
-set<M<C, E> > lift(const LMSet& todo, const LMSet& G);
-
-template<class C, class E, class MSet, class LMSet>
-void append(MSet& H, const LMSet& G);
-
-template<class C, class E, class MSet>
-MSet eliminate(const MSet& H);
-
-template<class C, class E, class MSet, class LMSet>
-void update(MSet& P, const LMSet& G);
-
-template<class C, class E, class PSet>
-PSet moGVW(const PSet& input);
+LabelledMonomial<C, E> operator*(const Exponent<E>& exp, const LabelledMonomial<C, E>& lmon);

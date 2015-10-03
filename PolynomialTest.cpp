@@ -1,6 +1,10 @@
 #include <gtest/gtest.h>
 
+#include <iostream>
+
 #include "Polynomial.h"
+
+using namespace std;
 
 TEST(PolynomialTest, EmptyConstruction) {
   Polynomial<int, char> p;
@@ -101,6 +105,9 @@ TEST(PolynomialTest, Multiplication) {
   f[0] = 4;
   b += Term<>(3, f);
 
+  Term<> x(Exponent<>::x(0));
+  Term<> y(Exponent<>::x(1));
+
   Polynomial<> p = a * b;
   Exponent<> g;
   g[0] = 4;
@@ -108,7 +115,7 @@ TEST(PolynomialTest, Multiplication) {
 
   EXPECT_EQ(15, p.lc());
   EXPECT_EQ(g, p.lm());
-  print(a); printf("\n");
-  print(b); printf("\n");
-  print(p); printf("\n");
+
+  Polynomial<> expected = 15*pow(x, 4)*pow(y, 12) + 51*pow(x, 4) + 35*pow(y, 12) + 119;
+  EXPECT_EQ(expected, p);
 }

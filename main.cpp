@@ -1,29 +1,19 @@
-#include <mpirxx.h>
+#include <iostream>
 
-#include <cstdlib>
-#include "LabelledMonomial.h"
+#include "moGVW.h"
+
 using namespace std;
 
-#include "print.h"
-
 int main(int argc, char* argv[]) {
-  mpir_ui a;
-  Exponent<char> exp;
-  exp[23] = 17;
-  auto exp2 = exp * exp;
-  print(exp2/exp/exp);
-  printf("\n");
-  printf("sizeof(mpz_t) = %li\n", sizeof(mpz_t));
-  printf("sizeof(mpz_class) = %li\n", sizeof(mpz_class));
-  printf("sizeof(Polynomial<mpz_class, char>) = %li\n", sizeof(Polynomial<mpz_class, char>));
-  printf("sizeof(Polynomial<mpz_class, short>) = %li\n", sizeof(Polynomial<mpz_class, short>));
-  printf("sizeof(Polynomial<mpz_class, int>) = %li\n", sizeof(Polynomial<mpz_class, int>));
-  printf("sizeof(Polynomial<mpz_class, long>) = %li\n", sizeof(Polynomial<mpz_class, long>));
-
-  Term<int,char> t;
-  t.coeff = 23;
-  t.exp = exp;
-  print(t);
-  printf("\n");
+  vector<Polynomial<> > input;
+  cout << "Input:" << endl;
+  for (auto it = input.begin(); it != input.end(); ++it) {
+    cout << *it << endl;
+  }
+//  auto output = moGVW(input);
+  cout << "Output:" << endl;
+//  for (auto it = output.begin(); it != output.end(); ++it) {
+//    cout << *it << endl;
+//  }
   return 0;
 }
