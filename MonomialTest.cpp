@@ -67,3 +67,46 @@ TEST(MonomialTest, divides) {
   EXPECT_FALSE(b.divides(c));
   EXPECT_TRUE(c.divides(b));
 }
+
+TEST(MonomialTest, lcm) {
+  Monomial<> x = Monomial<>::x(0);
+  Monomial<> y = Monomial<>::x(1);
+
+  Monomial<> a = x*x*x*y*y;
+  Monomial<> b = x*x*y*y*y;
+
+  EXPECT_EQ(pow(x, 3)*pow(y, 3), lcm(a, b));
+}
+
+TEST(MonomialTest, Multiplication) {
+  Monomial<> x = Monomial<>::x(0);
+  Monomial<> y = Monomial<>::x(1);
+
+  Monomial<> a = x*x*x*y*y;
+  Monomial<> b = x*x*y*y*y;
+
+  Monomial<> p = a;
+  p *= b;
+
+  EXPECT_EQ(pow(x, 5)*pow(y, 5), a * b);
+  EXPECT_EQ(pow(x, 5)*pow(y, 5), b * a);
+  EXPECT_EQ(pow(x, 5)*pow(y, 5), p);
+
+  EXPECT_EQ(pow(x, 5)*pow(y, 5), a * b * Monomial<>());
+  EXPECT_EQ(pow(x, 5)*pow(y, 5), b * a * Monomial<>());
+}
+
+TEST(MonomialTest, Division) {
+  Monomial<> x = Monomial<>::x(0);
+  Monomial<> y = Monomial<>::x(1);
+
+  Monomial<> a = x*x*x*y*y;
+  Monomial<> b = x*x*y*y*y;
+
+  Monomial<> p = a;
+  p /= x;
+
+  EXPECT_EQ(pow(x, 2)*pow(y, 2), a / x);
+  EXPECT_EQ(pow(x, 2)*pow(y, 2), b / y);
+  EXPECT_EQ(pow(x, 2)*pow(y, 2), p);
+}

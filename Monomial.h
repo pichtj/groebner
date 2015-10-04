@@ -42,12 +42,16 @@ public:
     return result;
   }
 
-  This operator/(const This& other) const {
-    This result;
+  This& operator/=(const This& other) {
     for (uint i = 0; i < VAR_COUNT; ++i) {
-      //assert(a.mon[i] < b.mon[i]);
-      result.mon[i] = mon[i] - other.mon[i];
+      mon[i] = mon[i] - other.mon[i];
     }
+    return *this;
+  }
+
+  This operator/(const This& other) const {
+    This result = *this;;
+    result /= other;
     return result;
   }
 
@@ -115,6 +119,15 @@ Monomial<E> pow(const Monomial<E>& m, uint e) {
   Monomial<E> result;
   for (uint i = 0; i < VAR_COUNT; ++i) {
     result[i] = m[i] * e;
+  }
+  return result;
+}
+
+template<class E>
+Monomial<E> lcm(const Monomial<E>& a, const Monomial<E>& b) {
+  Monomial<E> result;
+  for (uint i = 0; i < VAR_COUNT; ++i) {
+    result[i] = std::max(a[i], b[i]);
   }
   return result;
 }
