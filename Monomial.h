@@ -1,5 +1,5 @@
-#ifndef EXPONENT_H
-#define EXPONENT_H
+#ifndef MONOMIAL_H
+#define MONOMIAL_H
 
 #include "style.h"
 #include "operators.h"
@@ -10,59 +10,60 @@
 #define VAR_COUNT 2
 
 template<class E = char>
-class Exponent {
+class Monomial {
 public:
-  typedef E ExponentType;
-  Exponent() : exp() {}
-  E& operator[](const uint& index) { return exp[index]; }
-  const E& operator[](const uint& index) const { return exp[index]; }
+  typedef E MonomialEntryType;
+  typedef Monomial<E> This;
+  Monomial() : mon() {}
+  E& operator[](const uint& index) { return mon[index]; }
+  const E& operator[](const uint& index) const { return mon[index]; }
 
   uint degree() const {
     uint result = 0;
     uint i;
     for (i = 0; i < VAR_COUNT; ++i) {
-      result += exp[i];
+      result += mon[i];
     }
     return result;
   }
 
-  Exponent<E>& operator*=(const Exponent<E>& other) {
+  This& operator*=(const This& other) {
     for (uint i = 0; i < VAR_COUNT; ++i) {
-      exp[i] += other.exp[i];
+      mon[i] += other.mon[i];
     }
     return *this;
   }
 
-  Exponent<E> operator*(const Exponent<E>& other) const {
-    Exponent<E> result;
+  This operator*(const This& other) const {
+    This result;
     for (uint i = 0; i < VAR_COUNT; ++i) {
-      result.exp[i] = exp[i] + other.exp[i];
+      result.mon[i] = mon[i] + other.mon[i];
     }
     return result;
   }
 
-  Exponent<E> operator/(const Exponent<E>& other) const {
-    Exponent<E> result;
+  This operator/(const This& other) const {
+    This result;
     for (uint i = 0; i < VAR_COUNT; ++i) {
-      //assert(a.exp[i] < b.exp[i]);
-      result.exp[i] = exp[i] - other.exp[i];
+      //assert(a.mon[i] < b.mon[i]);
+      result.mon[i] = mon[i] - other.mon[i];
     }
     return result;
   }
 
-  bool operator<(const Exponent<E>& other) const {
+  bool operator<(const This& other) const {
     // lex order for simplicity
     for (uint i = 0; i < VAR_COUNT; ++i) {
-      if (exp[i] != other[i]) {
-        return exp[i] < other[i];
+      if (mon[i] != other[i]) {
+        return mon[i] < other[i];
       }
     }
     return false;
   }
 
-  bool operator==(const Exponent<E>& other) const {
+  bool operator==(const This& other) const {
     for (uint i = 0; i < VAR_COUNT; ++i) {
-      if (exp[i] != other[i]) {
+      if (mon[i] != other[i]) {
         return false;
       }
     }
@@ -70,26 +71,26 @@ public:
   }
   bool isZero() const {
     for (uint i = 0; i < VAR_COUNT; ++i) {
-      if (exp[i] != 0) {
+      if (mon[i] != 0) {
         return false;
       }
     }
     return true;
   }
 
-  static Exponent<E> x(uint i) {
-    Exponent<E> e;
+  static This x(uint i) {
+    This e;
     e[i] = 1;
     return e;
   }
 private:
-  E exp[VAR_COUNT];
+  E mon[VAR_COUNT];
 };
 
 namespace std {
   template<typename E>
   struct hash {
-      size_t operator()(const Exponent<typename E::ExponentType>& e) const {
+      size_t operator()(const Monomial<typename E::MonomialEntryType>& e) const {
       size_t result = 0;
       for (uint i = 0; i < VAR_COUNT; ++i) {
         result *= 7;
@@ -101,10 +102,10 @@ namespace std {
 }
 
 template<class E>
-std::ostream& operator<<(std::ostream& out, const Exponent<E>& exp) {
+std::ostream& operator<<(std::ostream& out, const Monomial<E>& mon) {
   out << "{";
   for (uint i = 0; i < VAR_COUNT; ++i) {
-    out << exp[i];
+    out << mon[i];
     if (i < VAR_COUNT - 1) out << " ";
   }
   out << "}";
@@ -112,14 +113,14 @@ std::ostream& operator<<(std::ostream& out, const Exponent<E>& exp) {
 }
 
 template<>
-inline std::ostream& operator<<(std::ostream& out, const Exponent<char>& exp) {
+inline std::ostream& operator<<(std::ostream& out, const Monomial<char>& mon) {
   out << "{";
   for (uint i = 0; i < VAR_COUNT; ++i) {
-    out << (int)exp[i];
+    out << (int)mon[i];
     if (i < VAR_COUNT - 1) out << " ";
   }
   out << "}";
   return out;
 }
 
-#endif // EXPONENT_H
+#endif // MONOMIAL_H

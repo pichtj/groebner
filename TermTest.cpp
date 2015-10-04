@@ -4,7 +4,7 @@
 
 TEST(TermTest, Multiplication) {
   Term<> t = 1;
-  t *= Exponent<>::x(1);
+  t *= Monomial<>::x(1);
 
-  EXPECT_EQ(t, Term<>(Exponent<>::x(1)));
+  EXPECT_EQ(t, Term<>(Monomial<>::x(1)));
 }

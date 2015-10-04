@@ -4,38 +4,35 @@
 #include <ostream>
 
 #include "style.h"
-#include "Exponent.h"
+#include "Monomial.h"
 
 template<class C = int, class E = char>
 class Term {
 public:
+  typedef Monomial<E> MonomialType;
+  typedef Term<C, E> This;
+
   Term() : coeff(), exp() {}
   Term(const C& c) : coeff(c), exp() {}
-  Term(const Exponent<E>& e) : coeff(1), exp(e) {}
-  Term(const C& c, const Exponent<E>& e) : coeff(c), exp(e) {}
-  Term<C, E>& operator*=(const Term<C, E>& t);
-  Term<C, E>& operator*=(const Exponent<E>& e);
+  Term(const MonomialType& e) : coeff(1), exp(e) {}
+  Term(const C& c, const MonomialType& e) : coeff(c), exp(e) {}
+  This& operator*=(const This& t) {
+    coeff *= t.coeff;
+    exp *= t.exp;
+    return *this;
+  }
+  This& operator*=(const MonomialType& e) {
+    exp *= e;
+    return *this;
+  }
   C coefficient() const { return coeff; }
   C& coefficient() { return coeff; }
-  Exponent<E> exponent() const { return exp; }
+  MonomialType exponent() const { return exp; }
   uint degree() { return exp.degree(); }
 private:
   C coeff;
-  Exponent<E> exp;
+  MonomialType exp;
 };
-
-template<class C, class E>
-Term<C, E>& Term<C, E>::operator*=(const Term<C, E>& t) {
-  coeff *= t.coeff;
-  exp *= t.exp;
-  return *this;
-}
-
-template<class C, class E>
-Term<C, E>& Term<C, E>::operator*=(const Exponent<E>& e) {
-  exp *= e;
-  return *this;
-}
 
 template<class C, class E>
 bool operator==(const Term<C, E>& a, const Term<C, E>& b) {

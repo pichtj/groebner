@@ -6,7 +6,7 @@ TEST(MMTest, Order) {
   MM<> m;
   MM<> n;
   n.u[2] = 5;
-  Exponent<> e;
+  Monomial<> e;
   e[1] = 1;
   n.u[2] *= e;
 

@@ -31,28 +31,28 @@ set<MM<C, E> > lift(const unordered_set<LabelledMonomial<C, E> >& todo, unordere
   set<MM<C, E> > HH;
   for (auto m = todo.begin(); m != todo.end(); ++m) {
     for (uint i = 0; i < VAR_COUNT; ++i ) {
-      LabelledMonomial<C, E> x_i_m = Exponent<E>::x(i) * *m;
+      LabelledMonomial<C, E> x_i_m = Monomial<E>::x(i) * *m;
       bool collides = false;
       for (auto n = GG.begin(); n != GG.end(); ++n) {
         if (x_i_m.collidesWith(*n)) {
           collides = true;
-          Exponent<E> t_f = x_i_m.m / m->f.lm();
-          Exponent<E> t_g = x_i_m.m / n->f.lm();
-          if (t_f * m->u.lm() > t_g * n->u.lm()
+          Monomial<E> t_f = x_i_m.m() / m->f().lm();
+          Monomial<E> t_g = x_i_m.m() / n->f().lm();
+          if (t_f * m->u().lm() > t_g * n->u().lm()
               && !rejectedByLCMCriterion(x_i_m)
               && !rejectedBySyzygyCriterion(x_i_m)
               && !rejectedByRewrittenCriterion(x_i_m)) {
-            HH.insert(t_f * MM<C, E>(m->u, m->f));
-            HH.insert(t_g * MM<C, E>(n->u, n->f));
+            HH.insert(t_f * MM<C, E>(m->u(), m->f()));
+            HH.insert(t_g * MM<C, E>(n->u(), n->f()));
           }
-          if (t_f * m->u.lm() < t_g * n->u.lm()) {
+          if (t_f * m->u().lm() < t_g * n->u().lm()) {
             GG.erase(n);
             GG.insert(x_i_m);
             if (!rejectedByLCMCriterion(*n)
                 && !rejectedBySyzygyCriterion(*n)
                 && !rejectedByRewrittenCriterion(*n)) {
-              HH.insert(t_f * MM<C, E>(m->u, m->f));
-              HH.insert(t_g * MM<C, E>(n->u, n->f));
+              HH.insert(t_f * MM<C, E>(m->u(), m->f()));
+              HH.insert(t_g * MM<C, E>(n->u(), n->f()));
             }
           }
         }
@@ -76,6 +76,9 @@ set<MM<C, E> > eliminate(const set<MM<C, E> >& HH) {
 
 template<class C, class E>
 void update(set<MM<C, E> >& PP, const unordered_set<LabelledMonomial<C, E> >& GG) {
+  for (auto wh = PP.begin(); wh != PP.end(); ++wh) {
+    if (wh->f.isZero()) continue;
+  }
 }
 
 template<class C = int, class E = char, class PSet>
@@ -91,7 +94,7 @@ PSet moGVW(const PSet& input) {
     if (it->isPrimitive()) {
       liftdeg = max(liftdeg, it->degree());
     }
-    if (!it->wasLifted) {
+    if (!it->wasLifted()) {
       mindeg = min(mindeg, it->degree());
     }
   }
@@ -99,7 +102,7 @@ PSet moGVW(const PSet& input) {
   while (mindeg <= liftdeg) {
     unordered_set<LabelledMonomial<C, E> > todo;
     for (auto it = GG.begin(); it != GG.end(); ++it) {
-      if (it->degree() == mindeg && !it->wasLifted) {
+      if (it->degree() == mindeg && !it->wasLifted()) {
         todo.insert(*it);
       }
     }
@@ -114,7 +117,7 @@ PSet moGVW(const PSet& input) {
       if (it->isPrimitive()) {
         liftdeg = max(liftdeg, it->degree());
       }
-      if (!it->wasLifted) {
+      if (!it->wasLifted()) {
         mindeg = min(mindeg, it->degree());
       }
     }

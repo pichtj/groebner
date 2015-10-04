@@ -7,8 +7,8 @@
 using namespace std;
 
 TEST(LabelledMonomialTest, Example22) {
-  Term<> x = Exponent<>::x(0);
-  Term<> y = Exponent<>::x(1);
+  Term<> x = Monomial<>::x(0);
+  Term<> y = Monomial<>::x(1);
   Polynomial<> f1 = x + 1;
   Polynomial<> f2 = y + 2;
   

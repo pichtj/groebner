@@ -28,7 +28,7 @@ TEST(PolynomialTest, ConstantAddition) {
 
 TEST(PolynomialTest, Addition) {
   Polynomial<> a(17);
-  Exponent<> e;
+  Monomial<> e;
   e[1] = 12;
   a += Term<>(5, e);
 
@@ -39,7 +39,7 @@ TEST(PolynomialTest, Addition) {
 
 TEST(PolynomialTest, AdditionToZero) {
   Polynomial<> a(17);
-  Exponent<> e;
+  Monomial<> e;
   e[1] = 12;
   a += Term<>(5, e);
 
@@ -52,7 +52,7 @@ TEST(PolynomialTest, AdditionToZero) {
 
 TEST(PolynomialTest, ConstantMultiplicationToZero) {
   Polynomial<> a(17);
-  Exponent<> e;
+  Monomial<> e;
   e[1] = 12;
   a += Term<>(5, e);
 
@@ -64,7 +64,7 @@ TEST(PolynomialTest, ConstantMultiplicationToZero) {
 
 TEST(PolynomialTest, ConstantMultiplication) {
   Polynomial<> a(17);
-  Exponent<> e;
+  Monomial<> e;
   e[1] = 12;
   a += Term<>(5, e);
 
@@ -75,16 +75,16 @@ TEST(PolynomialTest, ConstantMultiplication) {
 
 TEST(PolynomialTest, TermMultiplication) {
   Polynomial<> a(17);
-  Exponent<> e;
+  Monomial<> e;
   e[1] = 12;
   a += Term<>(5, e);
 
-  Exponent<> f;
+  Monomial<> f;
   f[0] = 2;
 
   a *= Term<>(3, f);
 
-  Exponent<> g;
+  Monomial<> g;
   g[0] = 2;
   g[1] = 12;
 
@@ -95,21 +95,21 @@ TEST(PolynomialTest, TermMultiplication) {
 TEST(PolynomialTest, Multiplication) {
   // 5y^12+17
   Polynomial<> a(17);
-  Exponent<> e;
+  Monomial<> e;
   e[1] = 12;
   a += Term<>(5, e);
 
   // 3x^4+7
   Polynomial<> b(7);
-  Exponent<> f;
+  Monomial<> f;
   f[0] = 4;
   b += Term<>(3, f);
 
-  Term<> x(Exponent<>::x(0));
-  Term<> y(Exponent<>::x(1));
+  Term<> x(Monomial<>::x(0));
+  Term<> y(Monomial<>::x(1));
 
   Polynomial<> p = a * b;
-  Exponent<> g;
+  Monomial<> g;
   g[0] = 4;
   g[1] = 12;
 

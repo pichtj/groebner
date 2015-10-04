@@ -2,16 +2,16 @@
 
 #include <gtest/gtest.h>
 
-#include "Exponent.h"
+#include "Monomial.h"
 
 using namespace std;
 
-TEST(ExponentTest, Order) {
-  Exponent<> e;
-  Exponent<> f;
-  Exponent<> g;
+TEST(MonomialTest, Order) {
+  Monomial<> e;
+  Monomial<> f;
+  Monomial<> g;
   g[1] = 1;
-  Exponent<> h;
+  Monomial<> h;
   h[1] = 12;
   EXPECT_FALSE(e < f);
   EXPECT_FALSE(f < e);
@@ -22,31 +22,31 @@ TEST(ExponentTest, Order) {
   EXPECT_FALSE(h < g);
 }
 
-TEST(ExponentTest, Equal) {
-  Exponent<> e;
-  Exponent<> f;
+TEST(MonomialTest, Equal) {
+  Monomial<> e;
+  Monomial<> f;
   e[1] = 12;
   EXPECT_NE(e, f);
   f[1] = 12;
   EXPECT_EQ(e, f);
 }
 
-TEST(ExponentTest, x_i) {
-  Exponent<> e = Exponent<>::x(0);
+TEST(MonomialTest, x_i) {
+  Monomial<> e = Monomial<>::x(0);
   EXPECT_EQ(e.degree(), 1);
 }
 
-TEST(ExponentTest, hash) {
-  Exponent<> e = Exponent<>::x(1);
-  Exponent<> f;
+TEST(MonomialTest, hash) {
+  Monomial<> e = Monomial<>::x(1);
+  Monomial<> f;
 
-  std::hash<Exponent<> > h;
+  std::hash<Monomial<> > h;
 
   EXPECT_NE(h(e), h(f));
 }
 
-TEST(ExponentTest, ostreamOperator) {
-  Exponent<> e = Exponent<>::x(1);
+TEST(MonomialTest, ostreamOperator) {
+  Monomial<> e = Monomial<>::x(1);
   stringstream s;
   s << e;
   EXPECT_EQ("{0 1}", s.str());

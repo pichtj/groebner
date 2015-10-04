@@ -8,19 +8,21 @@
 template<class C = int, class E = char>
 class Polynomial {
 public:
+  typedef Monomial<E> MonomialType;
+  typedef Term<C, E> TermType;
+  typedef Polynomial<C, E> PolynomialType;
   Polynomial() : pd(0) {}
-  Polynomial(const C& c) : pd(new PolynomialData(Term<C, E>(c))) {}
-  Polynomial(const Term<C, E>& t) : pd(new PolynomialData(t)) {}
-  Polynomial(const Polynomial<C, E>& other) : pd(0) {
+  Polynomial(const C& c) : pd(new PolynomialData(TermType(c))) {}
+  Polynomial(const TermType& t) : pd(new PolynomialData(t)) {}
+  Polynomial(const PolynomialType& other) : pd(0) {
     *this += other;
   }
-  ~Polynomial() {
-    deleteAll();
-  }
-  Term<C, E> lterm() const { return pd->term; }
+  ~Polynomial() { deleteAll(); }
+  TermType lterm() const { return pd->term; }
   C lc() const { if (pd) { return pd->term.coefficient(); } else { return C(); } }
-  Exponent<E> lm() const { if (pd) { return pd->term.exponent(); } else { return Exponent<E>(); } }
-  Polynomial<C, E>& operator+=(const Term<C, E>& t) {
+  Monomial<E> lm() const { if (pd) { return pd->term.exponent(); } else { return Monomial<E>(); } }
+  bool isZero() const { return pd == 0; }
+  PolynomialType& operator+=(const TermType& t) {
     if (pd == 0 || pd->term.exponent() < t.exponent()) {
       PolynomialData* new_pd = new PolynomialData(t);
       new_pd->next = pd;
@@ -56,9 +58,21 @@ public:
     
     return *this;
   }
-  Polynomial<C, E> operator+(const Polynomial<C, E>& other) const;
-  Polynomial<C, E>& operator+=(const Polynomial<C, E>& other);
-  Polynomial<C, E>& operator*=(const C& c) {
+  PolynomialType operator+(const PolynomialType& other) const {
+    Polynomial<C, E> result = Polynomial<C, E>();
+    result += *this;
+    result += other;
+    return result;
+  }
+  PolynomialType& operator+=(const PolynomialType& other) {
+    const PolynomialData* b = other.pd;
+    while (b) {
+      operator+=(b->term);
+      b = b->next;
+    }
+    return *this;
+  }
+  PolynomialType& operator*=(const C& c) {
     if (c == C()) {
       deleteAll();
       return *this;
@@ -70,7 +84,7 @@ public:
     }
     return *this;
   }
-  Polynomial<C, E>& operator*=(const Term<C, E>& t) {
+  PolynomialType& operator*=(const TermType& t) {
     PolynomialData* current = pd;
     while (current) {
       current->term *= t;
@@ -78,28 +92,28 @@ public:
     }
     return *this;
   }
-  Polynomial<C, E> operator*(const Term<C, E>& t) const {
-    Polynomial<C, E> result;
+  PolynomialType operator*(const TermType& t) const {
+    PolynomialType result;
     result += *this;
     result *= t;
     return result;
   }
-  Polynomial<C, E>& operator*=(const Polynomial<C, E>& other) {
-    Polynomial<C, E> newMe = *this * other;
+  PolynomialType& operator*=(const PolynomialType& other) {
+    PolynomialType newMe = *this * other;
     deleteAll();
     *this += newMe;
   }
-  Polynomial<C, E> operator*(const Polynomial<C, E>& other) const {
-    Polynomial<C, E> result;
+  PolynomialType operator*(const PolynomialType& other) const {
+    PolynomialType result;
     PolynomialData* current = other.pd;
     while (current) {
-      Polynomial<C, E> p = *this * current->term;
+      PolynomialType p = *this * current->term;
       result += p;
       current = current->next;
     }
     return result;
   }
-  bool operator==(const Polynomial<C, E>& other) const;
+  bool operator==(const PolynomialType& other) const;
   template<class C1, class E1>
   friend std::ostream& operator<<(std::ostream& out, const Polynomial<C1, E1>& p);
 private:
@@ -113,9 +127,9 @@ private:
     pd = 0;
   }
   struct PolynomialData {
-    PolynomialData(const Term<C, E>& t) : next(0), term(t) {}
+    PolynomialData(const TermType& t) : next(0), term(t) {}
     PolynomialData* next;
-    Term<C, E> term;
+    TermType term;
     friend std::ostream& operator<<(std::ostream& out, const PolynomialData& pd) {
       out << pd.term;
       if (pd.next) {
@@ -127,24 +141,6 @@ private:
   Polynomial(PolynomialData* polynomialData) : pd(polynomialData) {}
   PolynomialData* pd;
 };
-
-template<class C, class E>
-Polynomial<C, E>& Polynomial<C, E>::operator+=(const Polynomial<C, E>& other) {
-  const PolynomialData* b = other.pd;
-  while (b) {
-    operator+=(b->term);
-    b = b->next;
-  }
-  return *this;
-}
-
-template<class C, class E>
-Polynomial<C, E> Polynomial<C, E>::operator+(const Polynomial<C, E>& other) const {
-  Polynomial<C, E> result = Polynomial<C, E>();
-  result += *this;
-  result += other;
-  return result;
-}
 
 template<class C, class E>
 Polynomial<C, E> operator+(const Term<C, E>& a, const Term<C, E>& b) {
