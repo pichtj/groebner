@@ -10,7 +10,8 @@ int main(int argc, char* argv[]) {
   for (auto it = input.begin(); it != input.end(); ++it) {
     cout << *it << endl;
   }
-  auto output = moGVW(input);
+  moGVWRunner<> runner;
+  auto output = runner.moGVW(input);
   cout << "Output:" << endl;
   for (auto it = output.begin(); it != output.end(); ++it) {
     cout << *it << endl;

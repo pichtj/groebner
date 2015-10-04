@@ -51,3 +51,19 @@ TEST(MonomialTest, ostreamOperator) {
   s << e;
   EXPECT_EQ("{0 1}", s.str());
 }
+
+TEST(MonomialTest, divides) {
+  Monomial<> x = Monomial<>::x(0);
+  Monomial<> y = Monomial<>::x(1);
+
+  Monomial<> a = x*x*x*y*y;
+  Monomial<> b = x*x*y*y*y;
+  Monomial<> c = x*y*y;
+
+  EXPECT_FALSE(a.divides(b));
+  EXPECT_FALSE(b.divides(a));
+  EXPECT_FALSE(a.divides(c));
+  EXPECT_TRUE(c.divides(a));
+  EXPECT_FALSE(b.divides(c));
+  EXPECT_TRUE(c.divides(b));
+}

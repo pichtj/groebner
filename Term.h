@@ -40,6 +40,12 @@ bool operator==(const Term<C, E>& a, const Term<C, E>& b) {
 }
 
 template<class C, class E>
+Term<C, E> operator*(const C& c, const Monomial<E>& m) {
+  if (c == C()) return Term<C, E>();
+  return Term<C, E>(c, m);
+}
+
+template<class C, class E>
 Term<C, E> operator*(const C& c, const Term<C, E>& t) {
   return t * c;
 }
@@ -47,6 +53,16 @@ Term<C, E> operator*(const C& c, const Term<C, E>& t) {
 template<class C, class E>
 Term<C, E> operator*(const Term<C, E>& t, const C& c) {
   return t * Term<C, E>(c);
+}
+
+template<class C, class E>
+Term<C, E> operator*(const Monomial<E>& m, const Term<C, E>& t) {
+  return t * m;
+}
+
+template<class C, class E>
+Term<C, E> operator*(const Term<C, E>& t, const Monomial<E>& m) {
+  return t * Term<C, E>(m);
 }
 
 template<class C, class E>

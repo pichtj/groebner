@@ -12,7 +12,7 @@
 template<class E = char>
 class Monomial {
 public:
-  typedef E MonomialEntryType;
+  typedef E ExponentType;
   typedef Monomial<E> This;
   Monomial() : mon() {}
   E& operator[](const uint& index) { return mon[index]; }
@@ -49,6 +49,15 @@ public:
       result.mon[i] = mon[i] - other.mon[i];
     }
     return result;
+  }
+
+  bool divides(const This& other) const {
+    for (uint i = 0; i < VAR_COUNT; ++i) {
+      if (mon[i] > other.mon[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   bool operator<(const This& other) const {
@@ -90,7 +99,7 @@ private:
 namespace std {
   template<typename E>
   struct hash {
-      size_t operator()(const Monomial<typename E::MonomialEntryType>& e) const {
+      size_t operator()(const Monomial<typename E::ExponentType>& e) const {
       size_t result = 0;
       for (uint i = 0; i < VAR_COUNT; ++i) {
         result *= 7;
@@ -99,6 +108,15 @@ namespace std {
       return result;
     }
   };
+}
+
+template<class E>
+Monomial<E> pow(const Monomial<E>& m, uint e) {
+  Monomial<E> result;
+  for (uint i = 0; i < VAR_COUNT; ++i) {
+    result[i] = m[i] * e;
+  }
+  return result;
 }
 
 template<class E>

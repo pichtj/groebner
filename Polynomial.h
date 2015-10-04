@@ -14,9 +14,7 @@ public:
   Polynomial() : pd(0) {}
   Polynomial(const C& c) : pd(new PolynomialData(TermType(c))) {}
   Polynomial(const TermType& t) : pd(new PolynomialData(t)) {}
-  Polynomial(const PolynomialType& other) : pd(0) {
-    *this += other;
-  }
+  Polynomial(const PolynomialType& other) : pd(0) { *this += other; }
   ~Polynomial() { deleteAll(); }
   TermType lterm() const { return pd->term; }
   C lc() const { if (pd) { return pd->term.coefficient(); } else { return C(); } }
@@ -83,6 +81,11 @@ public:
       current = current->next;
     }
     return *this;
+  }
+  PolynomialType operator*(const MonomialType& m) const {
+    PolynomialType result = *this;
+    result *= m;
+    return result;
   }
   PolynomialType& operator*=(const TermType& t) {
     PolynomialData* current = pd;
@@ -154,6 +157,11 @@ Polynomial<C, E> operator+(const Term<C, E>& a, const C& b) {
   Polynomial<C, E> result(a);
   result += Term<C, E>(b);
   return result;
+}
+
+template<class C, class E>
+Polynomial<C, E> operator*(const Monomial<E>& m, const Polynomial<C, E>& p) {
+  return p * m;
 }
 
 template<class C, class E>

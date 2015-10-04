@@ -116,6 +116,22 @@ TEST(PolynomialTest, Multiplication) {
   EXPECT_EQ(15, p.lc());
   EXPECT_EQ(g, p.lm());
 
-  Polynomial<> expected = 15*pow(x, 4)*pow(y, 12) + 51*pow(x, 4) + 35*pow(y, 12) + 119;
-  EXPECT_EQ(expected, p);
+  EXPECT_EQ(15*pow(x, 4)*pow(y, 12) + 51*pow(x, 4) + 35*pow(y, 12) + 119, p);
+}
+
+TEST(PolynomialTest, MonomialMultiplication) {
+  Monomial<> x(Monomial<>::x(0));
+  Monomial<> y(Monomial<>::x(1));
+
+  // 5y^12+17
+  Polynomial<> a(17);
+  Monomial<> e;
+  e[1] = 12;
+  a += Term<>(5, e);
+
+  EXPECT_EQ(5*x*pow(y, 12) + 17*x, x*a);
+  EXPECT_EQ(5*x*pow(y, 12) + 17*x, a*x);
+
+  EXPECT_EQ(5*pow(y, 13) + 17*y, y*a);
+  EXPECT_EQ(5*pow(y, 13) + 17*y, a*y);
 }
