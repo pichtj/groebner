@@ -46,6 +46,11 @@ Term<C, E> operator*(const C& c, const Monomial<E>& m) {
 }
 
 template<class C, class E>
+Term<C, E> operator*(const Monomial<E>& m, const C& c) {
+  return c * m;
+}
+
+template<class C, class E>
 Term<C, E> operator*(const C& c, const Term<C, E>& t) {
   return t * c;
 }
