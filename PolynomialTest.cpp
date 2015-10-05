@@ -22,8 +22,17 @@ TEST(PolynomialTest, ConstantAddition) {
   Polynomial<> a(17);
   Polynomial<> b(4);
   Polynomial<> p = a + b;
-  EXPECT_EQ(21, p.lc());
+  p += 1;
+  EXPECT_EQ(22, p.lc());
+  EXPECT_EQ(25, (p + 3).lc());
   EXPECT_TRUE(p.lm().isZero());
+}
+
+TEST(PolynomialTest, ConstantSubtraction) {
+  Polynomial<> a(17);
+  a -= 3;
+  EXPECT_EQ(14, a.lc());
+  EXPECT_EQ(13, (a - 1).lc());
 }
 
 TEST(PolynomialTest, Addition) {

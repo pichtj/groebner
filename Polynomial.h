@@ -10,17 +10,31 @@ class Polynomial {
 public:
   typedef Monomial<E> MonomialType;
   typedef Term<C, E> TermType;
-  typedef Polynomial<C, E> PolynomialType;
+  typedef Polynomial<C, E> This;
   Polynomial() : pd(0) {}
   Polynomial(const C& c) : pd(new PolynomialData(TermType(c))) {}
   Polynomial(const TermType& t) : pd(new PolynomialData(t)) {}
-  Polynomial(const PolynomialType& other) : pd(0) { *this += other; }
+  Polynomial(const This& other) : pd(0) {
+    if (!other.pd) return;
+    pd = new PolynomialData(other.pd->term);
+    PolynomialData* c = pd;
+    PolynomialData* oc = other.pd->next;
+    while (oc) {
+      c->next = new PolynomialData(oc->term);
+      c = c->next;
+      oc = oc->next;
+    }
+  }
   ~Polynomial() { deleteAll(); }
   TermType lterm() const { return pd->term; }
   C lc() const { if (pd) { return pd->term.coefficient(); } else { return C(); } }
   Monomial<E> lm() const { if (pd) { return pd->term.exponent(); } else { return Monomial<E>(); } }
   bool isZero() const { return pd == 0; }
-  PolynomialType& operator+=(const TermType& t) {
+  This& operator+=(const C& c) { *this += TermType(c); return *this; }
+  This operator+(const C& c) const { This r = *this; r += c; return r; }
+  This& operator-=(const C& c) { *this += (-1) * c; return *this; }
+  This operator-(const C& c) const { return *this + (-1) * c; }
+  This& operator+=(const TermType& t) {
     if (pd == 0 || pd->term.exponent() < t.exponent()) {
       PolynomialData* new_pd = new PolynomialData(t);
       new_pd->next = pd;
@@ -56,13 +70,10 @@ public:
     
     return *this;
   }
-  PolynomialType operator+(const PolynomialType& other) const {
-    Polynomial<C, E> result = Polynomial<C, E>();
-    result += *this;
-    result += other;
-    return result;
-  }
-  PolynomialType& operator+=(const PolynomialType& other) {
+  This operator+(const TermType& t) const { This r = *this; r += other; return r; }
+  This& operator-=(const TermType& t) { *this += (-1) * t; return *this; }
+  This operator-(const TermType& t) const { This r = *this; r += other; return r; }
+  This& operator+=(const This& other) {
     const PolynomialData* b = other.pd;
     while (b) {
       operator+=(b->term);
@@ -70,7 +81,9 @@ public:
     }
     return *this;
   }
-  PolynomialType& operator*=(const C& c) {
+  This operator+(const This& other) const { This r = *this; r += other; return r; }
+
+  This& operator*=(const C& c) {
     if (c == C()) {
       deleteAll();
       return *this;
@@ -82,12 +95,12 @@ public:
     }
     return *this;
   }
-  PolynomialType operator*(const MonomialType& m) const {
-    PolynomialType result = *this;
+  This operator*(const MonomialType& m) const {
+    This result = *this;
     result *= m;
     return result;
   }
-  PolynomialType& operator*=(const TermType& t) {
+  This& operator*=(const TermType& t) {
     PolynomialData* current = pd;
     while (current) {
       current->term *= t;
@@ -95,37 +108,36 @@ public:
     }
     return *this;
   }
-  PolynomialType operator*(const TermType& t) const {
-    PolynomialType result;
-    result += *this;
+  This operator*(const TermType& t) const {
+    This result = *this;
     result *= t;
     return result;
   }
-  PolynomialType& operator*=(const PolynomialType& other) {
-    PolynomialType newMe = *this * other;
+  This& operator*=(const This& other) {
+    This newMe = *this * other;
     deleteAll();
     *this += newMe;
   }
-  PolynomialType operator*(const PolynomialType& other) const {
-    PolynomialType result;
+  This operator*(const This& other) const {
+    This result;
     PolynomialData* current = other.pd;
     while (current) {
-      PolynomialType p = *this * current->term;
+      This p = *this * current->term;
       result += p;
       current = current->next;
     }
     return result;
   }
-  bool operator==(const PolynomialType& other) const;
+  bool operator==(const This& other) const;
   template<class C1, class E1>
   friend std::ostream& operator<<(std::ostream& out, const Polynomial<C1, E1>& p);
 private:
   void deleteAll() {
     PolynomialData* last = pd;
     while (last) {
-      PolynomialData* p = last->next;
+      pd = last->next;
       delete last;
-      last = p;
+      last = pd;
     }
     pd = 0;
   }

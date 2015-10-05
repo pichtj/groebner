@@ -8,9 +8,9 @@ TEST(moGVWTest, LCMCriterion) {
   typedef Term<> TType;
   typedef Polynomial<> PType;
 
-//  PType a = MType::x(0);
-//  PType b = MType::x(1);
-//  PType c = MType::x(2);
+  MType a = MType::x(0);
+  MType b = MType::x(1);
+  MType c = MType::x(2);
 
 //  PType f1 = a*b*c + TType(-1);
 //  PType f2 = a*b + (-1*c);
