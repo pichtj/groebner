@@ -28,15 +28,15 @@ public:
   }
   ~Polynomial() { deleteAll(); }
   T lterm() const { return pd->term; }
-  CoefficientType lc() const { if (pd) { return pd->term.coefficient(); } else { return CoefficientType(); } }
-  MonomialType lm() const { if (pd) { return pd->term.exponent(); } else { return MonomialType(); } }
+  CoefficientType lc() const { if (pd) { return pd->term.c(); } else { return CoefficientType(); } }
+  MonomialType lm() const { if (pd) { return pd->term.m(); } else { return MonomialType(); } }
   bool isZero() const { return pd == 0; }
   This& operator+=(const CoefficientType& c) { *this += T(c); return *this; }
   This operator+(const CoefficientType& c) const { This r = *this; r += c; return r; }
   This& operator-=(const CoefficientType& c) { *this += (-1) * c; return *this; }
   This operator-(const CoefficientType& c) const { return *this + (-1) * c; }
   This& operator+=(const T& t) {
-    if (pd == 0 || pd->term.exponent() < t.exponent()) {
+    if (pd == 0 || pd->term.m() < t.m()) {
       PolynomialData* new_pd = new PolynomialData(t);
       new_pd->next = pd;
       pd = new_pd;
@@ -46,14 +46,14 @@ public:
     PolynomialData* current = pd;
     PolynomialData* before = 0;
 
-    while (current->term.exponent() > t.exponent() && current->next) {
+    while (current->term.m() > t.m() && current->next) {
       before = current;
       current = current->next;
     }
 
-    if (current->term.exponent() == t.exponent()) {
-      current->term.coefficient() += t.coefficient();
-      if (current->term.coefficient() == 0) {
+    if (current->term.m() == t.m()) {
+      current->term.c() += t.c();
+      if (current->term.c() == 0) {
         if (before) {
           before->next = current->next;
           delete current;
@@ -96,6 +96,7 @@ public:
     }
     return *this;
   }
+  This operator-() const { This r = *this; r *= -1; return r; }
   This operator*(const CoefficientType& c) { This r = *this; r *= c; return r; }
   This& operator*=(const T& t) {
     PolynomialData* current = pd;

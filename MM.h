@@ -24,7 +24,7 @@ public:
     for (uint i = 0; i < INPUT_COUNT; ++i) {
       if (u[i] != TermType()) {
         if (other.u[i] != TermType()) {
-          return u[i].exponent() < other.u[i].exponent();
+          return u[i].m() < other.u[i].m();
         } else {
           return false;
         }

@@ -22,13 +22,10 @@ public:
     exp *= t.exp;
     return *this;
   }
-  This& operator*=(const M& e) {
-    exp *= e;
-    return *this;
-  }
-  C coefficient() const { return coeff; }
-  C& coefficient() { return coeff; }
-  M exponent() const { return exp; }
+  This operator-() const { This r = *this; r *= -1; return r; }
+  C c() const { return coeff; }
+  C& c() { return coeff; }
+  M m() const { return exp; }
   uint degree() { return exp.degree(); }
 private:
   C coeff;
@@ -37,7 +34,7 @@ private:
 
 template<class C, class M>
 bool operator==(const Term<C, M>& a, const Term<C, M>& b) {
-  return a.exponent() == b.exponent() && a.coefficient() == b.coefficient();
+  return a.m() == b.m() && a.c() == b.c();
 }
 
 template<class C, class M>
@@ -68,7 +65,7 @@ Term<C, M> pow(const Term<C, M>& base, uint exp) {
 
 template<class C, class M>
 std::ostream& operator<<(std::ostream& out, const Term<C, M>& t) {
-  out << t.coefficient() << "*x^" << t.exponent();
+  out << t.c() << "*x^" << t.m();
 }
 
 #endif // TERM_H

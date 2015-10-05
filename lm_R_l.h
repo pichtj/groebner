@@ -24,8 +24,8 @@ public:
   TermType& operator[](uint i) { return lm_u[i]; }
   MonomialType lm() const {
     for (uint i = 0; i < VAR_COUNT; ++i) {
-      if (lm_u[i].coefficient() != CoefficientType()) {
-        return lm_u[i].exponent();
+      if (lm_u[i].c() != CoefficientType()) {
+        return lm_u[i].m();
       }
     }
     return MonomialType();
@@ -38,14 +38,47 @@ public:
     }
     return true;
   }
-  This& operator*=(const MonomialType& e) {
+
+  This& operator+=(const This& b) {
     for (uint i = 0; i < INPUT_COUNT; ++i) {
-      lm_u[i] *= e;
+      TermType zero;
+      if (b[i] != zero) {
+        if (lm_u[i] != zero) throw "lm_R_l: cannot add values with entries at same index";
+        lm_u[i] = b[i];
+      }
     }
     return *this;
   }
+  This operator+(const This& b) const { This r; r += b; return *this; }
+
+  This& operator-=(const This& b) {
+    for (uint i = 0; i < INPUT_COUNT; ++i) {
+      TermType zero;
+      if (b[i] != zero) {
+        if (lm_u[i] != zero) throw "lm_R_l: cannot add values with entries at same index";
+        lm_u[i] = -b[i];
+      }
+    }
+    return *this;
+  }
+  This operator-(const This& b) const { This r; r -= b; return *this; }
+
+  This& operator*=(const TermType& b) {
+    for (uint i = 0; i < INPUT_COUNT; ++i) {
+      lm_u[i] *= b;
+    }
+    return *this;
+  }
+
+  This operator*(const TermType& b) const { This r; r *= b; return *this; }
+
 private:
   TermType lm_u[INPUT_COUNT];
 };
+
+template<class P>
+lm_R_l<P> operator*(const typename P::TermType& a, const lm_R_l<P>& b) {
+  return b * a;
+}
 
 #endif // LM_R_L_H
