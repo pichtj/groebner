@@ -70,9 +70,9 @@ public:
     
     return *this;
   }
-  This operator+(const TermType& t) const { This r = *this; r += other; return r; }
+  This operator+(const TermType& t) const { This r = *this; r += t; return r; }
   This& operator-=(const TermType& t) { *this += (-1) * t; return *this; }
-  This operator-(const TermType& t) const { This r = *this; r += other; return r; }
+  This operator-(const TermType& t) const { This r = *this; r += t; return r; }
   This& operator+=(const This& other) {
     const PolynomialData* b = other.pd;
     while (b) {
