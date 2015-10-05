@@ -7,7 +7,7 @@
 using namespace std;
 
 TEST(PolynomialTest, EmptyConstruction) {
-  Polynomial<int, char> p;
+  Polynomial<> p;
   EXPECT_EQ(0, p.lc());
   EXPECT_TRUE(p.lm().isZero());
 }
@@ -129,8 +129,8 @@ TEST(PolynomialTest, Multiplication) {
 }
 
 TEST(PolynomialTest, MonomialMultiplication) {
-  Monomial<> x(Monomial<>::x(0));
-  Monomial<> y(Monomial<>::x(1));
+  Term<> x(Monomial<>::x(0));
+  Term<> y(Monomial<>::x(1));
 
   // 5y^12+17
   Polynomial<> a(17);

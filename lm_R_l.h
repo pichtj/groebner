@@ -7,12 +7,13 @@
 #define INPUT_COUNT 33
 
 /* lead monomials of elements of R^l */
-template<class C = int, class E = char>
+template<class P = Polynomial<Term<int, Monomial<char> > > >
 class lm_R_l {
 public:
-  typedef Monomial<E> MonomialType;
-  typedef Term<C, E> TermType;
-  typedef lm_R_l<C, E> This;
+  typedef typename P::TermType::MonomialType MonomialType;
+  typedef typename P::TermType::CoefficientType CoefficientType;
+  typedef typename P::TermType TermType;
+  typedef lm_R_l<P> This;
 
   static This e(int i) {
     This result;
@@ -23,7 +24,7 @@ public:
   TermType& operator[](uint i) { return lm_u[i]; }
   MonomialType lm() const {
     for (uint i = 0; i < VAR_COUNT; ++i) {
-      if (lm_u[i].coefficient() != C()) {
+      if (lm_u[i].coefficient() != CoefficientType()) {
         return lm_u[i].exponent();
       }
     }

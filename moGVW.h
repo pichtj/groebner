@@ -14,14 +14,13 @@ using namespace std;
 
 #define INPUT_COUNT 33
 
-template<class C = int, class E = char>
+template<class P = Polynomial<Term<int, Monomial<char> > > >
 class moGVWRunner {
 public:
-  typedef Monomial<E> MonomialType;
-  typedef Polynomial<C, E> PolynomialType;
-  typedef MM<C, E> MMType;
-  typedef lm_R_l<C, E> lm_R_lType;
-  typedef LabelledMonomial<C, E> LM;
+  typedef typename P::MonomialType MonomialType;
+  typedef MM<P> MMType;
+  typedef lm_R_l<P> lm_R_lType;
+  typedef LabelledMonomial<P> LM;
   typedef unordered_set<LM> LMSet;
   typedef set<MMType> MMSet;
 
@@ -102,7 +101,7 @@ public:
   PSet moGVW(const PSet& input) {
     LMSet GG;
     for (typename PSet::size_type i = 0; i < input.size(); ++i) {
-      GG.insert(LabelledMonomial<C, E>(input[i].lm(), lm_R_l<C, E>::e(i), input[i]));
+      GG.insert(LabelledMonomial<P>(input[i].lm(), lm_R_l<P>::e(i), input[i]));
     }
 
     uint liftdeg = 0;
@@ -117,7 +116,7 @@ public:
     }
 
     while (mindeg <= liftdeg) {
-      unordered_set<LabelledMonomial<C, E> > todo;
+      unordered_set<LabelledMonomial<P> > todo;
       for (auto it = GG.begin(); it != GG.end(); ++it) {
         if (it->degree() == mindeg && !it->wasLifted()) {
           todo.insert(*it);

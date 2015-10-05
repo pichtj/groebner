@@ -6,19 +6,19 @@
 #include "lm_R_l.h"
 #include "Polynomial.h"
 
-template<class C = int, class E = char>
+template<class P = Polynomial<Term<int, Monomial<char> > > >
 class MM {
 public:
-  typedef Monomial<E> MonomialType;
-  typedef Term<C, E> TermType;
-  typedef lm_R_l<C, E> lm_R_lType;
-  typedef Polynomial<C, E> PolynomialType;
-  typedef MM<C, E> This;
+  typedef typename P::MonomialType MonomialType;
+  typedef typename P::TermType TermType;
+  typedef P PolynomialType;
+  typedef lm_R_l<P> lm_R_lType;
+  typedef MM<P> This;
 
   MM() : u(), f() {}
-  MM(const lm_R_lType& v, const PolynomialType& g) : u(v), f(g) {}
+  MM(const lm_R_lType& v, const P& g) : u(v), f(g) {}
   lm_R_lType u;
-  PolynomialType f;
+  P f;
 
   bool operator<(const This& other) const {
     for (uint i = 0; i < INPUT_COUNT; ++i) {
@@ -52,8 +52,8 @@ public:
   }
 };
 
-template<class C, class E>
-MM<C, E> operator*(const Monomial<E>& e, const MM<C, E>& m) {
+template<class P>
+MM<P> operator*(const typename P::MonomialType& e, const MM<P>& m) {
   return m * e;
 }
 

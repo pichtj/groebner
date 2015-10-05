@@ -15,50 +15,50 @@ using namespace std;
 
 #define INPUT_COUNT 33
 
-template<class C = int, class E = char>
+template<class P = Polynomial<Term<int, Monomial<char> > > >
 class ULMSet {
 public:
-  typedef Monomial<E> MonomialType;
-  typedef MM<C, E> MMType;
-  typedef lm_R_l<C, E> lm_R_lType;
+  typedef typename P::MonomialType MonomialType;
+  typedef MM<P> MMType;
+  typedef lm_R_l<P> lm_R_lType;
 
   unordered_map<MonomialType, MMType> byMonomial;
 };
 
-template<class C = int, class E = char>
+template<class P = Polynomial<Term<int, Monomial<char> > > >
 class LMSet {
 public:
-  typedef Monomial<E> MonomialType;
-  typedef MM<C, E> MMType;
-  typedef lm_R_l<C, E> lm_R_lType;
+  typedef typename P::MonomialType MonomialType;
+  typedef MM<P> MMType;
+  typedef lm_R_l<P> lm_R_lType;
 
   unordered_multimap<MonomialType, MMType> byMonomial;
 };
 
-template<class C = int, class E = char>
+template<class P = Polynomial<Term<int, Monomial<char> > > >
 class LabelledMonomial {
 public:
-  typedef Monomial<E> MonomialType;
-  typedef Polynomial<C, E> PolynomialType;
-  typedef MM<C, E> MMType;
-  typedef lm_R_l<C, E> lm_R_lType;
-  typedef LMSet<C, E> LMSetType;
-  typedef ULMSet<C, E> ULMSetType;
-  typedef LabelledMonomial<C, E> This;
-  LabelledMonomial(const MonomialType& e, const MM<C, E>& g) : m_(e), u_(g.u), f_(g.f), wasLifted_(false) {}
-  LabelledMonomial(const MonomialType& e, const lm_R_l<C, E>& v, const Polynomial<C, E>& g) : m_(e), u_(v), f_(g), wasLifted_(false) {}
+  typedef typename P::MonomialType MonomialType;
+  typedef typename P::TermType TermType;
+  typedef lm_R_l<P> lm_R_lType;
+  typedef MM<P> MMType;
+  typedef LMSet<P> LMSetType;
+  typedef ULMSet<P> ULMSetType;
+  typedef LabelledMonomial<P> This;
+  LabelledMonomial(const MonomialType& e, const MMType& g) : m_(e), u_(g.u), f_(g.f), wasLifted_(false) {}
+  LabelledMonomial(const MonomialType& e, const lm_R_lType& v, const P& g) : m_(e), u_(v), f_(g), wasLifted_(false) {}
   MonomialType m() const { return this->m_; }
-  lm_R_l<C, E> u() const { return this->u_; }
-  Polynomial<C, E> f() const { return this->f_; }
+  lm_R_lType u() const { return this->u_; }
+  P f() const { return this->f_; }
   bool wasLifted() const { return this->wasLifted_; }
   uint degree() const { return m_.degree(); }
-  MM<C, E> signature() {
+  MMType signature() {
     MonomialType t = m_ / f_.lm();
-    return MM<C, E>(u_, Term<C, E>(t));
+    return MMType(u_, TermType(t));
   }
   bool isPrimitive() const { return m_ == f_.lm(); }
 
-  bool collidesWith(const LabelledMonomial<C, E>& other) { return m_ == other.m_ && !m_.isZero(); }
+  bool collidesWith(const This& other) { return m_ == other.m_ && !m_.isZero(); }
 
   bool reducible(const LMSetType& BB) const;
 
@@ -80,22 +80,22 @@ public:
 private:
   MonomialType m_;
   lm_R_lType u_;
-  PolynomialType f_;
+  P f_;
   bool wasLifted_;
 };
 
 namespace std {
-  template<class C, class E>
-  struct hash<LabelledMonomial<C, E> > {
-    size_t operator()(const LabelledMonomial<C, E>& lm) const {
-      hash<Monomial<E> > h;
+  template<class P>
+  struct hash<LabelledMonomial<P> > {
+    size_t operator()(const LabelledMonomial<P>& lm) const {
+      hash<typename LabelledMonomial<P>::MonomialType > h;
       return h(lm.m());
     }
   };
 }
 
-template<class C, class E>
-LabelledMonomial<C, E> operator*(const Monomial<E>& exp, const LabelledMonomial<C, E>& lmon) {
+template<class P>
+LabelledMonomial<P> operator*(const typename P::MonomialType& exp, const LabelledMonomial<P>& lmon) {
   return lmon * exp;
 }
 
