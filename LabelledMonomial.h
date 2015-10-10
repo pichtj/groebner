@@ -1,72 +1,99 @@
+#ifndef LABELLED_MONOMIAL_H
+#define LABELLED_MONOMIAL_H
+
+#include "style.h"
+#include "Monomial.h"
 #include "Polynomial.h"
+#include "MM.h"
+#include "lm_R_l.h"
 
 #include <set>
+#include <unordered_set>
+#include <unordered_map>
+#include <limits>
 using namespace std;
 
 #define INPUT_COUNT 33
 
-template<class E>
-class lm_R_l {
+template<class P = Polynomial<Term<int, Monomial<char> > > >
+class ULMSet {
 public:
-  Exponent<E> lm_u[INPUT_COUNT];
-  Exponent<E> lm() const;
+  typedef typename P::MonomialType MonomialType;
+  typedef MM<P> MMType;
+  typedef lm_R_l<P> lm_R_lType;
+
+  unordered_map<MonomialType, MMType> byMonomial;
 };
 
-template<class C, class E>
-class M {
+template<class P = Polynomial<Term<int, Monomial<char> > > >
+class LMSet {
 public:
-  lm_R_l<E> u;
-  Polynomial<C, E> f;
+  typedef typename P::MonomialType MonomialType;
+  typedef MM<P> MMType;
+  typedef lm_R_l<P> lm_R_lType;
 
-  M<C, E> jPair(const M<C, E>& other);
+  unordered_multimap<MonomialType, MMType> byMonomial;
 };
 
-template<class C, class E>
+template<class P = Polynomial<Term<int, Monomial<char> > > >
 class LabelledMonomial {
 public:
-  Exponent<E> m;
-  M<C, E> generator;
-  inline Exponent<E> monomial() const { return m; }
-  inline unsigned int degree() const { return m.degree(); }
-  inline Exponent<E> signature() {
-    Exponent<E> t = m / generator.f.lm();
-    return t * generator.u.lm();
+  typedef typename P::MonomialType MonomialType;
+  typedef typename P::TermType TermType;
+  typedef lm_R_l<P> lm_R_lType;
+  typedef MM<P> MMType;
+  typedef LMSet<P> LMSetType;
+  typedef ULMSet<P> ULMSetType;
+  typedef LabelledMonomial<P> This;
+  LabelledMonomial(const MonomialType& e, const MMType& g) : m_(e), u_(g.u()), f_(g.f()), wasLifted_(false) {}
+  LabelledMonomial(const MonomialType& e, const lm_R_lType& v, const P& g) : m_(e), u_(v), f_(g), wasLifted_(false) {}
+  MonomialType m() const { return this->m_; }
+  lm_R_lType u() const { return this->u_; }
+  P f() const { return this->f_; }
+  bool wasLifted() const { return this->wasLifted_; }
+  uint degree() const { return m_.degree(); }
+  MMType signature() {
+    MonomialType t = m_ / f_.lm();
+    return MMType(u_, TermType(1, t));
+  }
+  bool isPrimitive() const { return m_ == f_.lm(); }
+
+  bool collidesWith(const This& other) { return m_ == other.m_ && !m_.isZero(); }
+
+  bool operator==(const This& other) const {
+    return m_ == other.m_ && u_ == other.u_ && f_ == other.f_;
   }
 
-  inline bool collidesWith(const LabelledMonomial<C, E>& other) {
-    if (m != other.m) {
-      return false;
-    }
-    if (m.isZero()) {
-      return false;
-    }
-    return true;
+  This operator*(const MonomialType& e) const {
+    This result(*this);
+    result.m_ *= e;
+    return result;
   }
-
-  template<class LMSet>
-  bool reducible(const LMSet& B) const;
-
-  template<class LMSet>
-  void reduce(const LMSet& B);
-
-  template<class LMSet>
-  void mutual_reduce(LMSet& b);
+private:
+  MonomialType m_;
+  lm_R_lType u_;
+  P f_;
+  bool wasLifted_;
 };
 
-template<class C, class E>
-LabelledMonomial<C, E> operator*(Exponent<E> exp, LabelledMonomial<C, E> lmon);
+namespace std {
+  template<class P>
+  struct hash<LabelledMonomial<P> > {
+    size_t operator()(const LabelledMonomial<P>& lm) const {
+      hash<typename LabelledMonomial<P>::MonomialType > h;
+      return h(lm.m());
+    }
+  };
+}
 
-template<class C, class E, class LMSet>
-set<M<C, E> > lift(const LMSet& todo, const LMSet& G);
+template<class P>
+LabelledMonomial<P> operator*(const typename P::MonomialType& exp, const LabelledMonomial<P>& lmon) {
+  return lmon * exp;
+}
 
-template<class C, class E, class MSet, class LMSet>
-void append(MSet& H, const LMSet& G);
+template<class P>
+std::ostream& operator<<(std::ostream& out, const LabelledMonomial<P>& muf) {
+  return out << "(" << muf.m() << ", (" << muf.u() << ", " << muf.f() << "))";
+}
 
-template<class C, class E, class MSet>
-MSet eliminate(const MSet& H);
-
-template<class C, class E, class MSet, class LMSet>
-void update(MSet& P, const LMSet& G);
-
-template<class C, class E, class PSet>
-PSet moGVW(const PSet& input);
+#endif // LABELLED_MONOMIAL_H
