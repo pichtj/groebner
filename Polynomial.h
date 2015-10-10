@@ -107,6 +107,15 @@ public:
     return *this;
   }
   This operator*(const T& t) const { This r = *this; r *= t; return r; }
+  This& operator*=(const MonomialType& m) {
+    PolynomialData* current = pd;
+    while (current) {
+      current->term *= m;
+      current = current->next;
+    }
+    return *this;
+  }
+  This operator*(const MonomialType& m) const { This r = *this; r *= m; return r; }
   This& operator*=(const This& other) {
     This newMe = *this * other;
     deleteAll();
@@ -142,7 +151,11 @@ private:
     friend std::ostream& operator<<(std::ostream& out, const PolynomialData& pd) {
       out << pd.term;
       if (pd.next) {
-        out << "+" << *(pd.next);
+        if (pd.next->term.c() >= 0) {
+          out << "+" << *(pd.next);
+        } else {
+          out << *(pd.next);
+        }
       }
     }
   };
@@ -185,8 +198,6 @@ Polynomial<T> operator-(const T& a, const T& b) {
   return r;
 }
 
-template<class T>
-Polynomial<T> operator*(const typename T::CoefficientType& a, const Polynomial<T>& b) { return b * a; }
 
 template<class T>
 Polynomial<T> operator*(const T& a, const Polynomial<T>& b) { return b * a; }

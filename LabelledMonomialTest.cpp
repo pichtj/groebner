@@ -7,10 +7,14 @@
 using namespace std;
 
 TEST(LabelledMonomialTest, Example2_2) {
-  Term<> x = Monomial<>::x(0);
-  Term<> y = Monomial<>::x(1);
-  Polynomial<> f1 = x + 1;
-  Polynomial<> f2 = y + 2;
+  typedef Term<> T;
+  typedef Monomial<> M;
+  typedef Polynomial<> P;
+  T x = T(1, M::x(0));
+  T y = T(1, M::x(1));
+
+  P f1 = x + 1;
+  P f2 = y + 2;
   
   lm_R_l<> e1 = lm_R_l<>::e(0);
   lm_R_l<> e2 = lm_R_l<>::e(1);
@@ -29,14 +33,14 @@ TEST(LabelledMonomialTest, Example2_2) {
   EXPECT_LT(Yx.signature(), Xy.signature());
 }
 
-TEST(lm_R_lTest, Example2_18) {
+TEST(LabelledMonomialTest, Example2_18) {
   typedef Monomial<> M;
   typedef Term<> T;
   typedef Polynomial<> P;
 
-  T a = M::x(0);
-  T b = M::x(1);
-  T c = M::x(2);
+  T a = T(1, M::x(0));
+  T b = T(1, M::x(1));
+  T c = T(1, M::x(2));
 
   P f1 = a*b*c - 1;
   P f2 = a*b - c;

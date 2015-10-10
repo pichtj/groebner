@@ -45,11 +45,17 @@ TEST(MonomialTest, hash) {
   EXPECT_NE(h(e), h(f));
 }
 
+template<class T>
+string to_string(const T& t) {
+  stringstream s;
+  s << t;
+  return s.str();
+}
+
 TEST(MonomialTest, ostreamOperator) {
   Monomial<> e = Monomial<>::x(1);
-  stringstream s;
-  s << e;
-  EXPECT_EQ("{0 1}", s.str());
+  EXPECT_EQ("x1", to_string(e));
+  EXPECT_EQ("1", to_string(Monomial<>()));
 }
 
 TEST(MonomialTest, divides) {

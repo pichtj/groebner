@@ -4,11 +4,14 @@
 
 TEST(MMTest, Order) {
   MM<> m;
-  MM<> n;
-  n.u[2] = 5;
+  lm_R_l<> u;
+  u[2] = 5;
+
   Monomial<> e;
   e[1] = 1;
-  n.u[2] *= e;
+  u[2] *= e;
+
+  MM<> n(u, 0);
 
   EXPECT_FALSE(m < m);
   EXPECT_TRUE(m < n);

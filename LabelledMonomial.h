@@ -45,7 +45,7 @@ public:
   typedef LMSet<P> LMSetType;
   typedef ULMSet<P> ULMSetType;
   typedef LabelledMonomial<P> This;
-  LabelledMonomial(const MonomialType& e, const MMType& g) : m_(e), u_(g.u), f_(g.f), wasLifted_(false) {}
+  LabelledMonomial(const MonomialType& e, const MMType& g) : m_(e), u_(g.u()), f_(g.f()), wasLifted_(false) {}
   LabelledMonomial(const MonomialType& e, const lm_R_lType& v, const P& g) : m_(e), u_(v), f_(g), wasLifted_(false) {}
   MonomialType m() const { return this->m_; }
   lm_R_lType u() const { return this->u_; }
@@ -54,19 +54,11 @@ public:
   uint degree() const { return m_.degree(); }
   MMType signature() {
     MonomialType t = m_ / f_.lm();
-    return MMType(u_, TermType(t));
+    return MMType(u_, TermType(1, t));
   }
   bool isPrimitive() const { return m_ == f_.lm(); }
 
   bool collidesWith(const This& other) { return m_ == other.m_ && !m_.isZero(); }
-
-  bool reducible(const LMSetType& BB) const;
-
-  void reduce(const LMSetType& BB);
-
-  bool isCoveredBy(const LMSetType& BB) const;
-
-  void mutualReduce(LMSetType& BB);
 
   bool operator==(const This& other) const {
     return m_ == other.m_ && u_ == other.u_ && f_ == other.f_;
@@ -97,6 +89,11 @@ namespace std {
 template<class P>
 LabelledMonomial<P> operator*(const typename P::MonomialType& exp, const LabelledMonomial<P>& lmon) {
   return lmon * exp;
+}
+
+template<class P>
+std::ostream& operator<<(std::ostream& out, const LabelledMonomial<P>& muf) {
+  return out << "(" << muf.m() << ", (" << muf.u() << ", " << muf.f() << "))";
 }
 
 #endif // LABELLED_MONOMIAL_H

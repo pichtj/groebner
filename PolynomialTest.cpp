@@ -114,8 +114,8 @@ TEST(PolynomialTest, Multiplication) {
   f[0] = 4;
   b += Term<>(3, f);
 
-  Term<> x(Monomial<>::x(0));
-  Term<> y(Monomial<>::x(1));
+  Term<> x(1, Monomial<>::x(0));
+  Term<> y(1, Monomial<>::x(1));
 
   Polynomial<> p = a * b;
   Monomial<> g;
@@ -129,8 +129,8 @@ TEST(PolynomialTest, Multiplication) {
 }
 
 TEST(PolynomialTest, MonomialMultiplication) {
-  Term<> x(Monomial<>::x(0));
-  Term<> y(Monomial<>::x(1));
+  Term<> x(1, Monomial<>::x(0));
+  Term<> y(1, Monomial<>::x(1));
 
   // 5y^12+17
   Polynomial<> a(17);

@@ -3,34 +3,63 @@
 #include "Term.h"
 
 TEST(TermTest, Multiplication) {
-  Monomial<> X = Monomial<>::x(0);
-  Monomial<> Y = Monomial<>::x(1);
-  Term<> x = Monomial<>::x(0);
-  Term<> y = Monomial<>::x(1);
+  typedef Term<> T;
+  typedef Monomial<> M;
+  typedef typename T::CoefficientType C;
 
-  Term<> t = 1;
+  M X = M::x(0);
+  M Y = M::x(1);
+  T x = T(1, M::x(0));
+  T y = T(1, M::x(1));
+
+  T t = 1;
   t *= y;
 
-  EXPECT_EQ(Term<>(1, Y), t);
+  EXPECT_EQ(T(1, Y), t);
 
-  Term<> t2 = 5 * x;
+  T t2 = 5 * x;
 
-  EXPECT_EQ(Term<>(5, X), t2);
+  EXPECT_EQ(T(5, X), t2);
 
-  Term<> t3 = y * -8;
+  T t3 = y * -8;
 
-  EXPECT_EQ(Term<>(-8, Y), t3);
+  EXPECT_EQ(T(-8, Y), t3);
 
-  Term<> t4 = t2;
+  T t4 = t2;
   t4 *= 3;
 
-  EXPECT_EQ(Term<>(15, X), t4);
+  EXPECT_EQ(T(15, X), t4);
 
   t4 *= x;
 
-  EXPECT_EQ(Term<>(15, X*X), t4);
+  EXPECT_EQ(T(15, X*X), t4);
 
   t4 *= t3;
 
-  EXPECT_EQ(Term<>(-120, X*X*Y), t4);
+  EXPECT_EQ(T(-120, X*X*Y), t4);
+}
+
+TEST(TermTest, MultiplicationWithZero) {
+  typedef Term<> T;
+  typedef Monomial<> M;
+  typedef typename T::CoefficientType C;
+
+  T t;
+  EXPECT_EQ(0, t.c());
+  EXPECT_EQ(M(), t.m());
+  EXPECT_TRUE(t.isZero());
+  EXPECT_TRUE(t.m().isConstant());
+
+  t *= M::x(0);
+  EXPECT_EQ(0, t.c());
+  EXPECT_EQ(M(), t.m());
+  EXPECT_TRUE(t.isZero());
+  EXPECT_TRUE(t.m().isConstant());
+
+  T s(5, M::x(1));
+  s *= 0;
+  EXPECT_EQ(0, s.c());
+  EXPECT_EQ(M(), s.m());
+  EXPECT_TRUE(s.isZero());
+  EXPECT_TRUE(s.m().isConstant());
 }

@@ -6,8 +6,14 @@
 
 #include <functional>
 #include <ostream>
+#include <string>
 
-#define VAR_COUNT 2
+#ifndef VAR_COUNT
+#define VAR_COUNT 3
+#endif // VAR_COUNT
+
+extern std::string (*get_var_name)(uint);
+extern std::string (*default_get_var_name)(uint);
 
 template<class E = char>
 class Monomial {
@@ -25,6 +31,15 @@ public:
       result += mon[i];
     }
     return result;
+  }
+
+  bool isConstant() const {
+    for (uint i = 0; i < VAR_COUNT; ++i) {
+      if (mon[i] > 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   This& operator*=(const This& other) {
@@ -145,12 +160,17 @@ std::ostream& operator<<(std::ostream& out, const Monomial<E>& mon) {
 
 template<>
 inline std::ostream& operator<<(std::ostream& out, const Monomial<char>& mon) {
-  out << "{";
+  bool termPrinted = false;
   for (uint i = 0; i < VAR_COUNT; ++i) {
-    out << (int)mon[i];
-    if (i < VAR_COUNT - 1) out << " ";
+    int e = (int)mon[i];
+    if (e) {
+      if (termPrinted) out << "*";
+      out << (*get_var_name)(i);
+      if (e > 1) out << "^" << e;
+      termPrinted = true;
+    }
   }
-  out << "}";
+  if (!termPrinted) out << "1";
   return out;
 }
 

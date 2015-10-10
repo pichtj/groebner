@@ -24,8 +24,21 @@ public:
   typedef unordered_set<LM> LMSet;
   typedef set<MMType> MMSet;
 
-  bool rejectedByLCMCriterion(const LM& m, const LMSet& GG) {
-    
+  bool rejectedByLCMCriterion(const LM& muf, const LMSet& GG) {
+    MonomialType m = muf.m();
+    MonomialType lmu = muf.u().lm();
+    MonomialType lmf = muf.f().lm();
+    MonomialType t_f = m / lmf;
+    for (auto mvg = GG.begin(); mvg != GG.end(); ++mvg) {
+      if (mvg->m() != m) continue;
+      MonomialType lmv = mvg->u().lm();
+      MonomialType lmg = mvg->f().lm();
+      MonomialType t_g = m / lmg;
+      if (m == lcm(lmf, lmg)) continue;
+      if (t_f * lmu > t_g * lmv) {
+        return true;
+      }
+    }
     return false;
   }
 
@@ -93,7 +106,7 @@ public:
 
   void update(MMSet& PP, const LMSet& GG) {
     for (auto wh = PP.begin(); wh != PP.end(); ++wh) {
-      if (wh->f.isZero()) continue;
+      if (wh->f().isZero()) continue;
     }
   }
 

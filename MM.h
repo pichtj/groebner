@@ -15,21 +15,21 @@ public:
   typedef lm_R_l<P> lm_R_lType;
   typedef MM<P> This;
 
-  MM() : u(), f() {}
-  MM(const lm_R_lType& v, const P& g) : u(v), f(g) {}
-  lm_R_lType u;
-  P f;
+  MM() : u_(), f_() {}
+  MM(const lm_R_lType& v, const P& g) : u_(v), f_(g) {}
+  lm_R_lType u() const { return u_; }
+  P f() const { return f_; }
 
   bool operator<(const This& other) const {
     for (uint i = 0; i < INPUT_COUNT; ++i) {
-      if (u[i] != TermType()) {
-        if (other.u[i] != TermType()) {
-          return u[i].m() < other.u[i].m();
+      if (u_[i] != TermType()) {
+        if (other.u_[i] != TermType()) {
+          return u_[i].m() < other.u_[i].m();
         } else {
           return false;
         }
       } else {
-        if (other.u[i] != TermType()) {
+        if (other.u_[i] != TermType()) {
           return true;
         }
       }
@@ -37,24 +37,27 @@ public:
     return false;
   }
 
-  This jPair(const This& other);
-
   This& operator*=(const MonomialType& e) {
-    u *= e;
-    f *= e;
+    u_ *= e;
+    f_ *= e;
     return *this;
   }
 
-  This operator*(const MonomialType& e) const {
-    This result(*this);
-    result *= e;
-    return result;
-  }
+  This operator*(const MonomialType& e) const { This r(*this); r *= e; return r; }
+
+private:
+  lm_R_lType u_;
+  P f_;
 };
 
 template<class P>
 MM<P> operator*(const typename P::MonomialType& e, const MM<P>& m) {
   return m * e;
+}
+
+template<class P>
+std::ostream& operator<<(std::ostream& out, const MM<P>& uf) {
+  return out << "(" << uf.u() << ", " << uf.f() << ")";
 }
 
 #endif // MM_H
