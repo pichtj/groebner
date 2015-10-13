@@ -98,11 +98,14 @@ public:
           }
         }
         if (!collides) {
-          cout << "lift: no collision, inserting " << *muf << " into GG directly" << endl;
+          cout << "lift: no collision, inserting " << x_i_m << " into GG directly" << endl;
           GG.insert(x_i_m);
         }
       }
-      GG.find(*muf)->setLifted();
+      GG.erase(*muf);
+      LM lm = *muf;
+      lm.setLifted();
+      GG.insert(lm);
     }
     cout << "lift: returning HH = "; print("lift: ", HH);
     return HH;
