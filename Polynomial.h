@@ -30,6 +30,15 @@ public:
   T lterm() const { return pd->term; }
   CoefficientType lc() const { if (pd) { return pd->term.c(); } else { return CoefficientType(); } }
   MonomialType lm() const { if (pd) { return pd->term.m(); } else { return MonomialType(); } }
+  std::set<MonomialType> monomials() const {
+    std::set<MonomialType> r;
+    PolynomialData* c = pd;
+    while (c) {
+      r.insert(c->term.m());
+      c = c->next;
+    }
+    return r;
+  }
   bool isZero() const { return pd == 0; }
   This& operator+=(const CoefficientType& c) { *this += T(c); return *this; }
   This operator+(const CoefficientType& c) const { This r = *this; r += c; return r; }

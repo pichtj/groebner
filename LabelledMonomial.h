@@ -47,10 +47,11 @@ public:
   typedef LabelledMonomial<P> This;
   LabelledMonomial(const MonomialType& e, const MMType& g) : m_(e), u_(g.u()), f_(g.f()), wasLifted_(false) {}
   LabelledMonomial(const MonomialType& e, const lm_R_lType& v, const P& g) : m_(e), u_(v), f_(g), wasLifted_(false) {}
-  MonomialType m() const { return this->m_; }
-  lm_R_lType u() const { return this->u_; }
-  P f() const { return this->f_; }
-  bool wasLifted() const { return this->wasLifted_; }
+  MonomialType m() const { return m_; }
+  lm_R_lType u() const { return u_; }
+  P f() const { return f_; }
+  bool wasLifted() const { return wasLifted_; }
+  void setLifted() { wasLifted_ = true; }
   uint degree() const { return m_.degree(); }
   MMType signature() {
     MonomialType t = m_ / f_.lm();
