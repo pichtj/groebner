@@ -117,11 +117,11 @@ private:
 
 namespace std {
   template<typename E>
-  struct hash {
-      size_t operator()(const Monomial<typename E::ExponentType>& e) const {
+  struct hash<Monomial<E> > {
+    size_t operator()(const Monomial<E>& e) const {
       size_t result = 0;
       for (uint i = 0; i < VAR_COUNT; ++i) {
-        result *= 7;
+        result *= 2147483647;
         result += e[i];
       }
       return result;

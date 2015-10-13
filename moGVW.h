@@ -1,8 +1,8 @@
 #ifndef MOGVW_H
 #define MOGVW_H
 
-#include <set>
 #include <unordered_set>
+#include <unordered_map>
 #include <limits>
 #include <vector>
 
@@ -22,8 +22,8 @@ public:
   typedef MM<P> MMType;
   typedef lm_R_l<P> lm_R_lType;
   typedef LabelledMonomial<P> LM;
-  typedef unordered_set<LM> LMSet;
-  typedef set<MMType> MMSet;
+  typedef unordered_map<MonomialType, MMType> LMSet;
+  typedef unordered_set<MMType> MMSet;
   typedef set<MonomialType> MSet;
 
   bool rejectedByLCMCriterion(const LM& muf, const LMSet& GG) {
@@ -31,12 +31,15 @@ public:
     MonomialType lmu = muf.u().lm();
     MonomialType lmf = muf.f().lm();
     MonomialType t_f = m / lmf;
-    for (auto mvg = GG.begin(); mvg != GG.end(); ++mvg) {
-      if (mvg->m() != m) continue;
-      MonomialType lmv = mvg->u().lm();
-      MonomialType lmg = mvg->f().lm();
+    auto it = GG.find(m);
+    if (it != GG.end()) {
+      auto vg = it->second;
+      MonomialType lmv = vg.u().lm();
+      MonomialType lmg = vg.f().lm();
       MonomialType t_g = m / lmg;
-      if (m == lcm(lmf, lmg)) continue;
+      if (m == lcm(lmf, lmg)) {
+        return false;
+      }
       if (t_f * lmu > t_g * lmv) {
         return true;
       }
@@ -47,10 +50,11 @@ public:
   bool rejectedByRewrittenCriterion(const LM& uf, const LMSet& GG) {
     for (auto vg = GG.begin(); vg != GG.end(); ++vg) {
       MonomialType lmu = uf.u().lm();
-      MonomialType lmv = vg->u().lm();
+      auto v = vg->second.u();
+      MonomialType lmv = v.lm();
       if (!lmv.divides(lmu)) continue;
-      MonomialType t = uf.u().lm() / vg->u().lm();
-      if (t*vg->f().lm() < uf.f().lm()) {
+      MonomialType t = uf.u().lm() / lmv;
+      if (t*vg->second.f().lm() < uf.f().lm()) {
         return true;
       }
     }
@@ -62,50 +66,45 @@ public:
     cout << "lift: GG = "; print("lift: ", GG);
 
     MMSet HH;
-    for (auto muf = todo.begin(); muf != todo.end(); ++muf) {
-      cout << "lift: chose " << *muf << " to lift" << endl;
+    for (auto it = todo.begin(); it != todo.end(); ++it) {
+      LM muf = LM(it->first, it->second);
+      cout << "lift: chose " << muf << " to lift" << endl;
       for (uint i = 0; i < VAR_COUNT; ++i ) {
-        LM x_i_m = MonomialType::x(i) * *muf;
+        LM x_i_m = MonomialType::x(i) * muf;
         cout << "lift: lifted to " << x_i_m << endl;
-        bool collides = false;
-        for (auto nvg = GG.begin(); nvg != GG.end(); ++nvg) {
-          if (x_i_m.collidesWith(*nvg)) {
-            cout << "lift: collides with " << *nvg << endl;
-            collides = true;
-            MonomialType t_f = x_i_m.m() / muf->f().lm();
-            MonomialType t_g = x_i_m.m() / nvg->f().lm();
-            if (t_f * muf->u().lm() > t_g * nvg->u().lm()
-                && !rejectedByLCMCriterion(x_i_m, GG)
-                && !rejectedByRewrittenCriterion(x_i_m, GG)) {
-              cout << "lift: inserting " << t_f * MMType(muf->u(), muf->f()) << " into HH" << endl;
-              HH.insert(t_f * MMType(muf->u(), muf->f()));
-              cout << "lift: inserting " << t_g * MMType(nvg->u(), nvg->f()) << " into HH" << endl;
-              HH.insert(t_g * MMType(nvg->u(), nvg->f()));
-            }
-            if (t_f * muf->u().lm() < t_g * nvg->u().lm()) {
-              cout << "lift: replacing " << *nvg << " by " << x_i_m << endl;
-              GG.erase(nvg);
-              GG.insert(x_i_m);
-              if (!rejectedByLCMCriterion(*nvg, GG)
-                  && !rejectedByRewrittenCriterion(*nvg, GG)) {
-                cout << "lift: inserting " << t_f * MMType(muf->u(), muf->f()) << " into HH" << endl;
-                HH.insert(t_f * MMType(muf->u(), muf->f()));
-                cout << "lift: inserting " << t_g * MMType(nvg->u(), nvg->f()) << " into HH" << endl;
-                HH.insert(t_g * MMType(nvg->u(), nvg->f()));
-              }
-            }
-            break;
+        auto coll = GG.find(x_i_m.m());
+        if (coll != GG.end()) {
+          LM nvg = LM(coll->first, coll->second);
+          cout << "lift: collides with " << nvg << endl;
+          MonomialType t_f = x_i_m.m() / muf.f().lm();
+          MonomialType t_g = x_i_m.m() / nvg.f().lm();
+          if (t_f * muf.u().lm() > t_g * nvg.u().lm()
+              && !rejectedByLCMCriterion(x_i_m, GG)
+              && !rejectedByRewrittenCriterion(x_i_m, GG)) {
+            cout << "lift: inserting " << t_f * MMType(muf.u(), muf.f()) << " into HH" << endl;
+            HH.insert(t_f * MMType(muf.u(), muf.f()));
+            cout << "lift: inserting " << t_g * MMType(nvg.u(), nvg.f()) << " into HH" << endl;
+            HH.insert(t_g * MMType(nvg.u(), nvg.f()));
           }
-        }
-        if (!collides) {
+          if (t_f * muf.u().lm() < t_g * nvg.u().lm()) {
+            cout << "lift: replacing " << nvg << " by " << x_i_m << endl;
+            GG.erase(coll);
+            GG[x_i_m.m()] = MMType(x_i_m.u(), x_i_m.f());
+            if (!rejectedByLCMCriterion(nvg, GG)
+                && !rejectedByRewrittenCriterion(nvg, GG)) {
+              cout << "lift: inserting " << t_f * MMType(muf.u(), muf.f()) << " into HH" << endl;
+              HH.insert(t_f * MMType(muf.u(), muf.f()));
+              cout << "lift: inserting " << t_g * MMType(nvg.u(), nvg.f()) << " into HH" << endl;
+              HH.insert(t_g * MMType(nvg.u(), nvg.f()));
+            }
+          }
+          break;
+        } else {
           cout << "lift: no collision, inserting " << x_i_m << " into GG directly" << endl;
-          GG.insert(x_i_m);
+          GG[x_i_m.m()] = MMType(x_i_m.u(), x_i_m.f());
         }
       }
-      GG.erase(*muf);
-      LM lm = *muf;
-      lm.setLifted();
-      GG.insert(lm);
+      wasLifted[muf.m()] = true;
     }
     cout << "lift: returning HH = "; print("lift: ", HH);
     return HH;
@@ -131,16 +130,22 @@ public:
     while (!monomialsInHH.empty()) {
       MonomialType m = *(monomialsInHH.begin());
       done.insert(m);
-      for (auto mvg = GG.begin(); mvg != GG.end(); ++mvg) {
-        if (mvg->m() != m) continue;
-        MonomialType t = m / mvg->f().lm();
-        MMType newMM = t*MMType(mvg->u(), mvg->f());
+      auto it = GG.find(m);
+      if (it != GG.end()) {
+        MMType vg = it->second;
+        MonomialType t = m / vg.f().lm();
+        MMType newMM = t*vg;
         HH.insert(newMM);
         auto newMMMonomials = newMM.f().monomials();
         monomialsInHH.insert(newMMMonomials.begin(), newMMMonomials.end());
         break;
       }
-      monomialsInHH.erase(done.begin(), done.end());
+      for (auto it = done.begin(); it != done.end(); ++it) {
+        auto found = monomialsInHH.find(*it);
+        if (found != monomialsInHH.end()) {
+          monomialsInHH.erase(found);
+        }
+      }
     }
     cout << "append: returning HH = "; print("append: ", HH);
   }
@@ -150,13 +155,13 @@ public:
     MMSet PP;
     cout << "eliminate: declared PP" << endl;
     while (!HH.empty()) {
-      auto uf = HH.begin();
-      cout << "eliminate: working on " << *uf << endl;
+      auto uf = *(HH.begin());
+      cout << "eliminate: working on " << uf << endl;
       HH.erase(uf);
       bool found = false;
       auto vg = HH.begin();
       while (vg != HH.end()) {
-        if (vg->f().lm() == uf->f().lm()) {
+        if (vg->f().lm() == uf.f().lm()) {
           found = true;
           break;
         }
@@ -165,7 +170,7 @@ public:
       if (!found) {
         vg = PP.begin();
         while (vg != PP.end()) {
-          if (vg->f().lm() == uf->f().lm()) {
+          if (vg->f().lm() == uf.f().lm()) {
             found = true;
             break;
           }
@@ -173,10 +178,10 @@ public:
         }
       }
       if (found) {
-        cout << "eliminate: reducing " << *uf << " with " << *vg << endl;
-        auto u = uf->u();
+        cout << "eliminate: reducing " << uf << " with " << *vg << endl;
+        auto u = uf.u();
         auto v = vg->u();
-        auto f = uf->f();
+        auto f = uf.f();
         auto g = vg->f();
         auto lcg = g.lc();
         auto lcf = f.lc();
@@ -190,12 +195,12 @@ public:
           HH.erase(*vg);
 //          cout << "eliminate: inserting " << MMType(lcf*v-lcg*u, lcf*g-lcg*f) << " into HH" << endl;
 //          HH.insert(MMType(lcf*v-lcg*u, lcf*g-lcg*f));
-          cout << "eliminate: inserting " << *uf << " into HH" << endl;
-          HH.insert(*uf);
+          cout << "eliminate: inserting " << uf << " into HH" << endl;
+          HH.insert(uf);
         }
       } else {
-        cout << "eliminate: no reduction found for " << *uf << endl;
-        PP.insert(*uf);
+        cout << "eliminate: no reduction found for " << uf << endl;
+        PP.insert(uf);
       }
     }
     return PP;
@@ -207,11 +212,16 @@ public:
     }
   }
 
+  bool isPrimitive(const std::pair<MonomialType, MMType>& lm) const {
+    return lm.first == lm.second.f().lm();
+  }
+
   template<class PSet>
   PSet moGVW(const PSet& input) {
     LMSet GG;
+    wasLifted.clear();
     for (typename PSet::size_type i = 0; i < input.size(); ++i) {
-      GG.insert(LabelledMonomial<P>(input[i].lm(), lm_R_l<P>::e(i), input[i]));
+      GG[input[i].lm()] = MMType(lm_R_l<P>::e(i), input[i]);
     }
 
     cout << "moGVW: prefilled GG = "; print("moGVW: ", GG);
@@ -219,21 +229,21 @@ public:
     uint liftdeg = 0;
     uint mindeg = numeric_limits<uint>::max();
     for (auto it = GG.begin(); it != GG.end(); ++it) {
-      if (it->isPrimitive()) {
-        liftdeg = max(liftdeg, it->degree());
+      if (isPrimitive(*it)) {
+        liftdeg = max(liftdeg, it->first.degree());
       }
-      if (!it->wasLifted()) {
-        mindeg = min(mindeg, it->degree());
+      if (!wasLifted[it->first]) {
+        mindeg = min(mindeg, it->first.degree());
       }
     }
     cout << "moGVW: liftdeg = " << liftdeg << endl;
     cout << "moGVW: mindeg = " << mindeg << endl;
 
     while (mindeg <= liftdeg) {
-      unordered_set<LabelledMonomial<P> > todo;
+      unordered_map<MonomialType, MMType> todo;
       for (auto it = GG.begin(); it != GG.end(); ++it) {
-        if (it->degree() == mindeg && !it->wasLifted()) {
-          todo.insert(*it);
+        if (it->first.degree() == mindeg && !wasLifted[it->first]) {
+          todo[it->first] = it->second;
         }
       }
       cout << "moGVW: calling lift" << endl;
@@ -248,24 +258,31 @@ public:
       liftdeg = 0;
       mindeg = numeric_limits<uint>::max();
       for (auto it = GG.begin(); it != GG.end(); ++it) {
-        if (it->isPrimitive()) {
-          liftdeg = max(liftdeg, it->degree());
+        if (isPrimitive(*it)) {
+          liftdeg = max(liftdeg, it->first.degree());
         }
-        if (!it->wasLifted()) {
-          mindeg = min(mindeg, it->degree());
+        if (!wasLifted[it->first]) {
+          mindeg = min(mindeg, it->first.degree());
         }
       }
     }
 
     PSet result;
-    for (auto muf = GG.begin(); muf != GG.end(); ++muf) {
-      if (muf->isPrimitive()) {
-        result.push_back(muf->f());
+    for (auto it = GG.begin(); it != GG.end(); ++it) {
+      if (isPrimitive(*it)) {
+        result.push_back(it->second.f());
       }
     }
     return result;
   }
+private:
+  unordered_map<MonomialType, bool> wasLifted;
 };
+
+template<class A, class B>
+std::ostream& operator<<(ostream& out, const std::pair<A, B>& ab) {
+  return out << "(" << ab.first << ", " << ab.second << ")";
+}
 
 template<class C>
 void print(const string& prefix, const C& c) {
@@ -274,7 +291,6 @@ void print(const string& prefix, const C& c) {
     cout << prefix << "  " << *it << endl;
   }
   cout << prefix << "}" << endl;
-
 }
 
 #endif // MOGVW_H

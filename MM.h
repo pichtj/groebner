@@ -37,6 +37,10 @@ public:
     return false;
   }
 
+  bool operator==(const This& other) const {
+    return u_ == other.u_ && f_ == other.f_;
+  }
+
   This& operator*=(const MonomialType& e) {
     u_ *= e;
     f_ *= e;
@@ -58,6 +62,18 @@ MM<P> operator*(const typename P::MonomialType& e, const MM<P>& m) {
 template<class P>
 std::ostream& operator<<(std::ostream& out, const MM<P>& uf) {
   return out << "(" << uf.u() << ", " << uf.f() << ")";
+}
+
+namespace std {
+  template<class P>
+  struct hash<MM<P> > { 
+    size_t operator()(const MM<P>& mm) const {
+      size_t result = 0;
+      hash<typename P::MonomialType> mhash;
+      result += mhash(mm.f().lm());
+      return result;
+    }
+  };
 }
 
 #endif // MM_H

@@ -4,6 +4,7 @@
 
 TEST(MMTest, Order) {
   MM<> m;
+
   lm_R_l<> u;
   u[2] = 5;
 
