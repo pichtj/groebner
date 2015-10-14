@@ -4,6 +4,7 @@
 #include <ostream>
 #include <set>
 #include <forward_list>
+#include <stdexcept>
 
 #include "Term.h"
 
@@ -19,7 +20,7 @@ public:
   Polynomial(const T& t) : terms({t}) {}
   T lterm() const { return terms.front(); }
   CoefficientType lc() const { if (!terms.empty()) { return terms.front().c(); } else { return CoefficientType(); } }
-  MonomialType lm() const { if (!terms.empty()) { return terms.front().m(); } else { return MonomialType(); } }
+  MonomialType lm() const { if (!terms.empty()) { return terms.front().m(); } else { throw std::domain_error("0.lm() is not a monomial"); } }
   std::set<MonomialType> monomials() const {
     std::set<MonomialType> r;
     for (auto it = terms.begin(); it != terms.end(); ++it) {
@@ -66,6 +67,13 @@ public:
     return *this;
   }
   This operator+(const This& other) const { This r = *this; r += other; return r; }
+  This& operator-=(const This& other) {
+    for (auto it = other.terms.begin(); it != other.terms.end(); ++it) {
+      operator-=(*it);
+    }
+    return *this;
+  }
+  This operator-(const This& other) const { This r = *this; r -= other; return r; }
 
   This& operator*=(const CoefficientType& c) {
     if (c == CoefficientType()) {
@@ -78,7 +86,7 @@ public:
     return *this;
   }
   This operator-() const { This r = *this; r *= -1; return r; }
-  This operator*(const CoefficientType& c) { This r = *this; r *= c; return r; }
+  This operator*(const CoefficientType& c) const { This r = *this; r *= c; return r; }
   This& operator*=(const T& t) {
     if (t.isZero()) {
       terms.clear();
@@ -151,9 +159,11 @@ Polynomial<T> operator-(const T& a, const T& b) {
   return r;
 }
 
+template<class T>
+Polynomial<T> operator*(const typename T::CoefficientType& a, const Polynomial<T>& b) { return b.operator*(a); }
 
 template<class T>
-Polynomial<T> operator*(const T& a, const Polynomial<T>& b) { return b * a; }
+Polynomial<T> operator*(const T& a, const Polynomial<T>& b) { return b.operator*(a); }
 
 template<class T>
 std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {

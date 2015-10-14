@@ -51,6 +51,6 @@ TEST(lm_R_lTest, lm) {
   lm_R_l<> u = e1 - e2 - a * e3;
   lm_R_l<> v = b*e1 - b*e2 - b*a * e3;
 
-  EXPECT_EQ(M(), u.lm());
-  EXPECT_EQ(b, v.lm());
+  EXPECT_EQ(e1, u.lm());
+  EXPECT_EQ(b*e1, v.lm());
 }

@@ -9,8 +9,13 @@ std::string abc_var_names(uint index) {
   return std::string(alphabet + index, alphabet + index + 1);
 }
 
+struct use_abc_var_names {
+  use_abc_var_names() { get_var_name = abc_var_names; }
+  ~use_abc_var_names() { get_var_name = default_get_var_name; }
+};
+
 TEST(moGVWTest, LCMCriterion) {
-  get_var_name = abc_var_names;
+  use_abc_var_names in_this_scope;
   typedef Monomial<> M;
   typedef Term<> T;
   typedef Polynomial<> P;
@@ -66,12 +71,10 @@ TEST(moGVWTest, LCMCriterion) {
   GG[(a*c*c).m()] = r4;
 
   EXPECT_TRUE(runner.rejectedByLCMCriterion(abc_r4, GG));
-
-  get_var_name = default_get_var_name;
 }
 
 TEST(moGVWTest, lift) {
-  get_var_name = abc_var_names;
+  use_abc_var_names in_this_scope;
   typedef Monomial<> M;
   typedef Term<> T;
   typedef Polynomial<> P;
@@ -148,12 +151,10 @@ TEST(moGVWTest, lift) {
   GG2[(c*c).m()] = r4;
   GG2[(a*c).m()] = r4;
   GG2[(a*c*c).m()] = r4;
-
-  get_var_name = default_get_var_name;
 }
 
 TEST(moGVWTest, moGVW) {
-  get_var_name = abc_var_names;
+  use_abc_var_names in_this_scope;
   typedef Monomial<> M;
   typedef Term<> T;
   typedef Polynomial<> P;
@@ -181,6 +182,4 @@ TEST(moGVWTest, moGVW) {
   cout << "}" << endl;
 
   EXPECT_EQ(PSet({ a*b - c, b*c - b, c - 1, -c*c + c }), output);
-
-  get_var_name = default_get_var_name;
 }

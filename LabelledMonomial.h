@@ -51,7 +51,7 @@ public:
   lm_R_lType u() const { return u_; }
   P f() const { return f_; }
   uint degree() const { return m_.degree(); }
-  MMType signature() {
+  MMType signature() const {
     MonomialType t = m_ / f_.lm();
     return MMType(u_, TermType(1, t));
   }
