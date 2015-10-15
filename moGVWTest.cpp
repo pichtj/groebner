@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 
-#define VAR_COUNT 3
-
 #include "moGVW.h"
 
 std::string abc_var_names(uint index) {
@@ -114,18 +112,6 @@ TEST(moGVWTest, lift) {
 
   MMSet HH = runner.lift(todo, GG);
 
-  cout << "GG = {" << endl;
-  for (auto it = GG.begin(); it != GG.end(); ++it) {
-    cout << *it << endl;
-  }
-  cout << "}" << endl;
-
-  cout << "HH = {" << endl;
-  for (auto it = HH.begin(); it != HH.end(); ++it) {
-    cout << *it << endl;
-  }
-  cout << "}" << endl;
-
   // LOOP 1
   LabelledMonomial<> bcc_r3 = LabelledMonomial<>((b*c*c).m(), r3);
   LabelledMonomial<> bbc_r3 = LabelledMonomial<>((b*b*c).m(), r3);
@@ -158,8 +144,6 @@ TEST(moGVWTest, moGVW) {
   typedef Monomial<> M;
   typedef Term<> T;
   typedef Polynomial<> P;
-  typedef moGVWRunner<>::LMSet LMSet;
-  typedef moGVWRunner<>::MMSet MMSet;
   typedef vector<P> PSet;
   moGVWRunner<> runner;
 
@@ -175,11 +159,28 @@ TEST(moGVWTest, moGVW) {
 
   PSet output = runner.moGVW(input);
 
-  cout << "output = {" << endl;
-  for (auto it = output.begin(); it != output.end(); ++it) {
-    cout << *it << endl;
-  }
-  cout << "}" << endl;
+  EXPECT_EQ(PSet({ a*b - c, b*c - b, -c*c + c, c - 1 }), output);
+}
 
-  EXPECT_EQ(PSet({ a*b - c, b*c - b, c - 1, -c*c + c }), output);
+TEST(moGVWTest, cyclic3) {
+  use_abc_var_names in_this_scope;
+  typedef Monomial<> M;
+  typedef Term<> T;
+  typedef Polynomial<> P;
+  typedef vector<P> PSet;
+  moGVWRunner<> runner;
+
+  T a = T(1, M::x(0));
+  T b = T(1, M::x(1));
+  T c = T(1, M::x(2));
+
+  PSet input = {
+    a + b + c,
+    a*b + a*c + b*c,
+    a*b*c - 1
+  };
+
+  PSet output = runner.moGVW(input);
+
+  EXPECT_EQ(PSet({pow(b,3)-1, -a*c+pow(b,2), a+b+c, a*b+a*c+b*c, a*pow(c,2)+b*pow(c,2)+1, a*b*c-1, pow(b,2)*pow(c,2)+b+c, -pow(b,3)*c+c}), output);
 }

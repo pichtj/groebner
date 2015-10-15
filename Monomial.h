@@ -9,7 +9,7 @@
 #include <string>
 
 #ifndef VAR_COUNT
-#define VAR_COUNT 3
+#define VAR_COUNT 4
 #endif // VAR_COUNT
 
 extern std::string (*get_var_name)(uint);

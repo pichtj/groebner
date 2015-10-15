@@ -51,6 +51,7 @@ public:
       auto v = vg->second.u();
       auto lmv = v.lm();
       if (!lmv.divides(lmu)) continue;
+      cout << "rejectedByRewrittenCriterion: " << lmv << " divides " << lmu << endl;
       auto t = lmu / lmv;
       if (t*vg->second.f().lm() < uf.f().lm()) {
         return true;
@@ -288,6 +289,7 @@ public:
         result.push_back(it->second.f());
       }
     }
+    cout << "moGVW: returning gb = "; print("moGVW: ", result);
     return result;
   }
 private:
@@ -301,11 +303,15 @@ std::ostream& operator<<(ostream& out, const std::pair<A, B>& ab) {
 
 template<class C>
 void print(const string& prefix, const C& c) {
-  cout << "{" << endl;
+  cout << "{";
+  bool termPrinted = false;
   for (auto it = c.begin(); it != c.end(); ++it) {
-    cout << prefix << "  " << *it << endl;
+    if (termPrinted) cout << ",";
+    cout << endl << prefix << "  " << *it;
+    termPrinted = true;
   }
-  cout << prefix << "}" << endl;
+  if (termPrinted) cout << endl << prefix;
+  cout << "}" << endl;
 }
 
 #endif // MOGVW_H

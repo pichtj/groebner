@@ -20,7 +20,7 @@ public:
   Polynomial(const T& t) : terms({t}) {}
   T lterm() const { return terms.front(); }
   CoefficientType lc() const { if (!terms.empty()) { return terms.front().c(); } else { return CoefficientType(); } }
-  MonomialType lm() const { if (!terms.empty()) { return terms.front().m(); } else { throw std::domain_error("0.lm() is not a monomial"); } }
+  MonomialType lm() const { if (!terms.empty()) { return terms.front().m(); } else { return MonomialType(); } }
   std::set<MonomialType> monomials() const {
     std::set<MonomialType> r;
     for (auto it = terms.begin(); it != terms.end(); ++it) {

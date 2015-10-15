@@ -21,20 +21,7 @@ public:
   P f() const { return f_; }
 
   bool operator<(const This& other) const {
-    for (uint i = 0; i < INPUT_COUNT; ++i) {
-      if (u_[i] != TermType()) {
-        if (other.u_[i] != TermType()) {
-          return u_[i].m() < other.u_[i].m();
-        } else {
-          return false;
-        }
-      } else {
-        if (other.u_[i] != TermType()) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return u_ < other.u_;
   }
 
   bool operator==(const This& other) const {
