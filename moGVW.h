@@ -12,8 +12,6 @@
 
 using namespace std;
 
-#define INPUT_COUNT 33
-
 template<class P = Polynomial<Term<int, Monomial<char> > > >
 class moGVWRunner {
 public:

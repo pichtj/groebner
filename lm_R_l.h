@@ -4,11 +4,10 @@
 #include <ostream>
 #include <array>
 #include <stdexcept>
+#include <limits>
 
 #include "style.h"
 #include "Polynomial.h"
-
-#define INPUT_COUNT 33
 
 /* lead monomials of elements of R^l */
 template<class P = Polynomial<Term<int, Monomial<char> > > >
@@ -19,7 +18,7 @@ public:
   typedef typename P::TermType TermType;
   typedef lm_R_l<P> This;
 
-  lm_R_l() : m_(), index_(INPUT_COUNT) {}
+  lm_R_l() : m_(), index_(std::numeric_limits<uint>::max()) {}
 
   MonomialType m() const { return m_; }
   uint index() const { return index_; }
