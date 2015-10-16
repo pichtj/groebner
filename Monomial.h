@@ -8,18 +8,16 @@
 #include <ostream>
 #include <string>
 
-#ifndef VAR_COUNT
-#define VAR_COUNT 4
-#endif // VAR_COUNT
-
 extern std::string (*get_var_name)(uint);
 extern std::string (*default_get_var_name)(uint);
 
-template<class E = char>
+template<class E = char, long VC = 5>
 class Monomial {
 public:
   typedef E ExponentType;
   typedef Monomial<E> This;
+  static const long VAR_COUNT = VC;
+
   Monomial() : mon() {}
   E& operator[](const uint& index) { return mon[index]; }
   const E& operator[](const uint& index) const { return mon[index]; }
@@ -116,11 +114,11 @@ private:
 };
 
 namespace std {
-  template<typename E>
-  struct hash<Monomial<E> > {
-    size_t operator()(const Monomial<E>& e) const {
+  template<typename E, long VC>
+  struct hash<Monomial<E, VC> > {
+    size_t operator()(const Monomial<E, VC>& e) const {
       size_t result = 0;
-      for (uint i = 0; i < VAR_COUNT; ++i) {
+      for (uint i = 0; i < Monomial<E, VC>::VAR_COUNT; ++i) {
         result *= 2147483647;
         result += e[i];
       }
@@ -129,39 +127,39 @@ namespace std {
   };
 }
 
-template<class E>
-Monomial<E> pow(const Monomial<E>& m, uint e) {
-  Monomial<E> result;
-  for (uint i = 0; i < VAR_COUNT; ++i) {
+template<class E, long VC>
+Monomial<E, VC> pow(const Monomial<E, VC>& m, uint e) {
+  Monomial<E, VC> result;
+  for (uint i = 0; i < Monomial<E, VC>::VAR_COUNT; ++i) {
     result[i] = m[i] * e;
   }
   return result;
 }
 
-template<class E>
-Monomial<E> lcm(const Monomial<E>& a, const Monomial<E>& b) {
-  Monomial<E> result;
-  for (uint i = 0; i < VAR_COUNT; ++i) {
+template<class E, long VC>
+Monomial<E, VC> lcm(const Monomial<E, VC>& a, const Monomial<E, VC>& b) {
+  Monomial<E, VC> result;
+  for (uint i = 0; i < Monomial<E, VC>::VAR_COUNT; ++i) {
     result[i] = std::max(a[i], b[i]);
   }
   return result;
 }
 
-template<class E>
-std::ostream& operator<<(std::ostream& out, const Monomial<E>& mon) {
+template<class E, long VC>
+std::ostream& operator<<(std::ostream& out, const Monomial<E, VC>& mon) {
   out << "{";
-  for (uint i = 0; i < VAR_COUNT; ++i) {
+  for (uint i = 0; i < Monomial<E, VC>::VAR_COUNT; ++i) {
     out << mon[i];
-    if (i < VAR_COUNT - 1) out << " ";
+    if (i < Monomial<E, VC>::VAR_COUNT - 1) out << " ";
   }
   out << "}";
   return out;
 }
 
-template<>
-inline std::ostream& operator<<(std::ostream& out, const Monomial<char>& mon) {
+template<long VC>
+inline std::ostream& operator<<(std::ostream& out, const Monomial<char, VC>& mon) {
   bool termPrinted = false;
-  for (uint i = 0; i < VAR_COUNT; ++i) {
+  for (uint i = 0; i < Monomial<char, VC>::VAR_COUNT; ++i) {
     int e = (int)mon[i];
     if (e) {
       if (termPrinted) out << "*";

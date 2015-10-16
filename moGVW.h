@@ -39,8 +39,22 @@ public:
         return false;
       }
       if (muf.signature() > LM(it->first, it->second).signature()) {
+        cout << "rejectedByLCMCriterion: rejecting " << muf << endl;
         return true;
       }
+    }
+    return false;
+  }
+
+  bool rejectedBySyzygyCriterion(const LM& muf, const LMSet& GG) {
+    auto lmu = muf.u().lm();
+    auto t_f = muf.m() / muf.f().lm();
+    auto it = GG.find(t_f*lmu.m());
+    if (it == GG.end()) return false;
+    auto lmv = it->second.u().lm();
+    if (lmu.index() > lmv.index()) {
+      cout << "rejectedBySyzygyCriterion: rejecting " << muf << endl;
+      return true;
     }
     return false;
   }
@@ -51,9 +65,9 @@ public:
       auto v = vg->second.u();
       auto lmv = v.lm();
       if (!lmv.divides(lmu)) continue;
-      cout << "rejectedByRewrittenCriterion: " << lmv << " divides " << lmu << endl;
       auto t = lmu / lmv;
       if (t*vg->second.f().lm() < uf.f().lm()) {
+        cout << "rejectedByRewrittenCriterion: rejecting " << uf << endl;
         return true;
       }
     }
@@ -68,7 +82,7 @@ public:
     for (auto it = todo.begin(); it != todo.end(); ++it) {
       LM muf = LM(it->first, it->second);
       cout << "lift: chose " << muf << " to lift" << endl;
-      for (uint i = 0; i < VAR_COUNT; ++i ) {
+      for (uint i = 0; i < MonomialType::VAR_COUNT; ++i ) {
         LM x_i_m = MonomialType::x(i) * muf;
         cout << "lift: lifted to " << x_i_m << endl;
         auto coll = GG.find(x_i_m.m());
@@ -79,6 +93,7 @@ public:
           MonomialType t_g = x_i_m.m() / nvg.f().lm();
           if (muf.signature() > nvg.signature()
               && !rejectedByLCMCriterion(x_i_m, GG)
+              && !rejectedBySyzygyCriterion(x_i_m, GG)
               && !rejectedByRewrittenCriterion(x_i_m, GG)) {
             cout << "lift: inserting " << t_f * MMType(muf.u(), muf.f()) << " into HH" << endl;
             HH.insert(t_f * MMType(muf.u(), muf.f()));
@@ -90,6 +105,7 @@ public:
             GG.erase(coll);
             GG[x_i_m.m()] = MMType(x_i_m.u(), x_i_m.f());
             if (!rejectedByLCMCriterion(nvg, GG)
+                && !rejectedBySyzygyCriterion(x_i_m, GG)
                 && !rejectedByRewrittenCriterion(nvg, GG)) {
               cout << "lift: inserting " << t_f * MMType(muf.u(), muf.f()) << " into HH" << endl;
               HH.insert(t_f * MMType(muf.u(), muf.f()));
@@ -150,10 +166,12 @@ public:
 
   MMSet eliminate(MMSet& HH) {
     MMSet PP;
-    while (!HH.empty()) {
-      auto uf = *(HH.begin());
+    MMSet todoInHH = HH;
+    while (!todoInHH.empty()) {
+      auto uf = *(todoInHH.begin());
       cout << "eliminate: working on " << uf << endl;
       HH.erase(uf);
+      todoInHH.erase(uf);
       bool found = false;
       auto vg = HH.begin();
       while (vg != HH.end()) {
@@ -185,12 +203,15 @@ public:
         if (u.lm() > v.lm()) {
           cout << "eliminate: inserting " << MMType(lcg*u-lcf*v, lcg*f-lcf*g) << " into HH" << endl;
           HH.insert(MMType(lcg*u-lcf*v, lcg*f-lcf*g));
+          todoInHH.insert(MMType(lcg*u-lcf*v, lcg*f-lcf*g));
         }
         if (u.lm() < v.lm()) {
           cout << "eliminate: removing " << *vg << " from HH" << endl;
           HH.erase(*vg);
+          todoInHH.erase(*vg);
           cout << "eliminate: inserting " << MMType(lcf*v-lcg*u, lcf*g-lcg*f) << " into HH" << endl;
           HH.insert(MMType(lcf*v-lcg*u, lcf*g-lcg*f));
+          todoInHH.insert(MMType(lcf*v-lcg*u, lcf*g-lcg*f));
           cout << "eliminate: inserting " << uf << " into HH" << endl;
           HH.insert(uf);
         }
@@ -234,8 +255,10 @@ public:
   PSet moGVW(const PSet& input) {
     LMSet GG;
     wasLifted.clear();
-    for (typename PSet::size_type i = 0; i < input.size(); ++i) {
-      GG[input[i].lm()] = MMType(lm_R_l<P>::e(i), input[i]);
+    typename PSet::size_type i = 0;
+    for (auto it = input.begin(); it != input.end(); ++it) {
+      GG[it->lm()] = MMType(lm_R_l<P>::e(i), *it);
+      ++i;
     }
 
     cout << "moGVW: prefilled GG = "; print("moGVW: ", GG);
@@ -286,7 +309,7 @@ public:
     PSet result;
     for (auto it = GG.begin(); it != GG.end(); ++it) {
       if (isPrimitive(*it)) {
-        result.push_back(it->second.f());
+        result.insert(it->second.f());
       }
     }
     cout << "moGVW: returning gb = "; print("moGVW: ", result);

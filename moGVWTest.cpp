@@ -144,7 +144,7 @@ TEST(moGVWTest, moGVW) {
   typedef Monomial<> M;
   typedef Term<> T;
   typedef Polynomial<> P;
-  typedef vector<P> PSet;
+  typedef unordered_set<P> PSet;
   moGVWRunner<> runner;
 
   T a = T(1, M::x(0));
@@ -167,7 +167,7 @@ TEST(moGVWTest, cyclic3) {
   typedef Monomial<> M;
   typedef Term<> T;
   typedef Polynomial<> P;
-  typedef vector<P> PSet;
+  typedef unordered_set<P> PSet;
   moGVWRunner<> runner;
 
   T a = T(1, M::x(0));
@@ -183,4 +183,70 @@ TEST(moGVWTest, cyclic3) {
   PSet output = runner.moGVW(input);
 
   EXPECT_EQ(PSet({pow(b,3)-1, -a*c+pow(b,2), a+b+c, a*b+a*c+b*c, a*pow(c,2)+b*pow(c,2)+1, a*b*c-1, pow(b,2)*pow(c,2)+b+c, -pow(b,3)*c+c}), output);
+}
+
+TEST(moGVWTest, cyclic4) {
+  use_abc_var_names in_this_scope;
+  typedef Monomial<> M;
+  typedef Term<> T;
+  typedef Polynomial<> P;
+  typedef unordered_set<P> PSet;
+  moGVWRunner<> runner;
+
+  T a = T(1, M::x(0));
+  T b = T(1, M::x(1));
+  T c = T(1, M::x(2));
+  T d = T(1, M::x(3));
+
+  PSet input = {
+    a + b + c + d,
+    a*b + b*c + a*d + c*d,
+    a*b*c + a*b*d + a*c*d + b*c*d,
+    a*b*c*d - 1
+  };
+
+  PSet output = runner.moGVW(input);
+
+  EXPECT_EQ(PSet({
+    -pow(b,3)-pow(b,2)*d+b*pow(c,2)+pow(c,2)*d,
+    a+b+c+d,
+    -a*d+pow(b,2)+b*d-c*d,
+    a*b*c+a*b*d+a*c*d+b*c*d,
+    a*b*c*d-1,
+    a*b+a*d+b*c+c*d
+  }), output);
+}
+
+TEST(moGVWTest, cyclic5) {
+  use_abc_var_names in_this_scope;
+  typedef Monomial<> M;
+  typedef Term<> T;
+  typedef Polynomial<> P;
+  typedef unordered_set<P> PSet;
+  moGVWRunner<> runner;
+
+  T a = T(1, M::x(0));
+  T b = T(1, M::x(1));
+  T c = T(1, M::x(2));
+  T d = T(1, M::x(3));
+  T e = T(1, M::x(4));
+
+  PSet input = {
+    a*b*c*d*e -1,
+    a*b*c*d + a*b*c*e + a*b*d*e + a*c*d*e + b*c*d*e,
+    a*b*c + a*b*e + a*d*e + b*c*d + c*d*e,
+    a*b + a*e + b*c + c*d + d*e,
+    a + b + c + d + e
+  };
+
+  PSet output = runner.moGVW(input);
+
+  EXPECT_EQ(PSet({
+    -pow(b,3)-pow(b,2)*d+b*pow(c,2)+pow(c,2)*d,
+    a+b+c+d,
+    -a*d+pow(b,2)+b*d-c*d,
+    a*b*c+a*b*d+a*c*d+b*c*d,
+    a*b*c*d-1,
+    a*b+a*d+b*c+c*d
+  }), output);
 }

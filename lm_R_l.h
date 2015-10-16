@@ -19,62 +19,65 @@ public:
   typedef typename P::TermType TermType;
   typedef lm_R_l<P> This;
 
-  lm_R_l() : m(), index(INPUT_COUNT) {}
+  lm_R_l() : m_(), index_(INPUT_COUNT) {}
+
+  MonomialType m() const { return m_; }
+  uint index() const { return index_; }
 
   static This e(int i) {
     This result;
-    result.index = i;
+    result.index_ = i;
     return result;
   }
-  MonomialType operator[](uint i) const { if (i == index) return m; else return MonomialType(); }
+  MonomialType operator[](uint i) const { if (i == index_) return m_; else return MonomialType(); }
   This lm() const { return *this; }
   bool operator==(const This& other) const {
-    return index == other.index && m == other.m;
+    return index_ == other.index_ && m_ == other.m_;
   }
 
   bool operator<(const This& other) const {
-    uint i = index;
-    uint j = other.index;
+    uint i = index_;
+    uint j = other.index_;
     if (i > j) return true;
-    if (i == j && m < other.m) return true;
+    if (i == j && m_ < other.m_) return true;
     return false;
   }
 
   bool divides(const This& other) const {
-    if (index != other.index) return false;
-    return m.divides(other.m);
+    if (index_ != other.index_) return false;
+    return m_.divides(other.m_);
   }
 
   MonomialType operator/(const This& other) const {
     if (!other.divides(*this)) throw std::domain_error("does not divide");
-    return m / other.m;
+    return m_ / other.m_;
   }
 
   This& operator+=(const This& b) {
-    if (index < b.index) return *this;
-    if (index > b.index) {
-      index = b.index;
-      m = b.m;
+    if (index_ < b.index_) return *this;
+    if (index_ > b.index_) {
+      index_ = b.index_;
+      m_ = b.m_;
       return *this;
     }
-    m = std::max(m, b.m);
+    m_ = std::max(m_, b.m_);
   }
   This operator+(const This& b) const { This r(*this); r += b; return r; }
 
   This& operator-=(const This& b) { return operator+=(b); }
   This operator-(const This& b) const { This r(*this); r -= b; return r; }
 
-  This& operator*=(const TermType& b) { m *= b.m(); return *this; }
+  This& operator*=(const TermType& b) { m_ *= b.m(); return *this; }
   This operator*(const TermType& b) const { This r(*this); r *= b; return r; }
 
-  This& operator*=(const MonomialType& b) { m *= b; return *this; }
+  This& operator*=(const MonomialType& b) { m_ *= b; return *this; }
   This operator*(const MonomialType& b) const { This r(*this); r *= b; return r; }
 
   template<class P1>
   friend std::ostream& operator<<(std::ostream&, const lm_R_l<P1>&);
 private:
-  MonomialType m;
-  uint index;
+  MonomialType m_;
+  uint index_;
 };
 
 template<class P>
@@ -89,7 +92,7 @@ lm_R_l<P> operator*(const typename P::TermType& a, const lm_R_l<P>& b) {
 
 template<class P>
 std::ostream& operator<<(std::ostream& out, const lm_R_l<P>& u) {
-  return out << u.m << "*e_" << u.index;
+  return out << u.m_ << "*e_" << u.index_;
 }
 
 #endif // LM_R_L_H

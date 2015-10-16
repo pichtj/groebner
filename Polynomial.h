@@ -181,4 +181,13 @@ std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {
   return out;
 }
 
+namespace std {
+  template<typename T>
+  struct hash<Polynomial<T> > {
+    size_t operator()(const Polynomial<T>& p) const {
+      return hash<typename Polynomial<T>::MonomialType>()(p.lm());
+    }
+  };
+}
+
 #endif // POLYNOMIAL_H
