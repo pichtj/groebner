@@ -5,7 +5,7 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-  vector<Polynomial<> > input;
+  unordered_set<Polynomial<> > input;
   cout << "Input:" << endl;
   for (auto it = input.begin(); it != input.end(); ++it) {
     cout << *it << endl;

@@ -3,11 +3,11 @@
 
 #include <ostream>
 #include <array>
+#include <stdexcept>
+#include <limits>
 
 #include "style.h"
 #include "Polynomial.h"
-
-#define INPUT_COUNT 33
 
 /* lead monomials of elements of R^l */
 template<class P = Polynomial<Term<int, Monomial<char> > > >
@@ -18,70 +18,65 @@ public:
   typedef typename P::TermType TermType;
   typedef lm_R_l<P> This;
 
+  lm_R_l() : m_(), index_(std::numeric_limits<uint>::max()) {}
+
+  MonomialType m() const { return m_; }
+  uint index() const { return index_; }
+
   static This e(int i) {
     This result;
-    result.lm_u[i] = 1;
+    result.index_ = i;
     return result;
   }
-  TermType operator[](uint i) const { return lm_u[i]; }
-  TermType& operator[](uint i) { return lm_u[i]; }
-  MonomialType lm() const {
-    for (uint i = 0; i < VAR_COUNT; ++i) {
-      if (lm_u[i].c() != CoefficientType()) {
-        return lm_u[i].m();
-      }
-    }
-    return MonomialType();
-  }
+  MonomialType operator[](uint i) const { if (i == index_) return m_; else return MonomialType(); }
+  This lm() const { return *this; }
   bool operator==(const This& other) const {
-    for (uint i = 0; i < INPUT_COUNT; ++i) {
-      if (lm_u[i] != other[i]) {
-        return false;
-      }
-    }
-    return true;
+    return index_ == other.index_ && m_ == other.m_;
+  }
+
+  bool operator<(const This& other) const {
+    uint i = index_;
+    uint j = other.index_;
+    if (i > j) return true;
+    if (i == j && m_ < other.m_) return true;
+    return false;
+  }
+
+  bool divides(const This& other) const {
+    if (index_ != other.index_) return false;
+    return m_.divides(other.m_);
+  }
+
+  MonomialType operator/(const This& other) const {
+    if (!other.divides(*this)) throw std::domain_error("does not divide");
+    return m_ / other.m_;
   }
 
   This& operator+=(const This& b) {
-    for (uint i = 0; i < INPUT_COUNT; ++i) {
-      if (!b[i].isZero()) {
-        if (!lm_u[i].isZero()) throw "lm_R_l: cannot add values with entries at same index";
-        lm_u[i] = b[i];
-      }
+    if (index_ < b.index_) return *this;
+    if (index_ > b.index_) {
+      index_ = b.index_;
+      m_ = b.m_;
+      return *this;
     }
-    return *this;
+    m_ = std::max(m_, b.m_);
   }
   This operator+(const This& b) const { This r(*this); r += b; return r; }
 
-  This& operator-=(const This& b) {
-    for (uint i = 0; i < INPUT_COUNT; ++i) {
-      if (!b[i].isZero()) {
-        if (!lm_u[i].isZero()) throw "lm_R_l: cannot add values with entries at same index";
-        lm_u[i] = -b[i];
-      }
-    }
-    return *this;
-  }
+  This& operator-=(const This& b) { return operator+=(b); }
   This operator-(const This& b) const { This r(*this); r -= b; return r; }
 
-  This& operator*=(const TermType& b) {
-    for (uint i = 0; i < INPUT_COUNT; ++i) {
-      lm_u[i] *= b;
-    }
-    return *this;
-  }
+  This& operator*=(const TermType& b) { m_ *= b.m(); return *this; }
   This operator*(const TermType& b) const { This r(*this); r *= b; return r; }
 
-  This& operator*=(const MonomialType& m) {
-    for (uint i = 0; i < INPUT_COUNT; ++i) {
-      lm_u[i] *= m;
-    }
-    return *this;
-  }
+  This& operator*=(const MonomialType& b) { m_ *= b; return *this; }
   This operator*(const MonomialType& b) const { This r(*this); r *= b; return r; }
 
+  template<class P1>
+  friend std::ostream& operator<<(std::ostream&, const lm_R_l<P1>&);
 private:
-  std::array<TermType, INPUT_COUNT> lm_u;
+  MonomialType m_;
+  uint index_;
 };
 
 template<class P>
@@ -96,19 +91,8 @@ lm_R_l<P> operator*(const typename P::TermType& a, const lm_R_l<P>& b) {
 
 template<class P>
 std::ostream& operator<<(std::ostream& out, const lm_R_l<P>& u) {
-  typedef typename P::TermType T;
-  typedef typename T::CoefficientType C;
-  bool termPrinted = false;
-  for (uint i = 0; i < INPUT_COUNT; ++i) {
-    if (!u[i].isZero()) {
-      if (termPrinted && u[i].c() > 0) out << "+";
-      if (!u[i].isOne()) out << u[i] << "*";
-      out << "e_" << i;
-      termPrinted = true;
-    }
-  }
-  if (!termPrinted) out << "0";
-  return out;
+  if (!u.m_.isConstant()) out << u.m_ << "*";
+  return out << "e_" << u.index_;
 }
 
 #endif // LM_R_L_H

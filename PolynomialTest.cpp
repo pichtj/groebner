@@ -9,7 +9,6 @@ using namespace std;
 TEST(PolynomialTest, EmptyConstruction) {
   Polynomial<> p;
   EXPECT_EQ(0, p.lc());
-  EXPECT_TRUE(p.lm().isZero());
 }
 
 TEST(PolynomialTest, ConstantConstruction) {
@@ -22,6 +21,7 @@ TEST(PolynomialTest, ConstantAddition) {
   Polynomial<> a(17);
   Polynomial<> b(4);
   Polynomial<> p = a + b;
+  EXPECT_EQ(21, p.lc());
   p += 1;
   EXPECT_EQ(22, p.lc());
   EXPECT_EQ(25, (p + 3).lc());
@@ -55,8 +55,8 @@ TEST(PolynomialTest, AdditionToZero) {
   Polynomial<> b(-17);
   b += Term<>(-5, e);
 
-  EXPECT_TRUE((a + b).lm().isZero());
   EXPECT_EQ(0, (a + b).lc());
+  EXPECT_TRUE((a + b).isZero());
 }
 
 TEST(PolynomialTest, ConstantMultiplicationToZero) {
@@ -67,7 +67,7 @@ TEST(PolynomialTest, ConstantMultiplicationToZero) {
 
   a *= 0;
 
-  EXPECT_TRUE(a.lm().isZero());
+  EXPECT_TRUE(a.isZero());
   EXPECT_EQ(0, a.lc());
 }
 

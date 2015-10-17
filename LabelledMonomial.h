@@ -45,14 +45,13 @@ public:
   typedef LMSet<P> LMSetType;
   typedef ULMSet<P> ULMSetType;
   typedef LabelledMonomial<P> This;
-  LabelledMonomial(const MonomialType& e, const MMType& g) : m_(e), u_(g.u()), f_(g.f()), wasLifted_(false) {}
-  LabelledMonomial(const MonomialType& e, const lm_R_lType& v, const P& g) : m_(e), u_(v), f_(g), wasLifted_(false) {}
-  MonomialType m() const { return this->m_; }
-  lm_R_lType u() const { return this->u_; }
-  P f() const { return this->f_; }
-  bool wasLifted() const { return this->wasLifted_; }
+  LabelledMonomial(const MonomialType& e, const MMType& g) : m_(e), u_(g.u()), f_(g.f()) {}
+  LabelledMonomial(const MonomialType& e, const lm_R_lType& v, const P& g) : m_(e), u_(v), f_(g) {}
+  MonomialType m() const { return m_; }
+  lm_R_lType u() const { return u_; }
+  P f() const { return f_; }
   uint degree() const { return m_.degree(); }
-  MMType signature() {
+  MMType signature() const {
     MonomialType t = m_ / f_.lm();
     return MMType(u_, TermType(1, t));
   }
@@ -73,7 +72,6 @@ private:
   MonomialType m_;
   lm_R_lType u_;
   P f_;
-  bool wasLifted_;
 };
 
 namespace std {
