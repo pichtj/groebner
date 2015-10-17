@@ -91,7 +91,8 @@ lm_R_l<P> operator*(const typename P::TermType& a, const lm_R_l<P>& b) {
 
 template<class P>
 std::ostream& operator<<(std::ostream& out, const lm_R_l<P>& u) {
-  return out << u.m_ << "*e_" << u.index_;
+  if (!u.m_.isConstant()) out << u.m_ << "*";
+  return out << "e_" << u.index_;
 }
 
 #endif // LM_R_L_H

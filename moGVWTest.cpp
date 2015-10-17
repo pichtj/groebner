@@ -159,7 +159,7 @@ TEST(moGVWTest, moGVW) {
 
   PSet output = runner.moGVW(input);
 
-  EXPECT_EQ(PSet({ a*b - c, b*c - b, -c*c + c, c - 1 }), output);
+  EXPECT_EQ(PSet({c-1, a*b-1}), output);
 }
 
 TEST(moGVWTest, cyclic3) {
@@ -182,7 +182,7 @@ TEST(moGVWTest, cyclic3) {
 
   PSet output = runner.moGVW(input);
 
-  EXPECT_EQ(PSet({pow(b,3)-1, -a*c+pow(b,2), a+b+c, a*b+a*c+b*c, a*pow(c,2)+b*pow(c,2)+1, a*b*c-1, pow(b,2)*pow(c,2)+b+c, -pow(b,3)*c+c}), output);
+  EXPECT_EQ(PSet({pow(c,3)-1, pow(b,2)+b*c+pow(c,2), a+b+c}), output);
 }
 
 TEST(moGVWTest, cyclic4) {
@@ -208,12 +208,12 @@ TEST(moGVWTest, cyclic4) {
   PSet output = runner.moGVW(input);
 
   EXPECT_EQ(PSet({
-    -pow(b,3)-pow(b,2)*d+b*pow(c,2)+pow(c,2)*d,
-    a+b+c+d,
-    -a*d+pow(b,2)+b*d-c*d,
-    a*b*c+a*b*d+a*c*d+b*c*d,
-    a*b*c*d-1,
-    a*b+a*d+b*c+c*d
+    pow(c,2)*pow(d,6)-pow(c,2)*pow(d,2)-pow(d,4)+1,
+    pow(c,3)*pow(d,2)+pow(c,2)*pow(d,3)-c-d,
+    b*pow(d,4)-b+pow(d,5)-d,
+    b*c-b*d+pow(c,2)*pow(d,4)+c*d-2*pow(d,2),
+    pow(b,2)+2*b*d+pow(d,2),
+    a+b+c+d
   }), output);
 }
 
@@ -242,11 +242,16 @@ TEST(moGVWTest, cyclic5) {
   PSet output = runner.moGVW(input);
 
   EXPECT_EQ(PSet({
-    -pow(b,3)-pow(b,2)*d+b*pow(c,2)+pow(c,2)*d,
-    a+b+c+d,
-    -a*d+pow(b,2)+b*d-c*d,
-    a*b*c+a*b*d+a*c*d+b*c*d,
-    a*b*c*d-1,
-    a*b+a*d+b*c+c*d
+    pow(e,15)+122*pow(e,10)-122*pow(e,5)-1,
+    55*pow(d,2)*pow(e,5)-55*pow(d,2)-2*d*pow(e,11)-231*d*pow(e,6)+233*d*e-8*pow(e,12)-979*pow(e,7)+987*pow(e,2),
+    55*pow(d,7)+165*pow(d,6)*e+55*pow(d,5)*pow(e,2)-55*pow(d,2)-398*d*pow(e,11)-48554*d*pow(e,6)+48787*d*e-1042*pow(e,12)-127116*pow(e,7)+128103*pow(e,2),
+    55*c*pow(e,5)-55*c+pow(e,11)+143*pow(e,6)-144*e,
+    275*c*d-275*c*e+440*pow(d,6)*e+1210*pow(d,5)*pow(e,2)-275*pow(d,3)*pow(e,4)+275*pow(d,2)-442*d*pow(e,11)-53911*d*pow(e,6)+53913*d*e-1121*pow(e,12)-136763*pow(e,7)+136674*pow(e,2),
+    275*pow(c,3)+550*pow(c,2)*e-550*c*pow(e,2)+275*pow(d,6)*pow(e,2)+550*pow(d,5)*pow(e,3)-550*pow(d,4)*pow(e,4)+550*pow(d,2)*e-232*d*pow(e,12)-28336*d*pow(e,7)+28018*d*pow(e,2)-568*pow(e,13)-69289*pow(e,8)+69307*pow(e,3),
+    55*b*pow(e,5)-55*b+pow(e,11)+143*pow(e,6)-144*e,
+    275*b*d-275*b*e-110*pow(d,6)*e-440*pow(d,5)*pow(e,2)-275*pow(d,4)*pow(e,3)+275*pow(d,3)*pow(e,4)+124*d*pow(e,11)+15092*d*pow(e,6)-15106*d*e+346*pow(e,12)+42218*pow(e,7)-42124*pow(e,2),
+    275*b*c-275*b*e+275*pow(c,2)+550*c*e-330*pow(d,6)*e-1045*pow(d,5)*pow(e,2)-275*pow(d,4)*pow(e,3)+275*pow(d,3)*pow(e,4)-550*pow(d,2)+334*d*pow(e,11)+40722*d*pow(e,6)-40726*d*e+867*pow(e,12)+105776*pow(e,7)-105873*pow(e,2),
+    275*pow(b,2)+825*b*e+550*pow(d,6)*e+1650*pow(d,5)*pow(e,2)+275*pow(d,4)*pow(e,3)-550*pow(d,3)*pow(e,4)+275*pow(d,2)-566*d*pow(e,11)-69003*d*pow(e,6)+69019*d*e-1467*pow(e,12)-178981*pow(e,7)+179073*pow(e,2),
+    a+b+c+d+e
   }), output);
 }

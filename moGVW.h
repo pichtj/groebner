@@ -132,10 +132,8 @@ public:
     MSet monomialsInHH;
     for (auto wh = HH.begin(); wh != HH.end(); ++wh) {
       MSet monomialsInWH = wh->f().monomials();
-      cout << "append: monomials in " << *wh << " = "; print("append: ", monomialsInWH);
       monomialsInHH.insert(monomialsInWH.begin(), monomialsInWH.end());
     }
-    cout << "append: monomials in HH = "; print("append: ", monomialsInHH);
     for (auto it = done.begin(); it != done.end(); ++it) {
       monomialsInHH.erase(*it);
     }
@@ -245,6 +243,48 @@ public:
     cout << "update: returning, GG = "; print("update: ", GG);
   }
 
+  template<class PSet>
+  PSet interreduce(const PSet& input) {
+    cout << "interreduce: input = "; print("interreduce: ", input);
+    vector<typename PSet::value_type> intermediate(input.begin(), input.end());
+    bool stable;
+    do {
+      stable = true;
+      for (auto p = intermediate.begin(); p != intermediate.end(); ++p) {
+        auto terms = p->terms();
+        auto term = terms.begin();
+        while (term != terms.end()) {
+          auto r = intermediate.begin();
+          while (r != intermediate.end() && (r->isZero() || r == p || !r->lm().divides(term->m()))) {
+            ++r;
+          }
+          if (r != intermediate.end()) {
+            cout << "interreduce: reducing " << *p << " with " << *r;
+            stable = false;
+            auto t = term->m() / r->lm();
+            *p *= r->lc();
+            *p -= *r * t * term->c();
+            cout << " to " << *p << endl;
+            terms = p->terms();
+            term = terms.begin();
+            cout << "interreduce: intermediate = "; print("interreduce: ", intermediate);
+          } else {
+            ++term;
+          }
+        }
+      }
+    } while (!stable);
+
+    for (auto& p : intermediate) {
+      if (p.lc() < 0) p *= -1;
+      // TODO: divide by gcd(terms(p))
+    }
+    PSet result(intermediate.begin(), intermediate.end());
+    result.erase(typename PSet::value_type());
+    cout << "interreduce: returning reduced gb = "; print("interreduce: ", result);
+    return result;
+  }
+
   bool isPrimitive(const std::pair<MonomialType, MMType>& lm) const {
     return lm.first == lm.second.f().lm();
   }
@@ -310,6 +350,8 @@ public:
         result.insert(it->second.f());
       }
     }
+    cout << "moGVW: calling interreduce" << endl;
+    result = interreduce(result);
     cout << "moGVW: returning gb = "; print("moGVW: ", result);
     return result;
   }
@@ -325,13 +367,13 @@ std::ostream& operator<<(ostream& out, const std::pair<A, B>& ab) {
 template<class C>
 void print(const string& prefix, const C& c) {
   cout << "{";
-  bool termPrinted = false;
-  for (auto it = c.begin(); it != c.end(); ++it) {
-    if (termPrinted) cout << ",";
-    cout << endl << prefix << "  " << *it;
-    termPrinted = true;
+  bool itemPrinted = false;
+  for (const auto& item : c) {
+    if (itemPrinted) cout << ",";
+    cout << endl << prefix << "  " << item;
+    itemPrinted = true;
   }
-  if (termPrinted) cout << endl << prefix;
+  if (itemPrinted) cout << endl << prefix;
   cout << "}" << endl;
 }
 

@@ -16,44 +16,55 @@ public:
   typedef T TermType;
   typedef Polynomial<T> This;
   Polynomial() {}
-  Polynomial(const CoefficientType& c) : terms({T(c)}) {}
-  Polynomial(const T& t) : terms({t}) {}
-  T lterm() const { return terms.front(); }
-  CoefficientType lc() const { if (!terms.empty()) { return terms.front().c(); } else { return CoefficientType(); } }
-  MonomialType lm() const { if (!terms.empty()) { return terms.front().m(); } else { return MonomialType(); } }
+  Polynomial(const CoefficientType& c) : terms_({T(c)}) {}
+  Polynomial(const T& t) : terms_({t}) {}
+  T lterm() const { return terms_.front(); }
+  CoefficientType lc() const { if (!terms_.empty()) { return terms_.front().c(); } else { return CoefficientType(); } }
+  MonomialType lm() const { if (!terms_.empty()) { return terms_.front().m(); } else { return MonomialType(); } }
+
   std::set<MonomialType> monomials() const {
     std::set<MonomialType> r;
-    for (auto it = terms.begin(); it != terms.end(); ++it) {
+    for (auto it = terms_.begin(); it != terms_.end(); ++it) {
       r.insert(it->m());
     }
     return r;
   }
-  bool isZero() const { return terms.empty(); }
+  std::forward_list<TermType> terms() const {
+    return terms_;
+  }
+
+  TermType operator[](const MonomialType& m) const {
+    auto c = terms_.begin();
+    while (c->m() >= m) ++c;
+    if (c->m() == m) return *c;
+    return TermType();
+  }
+  bool isZero() const { return terms_.empty(); }
   This& operator+=(const CoefficientType& c) { *this += T(c); return *this; }
   This operator+(const CoefficientType& c) const { This r = *this; r += c; return r; }
   This& operator-=(const CoefficientType& c) { *this += (-1) * c; return *this; }
   This operator-(const CoefficientType& c) const { return *this + (-1) * c; }
   This& operator+=(const T& t) {
-    if (terms.empty() || lm() < t.m()) {
-      terms.insert_after(terms.before_begin(), t);
+    if (terms_.empty() || lm() < t.m()) {
+      terms_.insert_after(terms_.before_begin(), t);
       return *this;
     }
 
-    auto current = terms.begin();
-    auto before = terms.before_begin();
+    auto current = terms_.begin();
+    auto before = terms_.before_begin();
 
-    while (current != terms.end() && current->m() > t.m()) {
+    while (current != terms_.end() && current->m() > t.m()) {
       ++before;
       ++current;
     }
 
-    if (current != terms.end() && current->m() == t.m()) {
+    if (current != terms_.end() && current->m() == t.m()) {
       current->c() += t.c();
       if (current->c() == 0) {
-        terms.erase_after(before);
+        terms_.erase_after(before);
       }
     } else {
-      terms.insert_after(before, t);
+      terms_.insert_after(before, t);
     }
     return *this;
   }
@@ -61,14 +72,14 @@ public:
   This& operator-=(const T& t) { *this += (-1) * t; return *this; }
   This operator-(const T& t) const { This r = *this; r += t; return r; }
   This& operator+=(const This& other) {
-    for (auto it = other.terms.begin(); it != other.terms.end(); ++it) {
+    for (auto it = other.terms_.begin(); it != other.terms_.end(); ++it) {
       operator+=(*it);
     }
     return *this;
   }
   This operator+(const This& other) const { This r = *this; r += other; return r; }
   This& operator-=(const This& other) {
-    for (auto it = other.terms.begin(); it != other.terms.end(); ++it) {
+    for (auto it = other.terms_.begin(); it != other.terms_.end(); ++it) {
       operator-=(*it);
     }
     return *this;
@@ -77,10 +88,10 @@ public:
 
   This& operator*=(const CoefficientType& c) {
     if (c == CoefficientType()) {
-      terms.clear();
+      terms_.clear();
       return *this;
     }
-    for (auto it = terms.begin(); it != terms.end(); ++it) {
+    for (auto it = terms_.begin(); it != terms_.end(); ++it) {
       *it *= c;
     }
     return *this;
@@ -89,17 +100,17 @@ public:
   This operator*(const CoefficientType& c) const { This r = *this; r *= c; return r; }
   This& operator*=(const T& t) {
     if (t.isZero()) {
-      terms.clear();
+      terms_.clear();
       return *this;
     }
-    for (auto it = terms.begin(); it != terms.end(); ++it) {
+    for (auto it = terms_.begin(); it != terms_.end(); ++it) {
       *it *= t;
     }
     return *this;
   }
   This operator*(const T& t) const { This r = *this; r *= t; return r; }
   This& operator*=(const MonomialType& m) {
-    for (auto it = terms.begin(); it != terms.end(); ++it) {
+    for (auto it = terms_.begin(); it != terms_.end(); ++it) {
       *it *= m;
     }
     return *this;
@@ -107,22 +118,22 @@ public:
   This operator*(const MonomialType& m) const { This r = *this; r *= m; return r; }
   This& operator*=(const This& other) {
     This newMe = *this * other;
-    terms.clear();
+    terms_.clear();
     *this += newMe;
   }
   This operator*(const This& other) const {
     This result;
-    for (auto it = other.terms.begin(); it != other.terms.end(); ++it) {
+    for (auto it = other.terms_.begin(); it != other.terms_.end(); ++it) {
       This p = *this * *it;
       result += p;
     }
     return result;
   }
-  bool operator==(const This& other) const { return terms == other.terms; }
+  bool operator==(const This& other) const { return terms_ == other.terms_; }
   template<class T1>
   friend std::ostream& operator<<(std::ostream& out, const Polynomial<T1>& p);
 private:
-  std::forward_list<TermType> terms;
+  std::forward_list<TermType> terms_;
 };
 
 template<class T>
@@ -168,7 +179,7 @@ Polynomial<T> operator*(const T& a, const Polynomial<T>& b) { return b.operator*
 template<class T>
 std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {
   bool termPrinted = false;
-  for (auto it = p.terms.begin(); it != p.terms.end(); ++it) {
+  for (auto it = p.terms_.begin(); it != p.terms_.end(); ++it) {
     if (termPrinted && it->c() > 0) {
       out << "+";
     }
