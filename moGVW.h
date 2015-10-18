@@ -41,7 +41,7 @@ public:
         return false;
       }
       if (muf.signature() > LM(it->first, it->second).signature()) {
-        cout << "rejectedByLCMCriterion: rejecting " << muf << " because " << *it << " has smaller signature" << endl;
+        D("rejecting " << muf << " because " << *it << " has smaller signature");
         return true;
       }
     }
@@ -55,7 +55,7 @@ public:
     if (it == GG.end()) return false;
     auto lmv = it->second.u().lm();
     if (lmu.index() > lmv.index()) {
-      cout << "rejectedBySyzygyCriterion: rejecting " << muf << endl;
+      D("rejecting " << muf << " because " << *it << " has smaller index");
       return true;
     }
     return false;
@@ -69,7 +69,7 @@ public:
       if (!lmv.divides(lmu)) continue;
       auto t = lmu / lmv;
       if (t*vg->second.f().lm() < uf.f().lm()) {
-        cout << "rejectedByRewrittenCriterion: rejecting " << uf << endl;
+        D("rejecting " << uf);
         return true;
       }
     }
@@ -77,51 +77,50 @@ public:
   }
 
   MMSet lift(const LMSet& todo, LMSet& GG) {
-    cout << "lift: todo = "; print("lift: ", todo);
+    DD("todo = ", todo);
 
     MMSet HH;
     for (auto it = todo.begin(); it != todo.end(); ++it) {
       LM muf = LM(it->first, it->second);
-      cout << "lift: chose " << muf << " to lift" << endl;
+      D("chose " << muf << " to lift");
       for (uint i = 0; i < MonomialType::VAR_COUNT; ++i ) {
         LM x_i_m = MonomialType::x(i) * muf;
-        cout << "lift: lifted to " << x_i_m << endl;
+        D("lifted to " << x_i_m);
         auto coll = GG.find(x_i_m.m());
         if (coll != GG.end()) {
           LM nvg = LM(coll->first, coll->second);
-          cout << "lift: collides with " << nvg << endl;
+          D("collides with " << nvg);
           MonomialType t_f = x_i_m.m() / muf.f().lm();
           MonomialType t_g = x_i_m.m() / nvg.f().lm();
           if (muf.signature() > nvg.signature()
               && !rejectedByLCMCriterion(x_i_m, GG)
               && !rejectedBySyzygyCriterion(x_i_m, GG)
               && !rejectedByRewrittenCriterion(x_i_m, GG)) {
-            cout << "lift: inserting " << t_f * MMType(muf.u(), muf.f()) << " into HH" << endl;
+            D("inserting " << t_f * MMType(muf.u(), muf.f()) << " into HH");
             HH.insert(t_f * MMType(muf.u(), muf.f()));
-            cout << "lift: inserting " << t_g * MMType(nvg.u(), nvg.f()) << " into HH" << endl;
+            D("inserting " << t_g * MMType(nvg.u(), nvg.f()) << " into HH");
             HH.insert(t_g * MMType(nvg.u(), nvg.f()));
           }
           if (muf.signature() < nvg.signature()) {
-            cout << "lift: replacing " << nvg << " by " << x_i_m << endl;
+            D("replacing " << nvg << " by " << x_i_m);
             GG.erase(coll);
             GG[x_i_m.m()] = MMType(x_i_m.u(), x_i_m.f());
             if (!rejectedByLCMCriterion(nvg, GG)
                 && !rejectedBySyzygyCriterion(x_i_m, GG)
                 && !rejectedByRewrittenCriterion(nvg, GG)) {
-              cout << "lift: inserting " << t_f * MMType(muf.u(), muf.f()) << " into HH" << endl;
+              D("inserting " << t_f * MMType(muf.u(), muf.f()) << " into HH");
               HH.insert(t_f * MMType(muf.u(), muf.f()));
-              cout << "lift: inserting " << t_g * MMType(nvg.u(), nvg.f()) << " into HH" << endl;
+              D("inserting " << t_g * MMType(nvg.u(), nvg.f()) << " into HH");
               HH.insert(t_g * MMType(nvg.u(), nvg.f()));
             }
           }
         } else {
-          //cout << "lift: no collision, inserting " << x_i_m << " into GG directly" << endl;
           GG[x_i_m.m()] = MMType(x_i_m.u(), x_i_m.f());
         }
       }
       wasLifted[muf.m()] = true;
     }
-    cout << "lift: returning HH = "; print("lift: ", HH);
+    DD("returning HH = ", HH);
     return HH;
   }
 
@@ -130,7 +129,7 @@ public:
     for (auto wh = HH.begin(); wh != HH.end(); ++wh) {
       done.insert(wh->f().lm());
     }
-    cout << "append: initialized done = "; print("append: ", done);
+    DD("initialized done = ", done);
     MSet monomialsInHH;
     for (auto wh = HH.begin(); wh != HH.end(); ++wh) {
       MSet monomialsInWH = wh->f().monomials();
@@ -139,7 +138,7 @@ public:
     for (auto it = done.begin(); it != done.end(); ++it) {
       monomialsInHH.erase(*it);
     }
-    cout << "append: monomials in HH that are not done = "; print("append: ", monomialsInHH);
+    DD("monomials in HH that are not done = ", monomialsInHH);
     while (!monomialsInHH.empty()) {
       MonomialType m = *(monomialsInHH.begin());
       done.insert(m);
@@ -159,7 +158,7 @@ public:
         }
       }
     }
-    cout << "append: returning HH = "; print("append: ", HH);
+    DD("returning HH = ", HH);
   }
 
   MMSet eliminate(MMSet& HH) {
@@ -167,78 +166,79 @@ public:
     MMSet todoInHH = HH;
     while (!todoInHH.empty()) {
       auto uf = *(todoInHH.begin());
-      cout << "eliminate: working on " << uf << endl;
+      D("working on " << uf);
       HH.erase(uf);
       todoInHH.erase(uf);
       bool found = false;
-      auto vg = HH.begin();
-      while (vg != HH.end() && !found) {
-        if (vg->f().lm() == uf.f().lm()) {
+      auto it = HH.begin();
+      while (it != HH.end() && !found) {
+        if (it->f().lm() == uf.f().lm()) {
           found = true;
         } else {
-          ++vg;
+          ++it;
         }
       }
       if (!found) {
-        vg = PP.begin();
+        it = PP.begin();
       }
-      while (vg != PP.end() && !found) {
-        if (vg->f().lm() == uf.f().lm()) {
+      while (it != PP.end() && !found) {
+        if (it->f().lm() == uf.f().lm()) {
           found = true;
         } else {
-          ++vg;
+          ++it;
         }
       }
       if (found) {
-        cout << "eliminate: reducing " << uf << " with " << *vg << endl;
+        auto vg = *it;
+        D("reducing " << uf << " with " << vg);
         auto u = uf.u();
-        auto v = vg->u();
+        auto v = vg.u();
         auto f = uf.f();
-        auto g = vg->f();
+        auto g = vg.f();
         auto lcg = g.lc();
         auto lcf = f.lc();
 
         if (u.lm() > v.lm()) {
           auto lcgflcfg = lcg*f-lcf*g;
           if (lcgflcfg.isZero()) {
-            cout << "eliminate: a row in HH reduced to zero!" << endl;
+            D("a row in HH reduced to zero!");
           } else {
             auto divisor = gcd(lcgflcfg.coefficients());
             if (divisor != 1) {
-              cout << "eliminate: dividing " << lcgflcfg << " by gcd = " << divisor << endl;
+              D("dividing " << lcgflcfg << " by gcd = " << divisor);
               lcgflcfg /= divisor;
             }
-            cout << "eliminate: inserting " << MMType(lcg*u-lcf*v, lcgflcfg) << " into HH" << endl;
+            D("inserting " << MMType(lcg*u-lcf*v, lcgflcfg) << " into HH");
             HH.insert(MMType(lcg*u-lcf*v, lcgflcfg));
             todoInHH.insert(MMType(lcg*u-lcf*v, lcgflcfg));
           }
         }
         if (u.lm() < v.lm()) {
-          cout << "eliminate: removing " << *vg << " from HH" << endl;
-          HH.erase(*vg);
-          todoInHH.erase(*vg);
+          D("removing " << vg << " from HH");
+          HH.erase(vg);
+          todoInHH.erase(vg);
           auto lcfglcgf = lcf*g-lcg*f;
           if (lcfglcgf.isZero()) {
-            cout << "eliminate: a row in HH reduced to zero!" << endl;
+            D("a row in HH reduced to zero!");
           } else {
             auto divisor = gcd(lcfglcgf.coefficients());
             if (divisor != 1) {
-              cout << "eliminate: dividing " << lcfglcgf << " by gcd = " << divisor << endl;
+              D("dividing " << lcfglcgf << " by gcd = " << divisor);
               lcfglcgf /= divisor;
             }
-            cout << "eliminate: inserting " << MMType(lcf*v-lcg*u, lcfglcgf) << " into HH" << endl;
+            D("inserting " << MMType(lcf*v-lcg*u, lcfglcgf) << " into HH");
             HH.insert(MMType(lcf*v-lcg*u, lcfglcgf));
             todoInHH.insert(MMType(lcf*v-lcg*u, lcfglcgf));
           }
-          cout << "eliminate: inserting " << uf << " into HH" << endl;
+          D("inserting " << uf << " into HH");
           HH.insert(uf);
         }
       } else {
-        cout << "eliminate: no reduction found for " << uf << endl;
+        D("no reduction found for " << uf);
         PP.insert(uf);
       }
     }
-    cout << "eliminate: returning PP = "; print("eliminate: ", PP);
+    DD("returning PP = ", PP);
     return PP;
   }
 
@@ -246,28 +246,28 @@ public:
     for (auto wh = PP.begin(); wh != PP.end(); ++wh) {
       if (wh->f().isZero()) continue;
       auto m = wh->f().lm();
-      cout << "update: looking for lm(h) = " << m << endl;
+      D("looking for lm(h) = " << m);
       auto mvg = GG.find(m);
       if (mvg != GG.end()) {
-        cout << "update: found (" << mvg->first << ", " << mvg->second << ")" << endl;
+        D("found (" << mvg->first << ", " << mvg->second << ")");
         auto v = mvg->second.u();
         auto w = wh->u();
         auto g = mvg->second.f();
         if (((m / g.lm()) * v).lm() > w.lm()) {
-          cout << "update: replacing " << mvg->second << " by " << *wh << endl;
+          D("replacing " << mvg->second << " by " << *wh);
           GG[m] = *wh;
         }
       } else {
-        cout << "update: not found, adding (" << m << ", " << *wh << ") to GG" << endl;
+        D("not found, adding (" << m << ", " << *wh << ") to GG");
         GG[m] = *wh;
       }
     }
-    cout << "update: returning, GG = "; print("update: ", GG);
-    cout << "update: GG has " << GG.size() << " elements in " << GG.bucket_count() << " buckets" << endl;
+    DD("returning, GG = ", GG);
+    D("GG has " << GG.size() << " elements in " << GG.bucket_count() << " buckets");
   }
 
   std::set<P> interreduce(const std::set<P>& input) {
-    cout << "interreduce: input = "; print("interreduce: ", input);
+    DD("input = ", input);
     vector<P> intermediate(input.begin(), input.end());
     bool stable;
     do {
@@ -281,15 +281,15 @@ public:
             ++r;
           }
           if (r != intermediate.end()) {
-            cout << "interreduce: reducing " << *p << " with " << *r;
+            D("reducing " << *p << " with " << *r);
             stable = false;
             auto t = term->m() / r->lm();
             *p *= r->lc();
             *p -= *r * t * term->c();
-            cout << " to " << *p << endl;
+            D("to " << *p);
             terms = p->terms();
             term = terms.begin();
-            cout << "interreduce: intermediate = "; print("interreduce: ", intermediate);
+            DD("intermediate = ", intermediate);
           } else {
             ++term;
           }
@@ -302,13 +302,13 @@ public:
       if (p.lc() < 0) p *= -1;
       auto divisor = gcd(p.coefficients());
       if (divisor != 1) {
-        cout << "interreduce: dividing " << p << " by gcd = " << divisor << endl;
+        D("dividing " << p << " by gcd = " << divisor);
         p /= divisor;
       }
     }
     std::set<P> result(intermediate.begin(), intermediate.end());
     result.erase(P());
-    cout << "interreduce: returning reduced gb = "; print("interreduce: ", result);
+    DD("returning reduced gb = ", result);
     return result;
   }
 
@@ -325,7 +325,7 @@ public:
       ++i;
     }
 
-    cout << "moGVW: prefilled GG = "; print("moGVW: ", GG);
+    DD("prefilled GG = ", GG);
 
     uint liftdeg = 0;
     uint mindeg = numeric_limits<uint>::max();
@@ -337,8 +337,8 @@ public:
         mindeg = min(mindeg, lm.first.degree());
       }
     }
-    cout << "moGVW: liftdeg = " << liftdeg << endl;
-    cout << "moGVW: mindeg = " << mindeg << endl;
+    D("liftdeg = " << liftdeg);
+    D("mindeg = " << mindeg);
 
     while (mindeg <= liftdeg) {
       unordered_map<MonomialType, MMType> todo;
@@ -347,13 +347,13 @@ public:
           todo[it->first] = it->second;
         }
       }
-      cout << "moGVW: calling lift" << endl;
+      D("calling lift");
       MMSet HH = lift(todo, GG);
-      cout << "moGVW: calling append" << endl;
+      D("calling append");
       append(HH, GG);
-      cout << "moGVW: calling eliminate" << endl;
+      D("calling eliminate");
       MMSet PP = eliminate(HH);
-      cout << "moGVW: calling update" << endl;
+      D("calling update");
       update(PP, GG);
 
       liftdeg = 0;
@@ -366,8 +366,8 @@ public:
           mindeg = min(mindeg, it->first.degree());
         }
       }
-      cout << "moGVW: liftdeg = " << liftdeg << endl;
-      cout << "moGVW: mindeg = " << mindeg << endl;
+      D("liftdeg = " << liftdeg);
+      D("mindeg = " << mindeg);
     }
 
     std::set<P> result;
@@ -376,9 +376,9 @@ public:
         result.insert(p.second.f());
       }
     }
-    cout << "moGVW: calling interreduce" << endl;
+    D("calling interreduce");
     result = interreduce(result);
-    cout << "moGVW: returning gb = "; print("moGVW: ", result);
+    DD("returning gb = ", result);
     return result;
   }
 private:
