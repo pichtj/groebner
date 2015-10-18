@@ -1,6 +1,5 @@
 BUILDDIR := $(shell pwd)
 CFLAGS := -m64 -g -I$(BUILDDIR)/include -L$(BUILDDIR)/lib -std=c++11 -lmpir -lmpirxx -lgmp -Wall
-CPPFLAGS :=
 CC := $(shell which gcc-mp-4.9 || echo gcc)
 CXX := $(shell which g++-mp-4.9 || echo g++)
 MPIR := mpir-2.7.0
@@ -12,7 +11,7 @@ moGVW: main.o Monomial.o lib/libmpirxx.a lib/libmpir.a
 	$(CXX) $(CFLAGS) -o $@ $^ -lmpirxx -lmpir
 
 main.o: main.cpp Polynomial.h LabelledMonomial.h include/mpir.h include/mpirxx.h
-	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(CXX) $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -rf moGVW *.o test-runner
@@ -55,5 +54,5 @@ test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o
 	$(CXX) $^ $(CFLAGS) -pthread -o test-runner
 
 %.o: %.cpp
-	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(CXX) $(CFLAGS) -c -o $@ $<
 

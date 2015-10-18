@@ -6,7 +6,11 @@
 #include <limits>
 #include <vector>
 
+#define DEBUG
+#include "debug.h"
+
 #include "style.h"
+#include "debug.h"
 #include "integral.h"
 #include "Polynomial.h"
 #include "LabelledMonomial.h"
