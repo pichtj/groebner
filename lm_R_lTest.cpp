@@ -15,9 +15,8 @@ TEST(lm_R_lTest, Addition) {
   u = e1 - e2;
   u -= M::x(0)*e3;
 
-  EXPECT_EQ(M(), u[0]);
-  EXPECT_EQ(M(), u[1]);
-  EXPECT_EQ(M(), u[2]);
+  EXPECT_EQ(0, u.index);
+  EXPECT_EQ(M(), u.m);
 }
 
 TEST(lm_R_lTest, Multiplication) {
@@ -30,9 +29,8 @@ TEST(lm_R_lTest, Multiplication) {
 
   u *= T(1, M::x(0));
 
-  EXPECT_TRUE(u[0].isZero());
-  EXPECT_TRUE(u[1].isZero());
-  EXPECT_EQ(M::x(0), u[2]);
+  EXPECT_EQ(2, u.index);
+  EXPECT_EQ(M::x(0), u.m);
 }
 
 TEST(lm_R_lTest, lm) {
@@ -47,6 +45,6 @@ TEST(lm_R_lTest, lm) {
   lm_R_l<> u = e1 - e2 - a * e3;
   lm_R_l<> v = b*e1 - b*e2 - b*a * e3;
 
-  EXPECT_EQ(e1, u.lm());
-  EXPECT_EQ(b*e1, v.lm());
+  EXPECT_EQ(e1, u);
+  EXPECT_EQ(b*e1, v);
 }

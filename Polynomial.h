@@ -29,13 +29,6 @@ public:
   CoefficientType lc() const { if (!terms_.empty()) { return terms_.front().c(); } else { return CoefficientType(); } }
   MonomialType lm() const { if (!terms_.empty()) { return terms_.front().m(); } else { return MonomialType(); } }
 
-  std::set<MonomialType> monomials() const {
-    std::set<MonomialType> r;
-    for (auto it = terms_.begin(); it != terms_.end(); ++it) {
-      r.insert(it->m());
-    }
-    return r;
-  }
   std::forward_list<TermType> terms() const {
     return terms_;
   }

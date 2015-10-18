@@ -19,8 +19,8 @@ public:
   static const uint VAR_COUNT = VC;
 
   Monomial() : mon() {}
-  E& operator[](const uint& index) { return mon[index]; }
-  const E& operator[](const uint& index) const { return mon[index]; }
+  E& operator[](uint index) { return mon[index]; }
+  E operator[](uint index) const { return mon[index]; }
 
   uint degree() const {
     uint result = 0;
