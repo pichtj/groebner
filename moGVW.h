@@ -5,8 +5,13 @@
 #include <unordered_map>
 #include <limits>
 #include <vector>
+#include <algorithm>
+
+#define DEBUG
+#include "debug.h"
 
 #include "style.h"
+#include "debug.h"
 #include "integral.h"
 #include "Polynomial.h"
 #include "LabelledMonomial.h"
@@ -261,10 +266,9 @@ public:
     cout << "update: GG has " << GG.size() << " elements in " << GG.bucket_count() << " buckets" << endl;
   }
 
-  template<class PSet>
-  PSet interreduce(const PSet& input) {
+  std::set<P> interreduce(const std::set<P>& input) {
     cout << "interreduce: input = "; print("interreduce: ", input);
-    vector<typename PSet::value_type> intermediate(input.begin(), input.end());
+    vector<P> intermediate(input.begin(), input.end());
     bool stable;
     do {
       stable = true;
@@ -302,8 +306,8 @@ public:
         p /= divisor;
       }
     }
-    PSet result(intermediate.begin(), intermediate.end());
-    result.erase(typename PSet::value_type());
+    std::set<P> result(intermediate.begin(), intermediate.end());
+    result.erase(P());
     cout << "interreduce: returning reduced gb = "; print("interreduce: ", result);
     return result;
   }
@@ -312,13 +316,12 @@ public:
     return lm.first == lm.second.f().lm();
   }
 
-  template<class PSet>
-  PSet moGVW(const PSet& input) {
+  std::set<P> moGVW(const std::set<P>& input) {
     LMSet GG;
     wasLifted.clear();
-    typename PSet::size_type i = 0;
-    for (auto it = input.begin(); it != input.end(); ++it) {
-      GG[it->lm()] = MMType(lm_R_l<P>::e(i), *it);
+    typename std::set<P>::size_type i = 0;
+    for (const auto& p : input) {
+      GG[p.lm()] = MMType(lm_R_l<P>::e(i), p);
       ++i;
     }
 
@@ -326,12 +329,12 @@ public:
 
     uint liftdeg = 0;
     uint mindeg = numeric_limits<uint>::max();
-    for (auto it = GG.begin(); it != GG.end(); ++it) {
-      if (isPrimitive(*it)) {
-        liftdeg = max(liftdeg, it->first.degree());
+    for (const auto& lm : GG) {
+      if (isPrimitive(lm)) {
+        liftdeg = max(liftdeg, lm.first.degree());
       }
-      if (!wasLifted[it->first]) {
-        mindeg = min(mindeg, it->first.degree());
+      if (!wasLifted[lm.first]) {
+        mindeg = min(mindeg, lm.first.degree());
       }
     }
     cout << "moGVW: liftdeg = " << liftdeg << endl;
@@ -367,10 +370,10 @@ public:
       cout << "moGVW: mindeg = " << mindeg << endl;
     }
 
-    PSet result;
-    for (auto it = GG.begin(); it != GG.end(); ++it) {
-      if (isPrimitive(*it)) {
-        result.insert(it->second.f());
+    std::set<P> result;
+    for (const auto& p : GG) {
+      if (isPrimitive(p)) {
+        result.insert(p.second.f());
       }
     }
     cout << "moGVW: calling interreduce" << endl;

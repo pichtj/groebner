@@ -55,7 +55,7 @@ public:
   This& operator+=(const CoefficientType& c) { *this += T(c); return *this; }
   This operator+(const CoefficientType& c) const { This r = *this; r += c; return r; }
   This& operator-=(const CoefficientType& c) { *this += CoefficientType(-1) * c; return *this; }
-  This operator-(const CoefficientType& c) const { return *this + CoefficientType(-1) * c; }
+  This operator-(const CoefficientType& c) const { This r = *this; r -= c; return r; }
   This& operator+=(const T& t) {
     if (terms_.empty() || lm() < t.m()) {
       terms_.insert_after(terms_.before_begin(), t);
@@ -82,7 +82,7 @@ public:
   }
   This operator+(const T& t) const { This r = *this; r += t; return r; }
   This& operator-=(const T& t) { *this += CoefficientType(-1) * t; return *this; }
-  This operator-(const T& t) const { This r = *this; r += t; return r; }
+  This operator-(const T& t) const { This r = *this; r -= t; return r; }
   This& operator+=(const This& other) {
     for (auto it = other.terms_.begin(); it != other.terms_.end(); ++it) {
       operator+=(*it);
@@ -151,6 +151,7 @@ public:
     return result;
   }
   bool operator==(const This& other) const { return terms_ == other.terms_; }
+  bool operator<(const This& other) const { return lm() < other.lm(); }
   template<class T1>
   friend std::ostream& operator<<(std::ostream& out, const Polynomial<T1>& p);
 private:

@@ -172,4 +172,9 @@ inline std::ostream& operator<<(std::ostream& out, const Monomial<char, VC>& mon
   return out;
 }
 
+struct use_abc_var_names {
+  use_abc_var_names();
+  ~use_abc_var_names();
+};
+
 #endif // MONOMIAL_H

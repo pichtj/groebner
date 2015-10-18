@@ -144,3 +144,15 @@ TEST(PolynomialTest, MonomialMultiplication) {
   EXPECT_EQ(5*pow(y, 13) + 17*y, y*a);
   EXPECT_EQ(5*pow(y, 13) + 17*y, a*y);
 }
+
+TEST(PolynomialTest, Cyclic4Result) {
+  use_abc_var_names in_this_scope;
+
+  Term<> b(1, Monomial<>::x(1));
+  Term<> d(1, Monomial<>::x(3));
+
+  // b*d^4-b+d^5 - d
+  Polynomial<> p = b*pow(d,4)-b+pow(d,5)-d;
+
+  EXPECT_EQ("b*d^4-b+d^5-d", to_string(p));
+}

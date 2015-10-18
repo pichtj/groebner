@@ -45,13 +45,6 @@ TEST(MonomialTest, hash) {
   EXPECT_NE(h(e), h(f));
 }
 
-template<class T>
-string to_string(const T& t) {
-  stringstream s;
-  s << t;
-  return s.str();
-}
-
 TEST(MonomialTest, ostreamOperator) {
   Monomial<> e = Monomial<>::x(1);
   EXPECT_EQ("x1", to_string(e));
