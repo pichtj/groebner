@@ -7,38 +7,34 @@
 #include "Polynomial.h"
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
-class MM {
-public:
+struct MM {
   typedef typename P::MonomialType MonomialType;
   typedef typename P::TermType TermType;
   typedef P PolynomialType;
   typedef lm_R_l<P> lm_R_lType;
   typedef MM<P> This;
 
-  MM() : u_(), f_() {}
-  MM(const lm_R_lType& v, const P& g) : u_(v), f_(g) {}
-  lm_R_lType u() const { return u_; }
-  P f() const { return f_; }
+  MM() : u(), f() {}
+  MM(const lm_R_lType& v, const P& g) : u(v), f(g) {}
 
   bool operator<(const This& other) const {
-    return u_ < other.u_;
+    return u < other.u;
   }
 
   bool operator==(const This& other) const {
-    return u_ == other.u_ && f_ == other.f_;
+    return u == other.u && f == other.f;
   }
 
   This& operator*=(const MonomialType& e) {
-    u_ *= e;
-    f_ *= e;
+    u *= e;
+    f *= e;
     return *this;
   }
 
   This operator*(const MonomialType& e) const { This r(*this); r *= e; return r; }
 
-private:
-  lm_R_lType u_;
-  P f_;
+  lm_R_lType u;
+  P f;
 };
 
 template<class P>
@@ -48,7 +44,7 @@ MM<P> operator*(const typename P::MonomialType& e, const MM<P>& m) {
 
 template<class P>
 std::ostream& operator<<(std::ostream& out, const MM<P>& uf) {
-  return out << "(" << uf.u() << ", " << uf.f() << ")";
+  return out << "(" << uf.u << ", " << uf.f << ")";
 }
 
 namespace std {
@@ -57,7 +53,7 @@ namespace std {
     size_t operator()(const MM<P>& mm) const {
       size_t result = 0;
       hash<typename P::MonomialType> mhash;
-      result += mhash(mm.f().lm());
+      result += mhash(mm.f.lm());
       return result;
     }
   };

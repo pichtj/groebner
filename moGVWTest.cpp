@@ -59,7 +59,7 @@ TEST(moGVWTest, LCMCriterion) {
   GG[(a*c).m()] = r4;
   GG[(a*c*c).m()] = r4;
 
-  EXPECT_TRUE(runner.rejectedByLCMCriterion(abc_r4, GG));
+  EXPECT_TRUE(runner.rejectedByLCMCriterion(abc_r4.m, r4, GG));
 }
 
 TEST(moGVWTest, lift) {

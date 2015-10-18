@@ -15,7 +15,7 @@ TEST(LabelledMonomialTest, Example2_2) {
 
   P f1 = x + 1;
   P f2 = y + 2;
-  
+
   lm_R_l<> e1 = lm_R_l<>::e(0);
   lm_R_l<> e2 = lm_R_l<>::e(1);
 

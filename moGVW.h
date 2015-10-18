@@ -14,9 +14,10 @@
 #include "LabelledMonomial.h"
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
-class moGVWRunner {
-public:
+struct moGVWRunner {
   typedef typename P::MonomialType MonomialType;
+  typedef typename P::TermType TermType;
+  typedef typename P::TermType T;
   typedef typename P::CoefficientType CoefficientType;
   typedef MM<P> MMType;
   typedef lm_R_l<P> lm_R_lType;
@@ -25,45 +26,53 @@ public:
   typedef unordered_set<MMType> MMSet;
   typedef set<MonomialType> MSet;
 
-  bool rejectedByLCMCriterion(const LM& muf, const LMSet& GG) {
-    auto m = muf.m();
-    auto lmf = muf.f().lm();
-    auto it = GG.find(m);
-    if (it != GG.end()) {
-      auto vg = it->second;
-      auto lmg = vg.f().lm();
+  MMType signature(const MonomialType& m, const MMType& uf) const {
+    MonomialType t = m / uf.f.lm();
+    return MMType(uf.u, T(1, t));
+  }
+
+  MMType signature(const std::pair<MonomialType, MMType>& muf) const {
+    return signature(muf.first, muf.second);
+  }
+
+  bool rejectedByLCMCriterion(const MonomialType& m, const MMType& uf, const LMSet& GG) {
+    auto lmf = uf.f.lm();
+    auto nvg = GG.find(m);
+    if (nvg != GG.end()) {
+      auto vg = nvg->second;
+      auto lmg = vg.f.lm();
       if (m == lcm(lmf, lmg)) {
         return false;
       }
-      if (muf.signature() > LM(it->first, it->second).signature()) {
-        D("rejecting " << muf << " because " << *it << " has smaller signature");
+      if (signature(m, uf) > signature(*nvg)) {
+        D("rejecting " << std::pair(m, uf) << " because " << *it << " has smaller signature");
         return true;
       }
     }
     return false;
   }
 
-  bool rejectedBySyzygyCriterion(const LM& muf, const LMSet& GG) {
-    auto lmu = muf.u().lm();
-    auto t_f = muf.m() / muf.f().lm();
-    auto it = GG.find(t_f*lmu.m());
-    if (it == GG.end()) return false;
-    auto lmv = it->second.u().lm();
+  bool rejectedBySyzygyCriterion(const MonomialType& m, const MMType& uf, const LMSet& GG) {
+    auto lmu = uf.u.lm();
+    auto t_f = m / uf.f.lm();
+    auto nvg = GG.find(t_f*lmu.m());
+    if (nvg == GG.end()) return false;
+    auto lmv = nvg->second.u.lm();
     if (lmu.index() > lmv.index()) {
-      D("rejecting " << muf << " because " << *it << " has smaller index");
+      D("rejecting " << std::pair(m, uf) << " because " << *it << " has smaller index");
       return true;
     }
     return false;
   }
 
-  bool rejectedByRewrittenCriterion(const LM& uf, const LMSet& GG) {
-    for (auto vg = GG.begin(); vg != GG.end(); ++vg) {
-      auto lmu = uf.u().lm();
-      auto v = vg->second.u();
+  bool rejectedByRewrittenCriterion(const MonomialType& m, const MMType& uf, const LMSet& GG) {
+    auto lmu = uf.u.lm();
+    for (auto nvg = GG.begin(); nvg != GG.end(); ++nvg) {
+      auto v = nvg->second.u;
       auto lmv = v.lm();
       if (!lmv.divides(lmu)) continue;
       auto t = lmu / lmv;
-      if (t*vg->second.f().lm() < uf.f().lm()) {
+      if (t*nvg->second.f.lm() < uf.f.lm()) {
         D("rejecting " << uf);
         return true;
       }
@@ -75,45 +84,46 @@ public:
     DD("todo = ", todo);
 
     MMSet HH;
-    for (auto it = todo.begin(); it != todo.end(); ++it) {
-      LM muf = LM(it->first, it->second);
+    for (const auto& muf : todo) {
       D("chose " << muf << " to lift");
-      for (uint i = 0; i < MonomialType::VAR_COUNT; ++i ) {
-        LM x_i_m = MonomialType::x(i) * muf;
-        D("lifted to " << x_i_m);
-        auto coll = GG.find(x_i_m.m());
-        if (coll != GG.end()) {
-          LM nvg = LM(coll->first, coll->second);
-          D("collides with " << nvg);
-          MonomialType t_f = x_i_m.m() / muf.f().lm();
-          MonomialType t_g = x_i_m.m() / nvg.f().lm();
-          if (muf.signature() > nvg.signature()
-              && !rejectedByLCMCriterion(x_i_m, GG)
-              && !rejectedBySyzygyCriterion(x_i_m, GG)
-              && !rejectedByRewrittenCriterion(x_i_m, GG)) {
-            D("inserting " << t_f * MMType(muf.u(), muf.f()) << " into HH");
-            HH.insert(t_f * MMType(muf.u(), muf.f()));
-            D("inserting " << t_g * MMType(nvg.u(), nvg.f()) << " into HH");
-            HH.insert(t_g * MMType(nvg.u(), nvg.f()));
+      for (uint i = 0; i < MonomialType::VAR_COUNT; ++i) {
+        auto xim_m = muf.first;
+        xim_m[i]++;
+        auto uf = muf.second;
+        auto nvg = GG.find(xim_m);
+        if (nvg != GG.end()) {
+          auto vg = nvg->second;
+          auto f = uf.f;
+          MonomialType t_f = xim_m / uf.f.lm();
+          MonomialType t_g = xim_m / vg.f.lm();
+          auto tf_lmu = t_f * uf.u;
+          auto tg_lmv = t_g * vg.u;
+          if (tf_lmu > tg_lmv
+              && !rejectedByLCMCriterion(xim_m, uf, GG)
+              && !rejectedBySyzygyCriterion(xim_m, uf, GG)
+              && !rejectedByRewrittenCriterion(xim_m, uf, GG)) {
+            D("inserting " << t_f * uf << " into HH");
+            HH.insert(t_f * uf);
+            D("inserting " << t_g * vg << " into HH");
+            HH.insert(t_g * vg);
           }
-          if (muf.signature() < nvg.signature()) {
-            D("replacing " << nvg << " by " << x_i_m);
-            GG.erase(coll);
-            GG[x_i_m.m()] = MMType(x_i_m.u(), x_i_m.f());
-            if (!rejectedByLCMCriterion(nvg, GG)
-                && !rejectedBySyzygyCriterion(x_i_m, GG)
-                && !rejectedByRewrittenCriterion(nvg, GG)) {
-              D("inserting " << t_f * MMType(muf.u(), muf.f()) << " into HH");
-              HH.insert(t_f * MMType(muf.u(), muf.f()));
-              D("inserting " << t_g * MMType(nvg.u(), nvg.f()) << " into HH");
-              HH.insert(t_g * MMType(nvg.u(), nvg.f()));
+          if (tf_lmu < tg_lmv) {
+            D("replacing " << *nvg << " by " << std::pair(xim_m, uf));
+            GG[xim_m] = uf;
+            if (!rejectedByLCMCriterion(xim_m, vg, GG)
+                && !rejectedBySyzygyCriterion(xim_m, vg, GG)
+                && !rejectedByRewrittenCriterion(xim_m, vg, GG)) {
+              D("inserting " << t_f * uf << " into HH");
+              HH.insert(t_f * uf);
+              D("inserting " << t_g * vg << " into HH");
+              HH.insert(t_g * vg);
             }
           }
         } else {
-          GG[x_i_m.m()] = MMType(x_i_m.u(), x_i_m.f());
+          GG[xim_m] = uf;
         }
       }
-      wasLifted[muf.m()] = true;
+      wasLifted[muf.first] = true;
     }
     DD("returning HH = ", HH);
     return HH;
@@ -122,12 +132,12 @@ public:
   void append(MMSet& HH, const LMSet& GG) {
     MSet done;
     for (auto wh = HH.begin(); wh != HH.end(); ++wh) {
-      done.insert(wh->f().lm());
+      done.insert(wh->f.lm());
     }
     DD("initialized done = ", done);
     MSet monomialsInHH;
     for (auto wh = HH.begin(); wh != HH.end(); ++wh) {
-      MSet monomialsInWH = wh->f().monomials();
+      MSet monomialsInWH = wh->f.monomials();
       monomialsInHH.insert(monomialsInWH.begin(), monomialsInWH.end());
     }
     for (auto it = done.begin(); it != done.end(); ++it) {
@@ -140,10 +150,10 @@ public:
       auto it = GG.find(m);
       if (it != GG.end()) {
         MMType vg = it->second;
-        MonomialType t = m / vg.f().lm();
+        MonomialType t = m / vg.f.lm();
         MMType newMM = t*vg;
         HH.insert(newMM);
-        auto newMMMonomials = newMM.f().monomials();
+        auto newMMMonomials = newMM.f.monomials();
         monomialsInHH.insert(newMMMonomials.begin(), newMMMonomials.end());
       }
       for (auto it = done.begin(); it != done.end(); ++it) {
@@ -167,7 +177,7 @@ public:
       bool found = false;
       auto it = HH.begin();
       while (it != HH.end() && !found) {
-        if (it->f().lm() == uf.f().lm()) {
+        if (it->f.lm() == uf.f.lm()) {
           found = true;
         } else {
           ++it;
@@ -177,7 +187,7 @@ public:
         it = PP.begin();
       }
       while (it != PP.end() && !found) {
-        if (it->f().lm() == uf.f().lm()) {
+        if (it->f.lm() == uf.f.lm()) {
           found = true;
         } else {
           ++it;
@@ -186,10 +196,10 @@ public:
       if (found) {
         auto vg = *it;
         D("reducing " << uf << " with " << vg);
-        auto u = uf.u();
-        auto v = vg.u();
-        auto f = uf.f();
-        auto g = vg.f();
+        auto u = uf.u;
+        auto v = vg.u;
+        auto f = uf.f;
+        auto g = vg.f;
         auto lcg = g.lc();
         auto lcf = f.lc();
 
@@ -231,15 +241,15 @@ public:
 
   void update(const MMSet& PP, LMSet& GG) {
     for (auto wh = PP.begin(); wh != PP.end(); ++wh) {
-      if (wh->f().isZero()) continue;
-      auto m = wh->f().lm();
+      if (wh->f.isZero()) continue;
+      auto m = wh->f.lm();
       D("looking for lm(h) = " << m);
       auto mvg = GG.find(m);
       if (mvg != GG.end()) {
         D("found (" << mvg->first << ", " << mvg->second << ")");
-        auto v = mvg->second.u();
-        auto w = wh->u();
-        auto g = mvg->second.f();
+        auto v = mvg->second.u;
+        auto w = wh->u;
+        auto g = mvg->second.f;
         if (((m / g.lm()) * v).lm() > w.lm()) {
           D("replacing " << mvg->second << " by " << *wh);
           GG[m] = *wh;
@@ -296,7 +306,7 @@ public:
   }
 
   bool isPrimitive(const std::pair<MonomialType, MMType>& lm) const {
-    return lm.first == lm.second.f().lm();
+    return lm.first == lm.second.f.lm();
   }
 
   std::set<P> moGVW(const std::set<P>& input) {
@@ -356,7 +366,7 @@ public:
     std::set<P> result;
     for (const auto& p : GG) {
       if (isPrimitive(p)) {
-        result.insert(p.second.f());
+        result.insert(p.second.f);
       }
     }
     I("calling interreduce");

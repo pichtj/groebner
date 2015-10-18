@@ -16,70 +16,43 @@ using namespace std;
 #define INPUT_COUNT 33
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
-class ULMSet {
-public:
-  typedef typename P::MonomialType MonomialType;
-  typedef MM<P> MMType;
-  typedef lm_R_l<P> lm_R_lType;
-
-  unordered_map<MonomialType, MMType> byMonomial;
-};
-
-template<class P = Polynomial<Term<int, Monomial<char> > > >
-class LMSet {
-public:
-  typedef typename P::MonomialType MonomialType;
-  typedef MM<P> MMType;
-  typedef lm_R_l<P> lm_R_lType;
-
-  unordered_multimap<MonomialType, MMType> byMonomial;
-};
-
-template<class P = Polynomial<Term<int, Monomial<char> > > >
-class LabelledMonomial {
-public:
+struct LabelledMonomial {
   typedef typename P::MonomialType MonomialType;
   typedef typename P::TermType TermType;
   typedef lm_R_l<P> lm_R_lType;
   typedef MM<P> MMType;
-  typedef LMSet<P> LMSetType;
-  typedef ULMSet<P> ULMSetType;
   typedef LabelledMonomial<P> This;
-  LabelledMonomial(const MonomialType& e, const MMType& g) : m_(e), u_(g.u()), f_(g.f()) {}
-  LabelledMonomial(const MonomialType& e, const lm_R_lType& v, const P& g) : m_(e), u_(v), f_(g) {}
-  MonomialType m() const { return m_; }
-  lm_R_lType u() const { return u_; }
-  P f() const { return f_; }
-  uint degree() const { return m_.degree(); }
-  MMType signature() const {
-    MonomialType t = m_ / f_.lm();
-    return MMType(u_, TermType(1, t));
+  LabelledMonomial(const MonomialType& e, const MMType& g) : m(e), u(g.u), f(g.f) {}
+  LabelledMonomial(const MonomialType& e, const lm_R_lType& v, const P& g) : m(e), u(v), f(g) {}
+  uint degree() const { return m.degree(); }
+  lm_R_lType signature() const {
+    MonomialType t = m / f.lm();
+    return u * t;
   }
-  bool isPrimitive() const { return m_ == f_.lm(); }
+  bool isPrimitive() const { return m == f.lm(); }
 
-  bool collidesWith(const This& other) { return m_ == other.m_ && !m_.isZero(); }
+  bool collidesWith(const This& other) { return m == other.m && !m.isZero(); }
 
   bool operator==(const This& other) const {
-    return m_ == other.m_ && u_ == other.u_ && f_ == other.f_;
+    return m == other.m && u == other.u && f == other.f;
   }
 
   This operator*(const MonomialType& e) const {
     This result(*this);
-    result.m_ *= e;
+    result.m *= e;
     return result;
   }
-private:
-  MonomialType m_;
-  lm_R_lType u_;
-  P f_;
+  MonomialType m;
+  lm_R_lType u;
+  P f;
 };
 
 namespace std {
   template<class P>
   struct hash<LabelledMonomial<P> > {
     size_t operator()(const LabelledMonomial<P>& lm) const {
-      hash<typename LabelledMonomial<P>::MonomialType > h;
-      return h(lm.m());
+      hash<typename LabelledMonomial<P>::MonomialType> h;
+      return h(lm.m);
     }
   };
 }
@@ -91,7 +64,7 @@ LabelledMonomial<P> operator*(const typename P::MonomialType& exp, const Labelle
 
 template<class P>
 std::ostream& operator<<(std::ostream& out, const LabelledMonomial<P>& muf) {
-  return out << "(" << muf.m() << ", (" << muf.u() << ", " << muf.f() << "))";
+  return out << "(" << muf.m << ", (" << muf.u << ", " << muf.f << "))";
 }
 
 #endif // LABELLED_MONOMIAL_H
