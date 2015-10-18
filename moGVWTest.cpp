@@ -3,6 +3,8 @@
 
 #include "moGVW.h"
 
+using namespace std;
+
 TEST(moGVWTest, LCMCriterion) {
   use_abc_var_names in_this_scope;
   typedef Monomial<> M;
@@ -28,26 +30,6 @@ TEST(moGVWTest, LCMCriterion) {
   auto r3 = shared_ptr<MM<> >(new MM<>(e3, f3));
   auto r4 = shared_ptr<MM<> >(new MM<>(e1 - e2 - a*e3, c - 1));
 
-  // initially
-  LabelledMonomial<> abc_r1 = LabelledMonomial<>((a*b*c).m(), *r1);
-  LabelledMonomial<> ab_r2 = LabelledMonomial<>((a*b).m(), *r2);
-  LabelledMonomial<> bc_r3 = LabelledMonomial<>((b*c).m(), *r3);
-
-  // LOOP 1
-  LabelledMonomial<> bcc_r3 = LabelledMonomial<>((b*c*c).m(), *r3);
-  LabelledMonomial<> bbc_r3 = LabelledMonomial<>((b*b*c).m(), *r3);
-  LabelledMonomial<> abc_r3 = LabelledMonomial<>((a*b*c).m(), *r3);
-  LabelledMonomial<> c_r4 = LabelledMonomial<>((c).m(), *r4);
-
-  // LOOP 2
-  LabelledMonomial<> cc_r4 = LabelledMonomial<>((c*c).m(), *r4);
-  // LabelledMonomial<> bc_r4 = LabelledMonomial<>((b*c).m(), *r4);
-  LabelledMonomial<> ac_r4 = LabelledMonomial<>((a*c).m(), *r4);
-
-  // LOOP 3
-  LabelledMonomial<> acc_r4 = LabelledMonomial<>((a*c*c).m(), *r4);
-  LabelledMonomial<> abc_r4 = LabelledMonomial<>((a*b*c).m(), *r4);
-
   LMSet GG;
   GG[(a*b).m()] = r2;
   GG[(b*c).m()] = r3;
@@ -59,7 +41,7 @@ TEST(moGVWTest, LCMCriterion) {
   GG[(a*c).m()] = r4;
   GG[(a*c*c).m()] = r4;
 
-  EXPECT_TRUE(runner.rejectedByLCMCriterion(abc_r4.m, r4, GG));
+  EXPECT_TRUE(runner.rejectedByLCMCriterion((a*b*c).m(), r4, GG));
 }
 
 TEST(moGVWTest, lift) {
@@ -88,11 +70,6 @@ TEST(moGVWTest, lift) {
   auto r3 = shared_ptr<MM<> >(new MM<>(e3, f3));
   auto r4 = shared_ptr<MM<> >(new MM<>(e1 - e2 - a*e3, c - 1));
 
-  // initially
-  LabelledMonomial<> abc_r1 = LabelledMonomial<>((a*b*c).m(), *r1);
-  LabelledMonomial<> ab_r2 = LabelledMonomial<>((a*b).m(), *r2);
-  LabelledMonomial<> bc_r3 = LabelledMonomial<>((b*c).m(), *r3);
-
   LMSet GG;
   GG[(a*b*c).m()] = r1;
   GG[(a*b).m()] = r2;
@@ -102,21 +79,6 @@ TEST(moGVWTest, lift) {
   todo[(b*c).m()] = r3;
 
   MMSet HH = runner.lift(todo, GG);
-
-  // LOOP 1
-  LabelledMonomial<> bcc_r3 = LabelledMonomial<>((b*c*c).m(), *r3);
-  LabelledMonomial<> bbc_r3 = LabelledMonomial<>((b*b*c).m(), *r3);
-  LabelledMonomial<> abc_r3 = LabelledMonomial<>((a*b*c).m(), *r3);
-  LabelledMonomial<> c_r4 = LabelledMonomial<>((c).m(), *r4);
-
-  // LOOP 2
-  LabelledMonomial<> cc_r4 = LabelledMonomial<>((c*c).m(), *r4);
-  // LabelledMonomial<> bc_r4 = LabelledMonomial<>((b*c).m(), *r4);
-  LabelledMonomial<> ac_r4 = LabelledMonomial<>((a*c).m(), *r4);
-
-  // LOOP 3
-  LabelledMonomial<> acc_r4 = LabelledMonomial<>((a*c*c).m(), *r4);
-  LabelledMonomial<> abc_r4 = LabelledMonomial<>((a*b*c).m(), *r4);
 
   LMSet GG2;
   GG2[(a*b).m()] = r2;

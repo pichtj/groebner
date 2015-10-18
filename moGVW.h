@@ -12,7 +12,7 @@
 #include "debug.h"
 #include "integral.h"
 #include "Polynomial.h"
-#include "LabelledMonomial.h"
+#include "MM.h"
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
 struct moGVWRunner {
@@ -22,10 +22,9 @@ struct moGVWRunner {
   typedef typename P::CoefficientType CoefficientType;
   typedef MM<P> MMType;
   typedef lm_R_l<P> lm_R_lType;
-  typedef LabelledMonomial<P> LM;
-  typedef unordered_map<MonomialType, std::shared_ptr<MMType> > LMSet;
-  typedef unordered_set<MMType> MMSet;
-  typedef set<MonomialType> MSet;
+  typedef std::unordered_map<MonomialType, std::shared_ptr<MMType> > LMSet;
+  typedef std::unordered_set<MMType> MMSet;
+  typedef std::set<MonomialType> MSet;
 
   MMType signature(const MonomialType& m, const MMType& uf) const {
     MonomialType t = m / uf.f.lm();
@@ -53,7 +52,7 @@ struct moGVWRunner {
     return false;
   }
 
-  bool rejectedBySyzygyCriterion(const MonomialType& m, shared_ptr<MMType> uf, const LMSet& GG) {
+  bool rejectedBySyzygyCriterion(const MonomialType& m, std::shared_ptr<MMType> uf, const LMSet& GG) {
     auto lmu = uf->u;
     auto t_f = m / uf->f.lm();
     auto nvg = GG.find(t_f*lmu.m);
@@ -66,7 +65,7 @@ struct moGVWRunner {
     return false;
   }
 
-  bool rejectedByRewrittenCriterion(const MonomialType& m, shared_ptr<MMType> uf, const LMSet& GG) {
+  bool rejectedByRewrittenCriterion(const MonomialType& m, std::shared_ptr<MMType> uf, const LMSet& GG) {
     auto lmu = uf->u;
     for (auto nvg = GG.begin(); nvg != GG.end(); ++nvg) {
       auto lmv = nvg->second->u;
@@ -255,11 +254,11 @@ struct moGVWRunner {
         auto g = mvg->second->f;
         if (((m / g.lm()) * v) > w) {
           D("replacing " << mvg->second << " by " << *wh);
-          GG[m] = shared_ptr<MMType>(new MMType(*wh));
+          GG[m] = std::shared_ptr<MMType>(new MMType(*wh));
         }
       } else {
         D("not found, adding (" << m << ", " << *wh << ") to GG");
-        GG[m] = shared_ptr<MMType>(new MMType(*wh));
+        GG[m] = std::shared_ptr<MMType>(new MMType(*wh));
       }
     }
     DD("returning, GG = ", GG);
@@ -268,7 +267,7 @@ struct moGVWRunner {
 
   std::set<P> interreduce(const std::set<P>& input) {
     DD("input = ", input);
-    vector<P> intermediate(input.begin(), input.end());
+    std::vector<P> intermediate(input.begin(), input.end());
     bool stable;
     do {
       stable = true;
@@ -325,13 +324,13 @@ struct moGVWRunner {
     DD("prefilled GG = ", GG);
 
     uint liftdeg = 0;
-    uint mindeg = numeric_limits<uint>::max();
+    uint mindeg = std::numeric_limits<uint>::max();
     for (const auto& lm : GG) {
       if (isPrimitive(lm)) {
-        liftdeg = max(liftdeg, lm.first.degree());
+        liftdeg = std::max(liftdeg, lm.first.degree());
       }
       if (!wasLifted[lm.first]) {
-        mindeg = min(mindeg, lm.first.degree());
+        mindeg = std::min(mindeg, lm.first.degree());
       }
     }
     I("liftdeg = " << liftdeg);
@@ -354,13 +353,13 @@ struct moGVWRunner {
       update(PP, GG);
 
       liftdeg = 0;
-      mindeg = numeric_limits<uint>::max();
+      mindeg = std::numeric_limits<uint>::max();
       for (auto it = GG.begin(); it != GG.end(); ++it) {
         if (isPrimitive(*it)) {
-          liftdeg = max(liftdeg, it->first.degree());
+          liftdeg = std::max(liftdeg, it->first.degree());
         }
         if (!wasLifted[it->first]) {
-          mindeg = min(mindeg, it->first.degree());
+          mindeg = std::min(mindeg, it->first.degree());
         }
       }
       I("liftdeg = " << liftdeg);
@@ -379,25 +378,25 @@ struct moGVWRunner {
     return result;
   }
 private:
-  unordered_map<MonomialType, bool> wasLifted;
+  std::unordered_map<MonomialType, bool> wasLifted;
 };
 
 template<class A, class B>
-std::ostream& operator<<(ostream& out, const std::pair<A, B>& ab) {
+std::ostream& operator<<(std::ostream& out, const std::pair<A, B>& ab) {
   return out << "(" << ab.first << ", " << ab.second << ")";
 }
 
 template<class C>
-void print(const string& prefix, const C& c) {
-  cout << "{";
+void print(const std::string& prefix, const C& c) {
+  std::cout << "{";
   bool itemPrinted = false;
   for (const auto& item : c) {
-    if (itemPrinted) cout << ",";
-    cout << endl << prefix << "  " << item;
+    if (itemPrinted) std::cout << ",";
+    std::cout << std::endl << prefix << "  " << item;
     itemPrinted = true;
   }
-  if (itemPrinted) cout << endl << prefix;
-  cout << "}" << endl;
+  if (itemPrinted) std::cout << std::endl << prefix;
+  std::cout << "}" << std::endl;
 }
 
 #endif // MOGVW_H

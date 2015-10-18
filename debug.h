@@ -2,7 +2,7 @@
 #define DEBUG_H
 
 #define I(statement) std::cout << __func__ << "[" << __LINE__ << "]: " << statement << std::endl;
-#define II(statement, container) std::cout << __func__ << "[" << __LINE__ << "]: " << statement; print(string(__func__) + "[" + to_string(__LINE__) + "]: ", container);
+#define II(statement, container) std::cout << __func__ << "[" << __LINE__ << "]: " << statement; print(std::string(__func__) + "[" + to_string(__LINE__) + "]: ", container);
 
 #ifdef DEBUG
 #define D(statement) I(statement)
