@@ -6,6 +6,7 @@
 #include <limits>
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 #include "style.h"
 #include "debug.h"
@@ -22,7 +23,7 @@ struct moGVWRunner {
   typedef MM<P> MMType;
   typedef lm_R_l<P> lm_R_lType;
   typedef LabelledMonomial<P> LM;
-  typedef unordered_map<MonomialType, MMType> LMSet;
+  typedef unordered_map<MonomialType, std::shared_ptr<MMType> > LMSet;
   typedef unordered_set<MMType> MMSet;
   typedef set<MonomialType> MSet;
 
@@ -31,49 +32,49 @@ struct moGVWRunner {
     return MMType(uf.u, T(1, t));
   }
 
-  MMType signature(const std::pair<MonomialType, MMType>& muf) const {
-    return signature(muf.first, muf.second);
+  MMType signature(const std::pair<MonomialType, std::shared_ptr<MMType> >& muf) const {
+    return signature(muf.first, *(muf.second));
   }
 
-  bool rejectedByLCMCriterion(const MonomialType& m, const MMType& uf, const LMSet& GG) {
-    auto lmf = uf.f.lm();
+  bool rejectedByLCMCriterion(const MonomialType& m, shared_ptr<MMType> uf, const LMSet& GG) {
+    auto lmf = uf->f.lm();
     auto nvg = GG.find(m);
     if (nvg != GG.end()) {
-      auto vg = nvg->second;
+      auto vg = *(nvg->second);
       auto lmg = vg.f.lm();
       if (m == lcm(lmf, lmg)) {
         return false;
       }
-      if (signature(m, uf) > signature(*nvg)) {
-        D("rejecting (" << m << ", " << uf << ") because " << *nvg << " has smaller signature");
+      if (signature(m, *uf) > signature(*nvg)) {
+        D("rejecting (" << m << ", " << *uf << ") because " << *nvg << " has smaller signature");
         return true;
       }
     }
     return false;
   }
 
-  bool rejectedBySyzygyCriterion(const MonomialType& m, const MMType& uf, const LMSet& GG) {
-    auto lmu = uf.u.lm();
-    auto t_f = m / uf.f.lm();
+  bool rejectedBySyzygyCriterion(const MonomialType& m, shared_ptr<MMType> uf, const LMSet& GG) {
+    auto lmu = uf->u.lm();
+    auto t_f = m / uf->f.lm();
     auto nvg = GG.find(t_f*lmu.m());
     if (nvg == GG.end()) return false;
-    auto lmv = nvg->second.u.lm();
+    auto lmv = nvg->second->u.lm();
     if (lmu.index() > lmv.index()) {
-      D("rejecting (" << m << ", " << uf << ") because " << *nvg << " has smaller index");
+      D("rejecting (" << m << ", " << *uf << ") because " << *nvg << " has smaller index");
       return true;
     }
     return false;
   }
 
-  bool rejectedByRewrittenCriterion(const MonomialType& m, const MMType& uf, const LMSet& GG) {
-    auto lmu = uf.u.lm();
+  bool rejectedByRewrittenCriterion(const MonomialType& m, shared_ptr<MMType> uf, const LMSet& GG) {
+    auto lmu = uf->u.lm();
     for (auto nvg = GG.begin(); nvg != GG.end(); ++nvg) {
-      auto v = nvg->second.u;
+      auto v = nvg->second->u;
       auto lmv = v.lm();
       if (!lmv.divides(lmu)) continue;
       auto t = lmu / lmv;
-      if (t*nvg->second.f.lm() < uf.f.lm()) {
-        D("rejecting " << uf);
+      if (t*nvg->second->f.lm() < uf->f.lm()) {
+        D("rejecting " << *uf);
         return true;
       }
     }
@@ -93,30 +94,30 @@ struct moGVWRunner {
         auto nvg = GG.find(xim_m);
         if (nvg != GG.end()) {
           auto vg = nvg->second;
-          auto f = uf.f;
-          MonomialType t_f = xim_m / uf.f.lm();
-          MonomialType t_g = xim_m / vg.f.lm();
-          auto tf_lmu = t_f * uf.u;
-          auto tg_lmv = t_g * vg.u;
+          auto f = uf->f;
+          MonomialType t_f = xim_m / uf->f.lm();
+          MonomialType t_g = xim_m / vg->f.lm();
+          auto tf_lmu = t_f * uf->u;
+          auto tg_lmv = t_g * vg->u;
           if (tf_lmu > tg_lmv
               && !rejectedByLCMCriterion(xim_m, uf, GG)
               && !rejectedBySyzygyCriterion(xim_m, uf, GG)
               && !rejectedByRewrittenCriterion(xim_m, uf, GG)) {
-            D("inserting " << t_f * uf << " into HH");
-            HH.insert(t_f * uf);
-            D("inserting " << t_g * vg << " into HH");
-            HH.insert(t_g * vg);
+            D("inserting " << t_f * *uf << " into HH");
+            HH.insert(t_f * *uf);
+            D("inserting " << t_g * *vg << " into HH");
+            HH.insert(t_g * *vg);
           }
           if (tf_lmu < tg_lmv) {
-            D("replacing GG[" << xim_m << "] = " << vg << " by " << uf);
+            D("replacing GG[" << xim_m << "] = " << *vg << " by " << *uf);
             GG[xim_m] = uf;
             if (!rejectedByLCMCriterion(xim_m, vg, GG)
                 && !rejectedBySyzygyCriterion(xim_m, vg, GG)
                 && !rejectedByRewrittenCriterion(xim_m, vg, GG)) {
-              D("inserting " << t_f * uf << " into HH");
-              HH.insert(t_f * uf);
-              D("inserting " << t_g * vg << " into HH");
-              HH.insert(t_g * vg);
+              D("inserting " << t_f * *uf << " into HH");
+              HH.insert(t_f * *uf);
+              D("inserting " << t_g * *vg << " into HH");
+              HH.insert(t_g * *vg);
             }
           }
         } else {
@@ -149,9 +150,9 @@ struct moGVWRunner {
       done.insert(m);
       auto it = GG.find(m);
       if (it != GG.end()) {
-        MMType vg = it->second;
-        MonomialType t = m / vg.f.lm();
-        MMType newMM = t*vg;
+        auto vg = it->second;
+        MonomialType t = m / vg->f.lm();
+        MMType newMM = t * *vg;
         HH.insert(newMM);
         auto newMMMonomials = newMM.f.monomials();
         monomialsInHH.insert(newMMMonomials.begin(), newMMMonomials.end());
@@ -246,17 +247,16 @@ struct moGVWRunner {
       D("looking for lm(h) = " << m);
       auto mvg = GG.find(m);
       if (mvg != GG.end()) {
-        D("found (" << mvg->first << ", " << mvg->second << ")");
-        auto v = mvg->second.u;
+        auto v = mvg->second->u;
         auto w = wh->u;
-        auto g = mvg->second.f;
+        auto g = mvg->second->f;
         if (((m / g.lm()) * v).lm() > w.lm()) {
           D("replacing " << mvg->second << " by " << *wh);
-          GG[m] = *wh;
+          GG[m] = shared_ptr<MMType>(new MMType(*wh));
         }
       } else {
         D("not found, adding (" << m << ", " << *wh << ") to GG");
-        GG[m] = *wh;
+        GG[m] = shared_ptr<MMType>(new MMType(*wh));
       }
     }
     DD("returning, GG = ", GG);
@@ -306,8 +306,8 @@ struct moGVWRunner {
     return result;
   }
 
-  bool isPrimitive(const std::pair<MonomialType, MMType>& lm) const {
-    return lm.first == lm.second.f.lm();
+  bool isPrimitive(const std::pair<MonomialType, std::shared_ptr<MMType> >& lm) const {
+    return lm.first == lm.second->f.lm();
   }
 
   std::set<P> moGVW(const std::set<P>& input) {
@@ -315,7 +315,7 @@ struct moGVWRunner {
     wasLifted.clear();
     typename std::set<P>::size_type i = 0;
     for (const auto& p : input) {
-      GG[p.lm()] = MMType(lm_R_l<P>::e(i), p);
+      GG[p.lm()] = std::shared_ptr<MMType>(new MMType(lm_R_l<P>::e(i), p));
       ++i;
     }
 
@@ -335,7 +335,7 @@ struct moGVWRunner {
     I("mindeg = " << mindeg);
 
     while (mindeg <= liftdeg) {
-      unordered_map<MonomialType, MMType> todo;
+      LMSet todo;
       for (auto it = GG.begin(); it != GG.end(); ++it) {
         if (it->first.degree() == mindeg && !wasLifted[it->first]) {
           todo[it->first] = it->second;
@@ -367,7 +367,7 @@ struct moGVWRunner {
     std::set<P> result;
     for (const auto& p : GG) {
       if (isPrimitive(p)) {
-        result.insert(p.second.f);
+        result.insert(p.second->f);
       }
     }
     I("calling interreduce");

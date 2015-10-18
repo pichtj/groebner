@@ -1,6 +1,6 @@
 BUILDDIR := $(shell pwd)
 CFLAGS := -m64 -g -pg -O3 -march=native -mtune=native -I$(BUILDDIR)/include -L$(BUILDDIR)/lib -std=c++11 -lmpir -lmpirxx -lgmp -Wall
-CPPFLAGS := -DDEBUG
+CPPFLAGS :=
 CC := $(shell which gcc-mp-4.9 || echo gcc)
 CXX := $(shell which g++-mp-4.9 || echo g++)
 MPIR := mpir-2.7.0

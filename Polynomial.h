@@ -40,14 +40,6 @@ public:
     return terms_;
   }
 
-  std::list<CoefficientType> coefficients() const {
-    std::list<CoefficientType> result;
-    for (const auto& term : terms_) {
-      result.insert(result.end(), term.c());
-    }
-    return result;
-  }
-
   TermType operator[](const MonomialType& m) const {
     auto c = terms_.begin();
     while (c->m() >= m) ++c;
