@@ -151,6 +151,7 @@ public:
     return result;
   }
   bool operator==(const This& other) const { return terms_ == other.terms_; }
+  bool operator<(const This& other) const { return lm() < other.lm(); }
   template<class T1>
   friend std::ostream& operator<<(std::ostream& out, const Polynomial<T1>& p);
 private:
