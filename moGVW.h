@@ -45,7 +45,7 @@ struct moGVWRunner {
         return false;
       }
       if (signature(m, uf) > signature(*nvg)) {
-        D("rejecting " << std::pair(m, uf) << " because " << *it << " has smaller signature");
+        D("rejecting (" << m << ", " << uf << ") because " << *nvg << " has smaller signature");
         return true;
       }
     }
@@ -59,7 +59,7 @@ struct moGVWRunner {
     if (nvg == GG.end()) return false;
     auto lmv = nvg->second.u.lm();
     if (lmu.index() > lmv.index()) {
-      D("rejecting " << std::pair(m, uf) << " because " << *it << " has smaller index");
+      D("rejecting (" << m << ", " << uf << ") because " << *nvg << " has smaller index");
       return true;
     }
     return false;
@@ -108,7 +108,7 @@ struct moGVWRunner {
             HH.insert(t_g * vg);
           }
           if (tf_lmu < tg_lmv) {
-            D("replacing " << *nvg << " by " << std::pair(xim_m, uf));
+            D("replacing GG[" << xim_m << "] = " << vg << " by " << uf);
             GG[xim_m] = uf;
             if (!rejectedByLCMCriterion(xim_m, vg, GG)
                 && !rejectedBySyzygyCriterion(xim_m, vg, GG)
