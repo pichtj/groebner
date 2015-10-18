@@ -27,6 +27,16 @@ public:
     }
     return *this;
   }
+  This& operator/=(const This& t) {
+    if (!isZero()) {
+      if (t.isZero()) {
+        throw std::domain_error("division by zero");
+      }
+      coeff /= t.coeff;
+      exp /= t.exp;
+    }
+    return *this;
+  }
   This& operator*=(const M& m) {
     if (!isZero()) {
       exp *= m;

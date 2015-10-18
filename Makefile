@@ -1,5 +1,5 @@
 BUILDDIR := $(shell pwd)
-CFLAGS := -m64 -g -I$(BUILDDIR)/include -L$(BUILDDIR)/lib -std=c++11
+CFLAGS := -m64 -g -I$(BUILDDIR)/include -L$(BUILDDIR)/lib -std=c++11 -lmpir -lmpirxx -lgmp -Wall
 CPPFLAGS :=
 CC := $(shell which gcc-mp-4.9 || echo gcc)
 CXX := $(shell which g++-mp-4.9 || echo g++)
@@ -27,7 +27,7 @@ $(MPIR): $(MPIR).tar.bz2
 	tar jxvf $<
 
 lib/libmpir.a include/mpir.h include/mpirxx.h: $(MPIR)
-	cd $< && CC="$(CC)" ./configure --enable-cxx --disable-shared --enable-static --prefix=$(BUILDDIR) && make && make install
+	cd $< && CC="$(CC)" ./configure --enable-gmpcompat --enable-cxx --disable-shared --enable-static --prefix=$(BUILDDIR) && make && make install
 
 $(GTEST).zip:
 	wget https://googletest.googlecode.com/files/$(GTEST).zip
@@ -52,7 +52,7 @@ gtest_main.o: $(GTEST)/src/gtest_main.cc
 TEST_OBJECTS := $(shell ls *Test.cpp | sed -e s/cpp$$/o/g)
 
 test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o
-	$(CXX) $(CFLAGS) -o test-runner $^ -pthread
+	$(CXX) $^ $(CFLAGS) -pthread -o test-runner
 
 %.o: %.cpp
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<

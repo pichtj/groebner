@@ -6,7 +6,6 @@ using namespace std;
 
 TEST(lm_R_lTest, Addition) {
   typedef Monomial<> M;
-  typedef Term<> T;
   lm_R_l<> e1 = lm_R_l<>::e(0);
   lm_R_l<> e2 = lm_R_l<>::e(1);
   lm_R_l<> e3 = lm_R_l<>::e(2);
@@ -24,8 +23,6 @@ TEST(lm_R_lTest, Addition) {
 TEST(lm_R_lTest, Multiplication) {
   typedef Monomial<> M;
   typedef Term<> T;
-  lm_R_l<> e1 = lm_R_l<>::e(0);
-  lm_R_l<> e2 = lm_R_l<>::e(1);
   lm_R_l<> e3 = lm_R_l<>::e(2);
 
   lm_R_l<> u;
@@ -40,7 +37,6 @@ TEST(lm_R_lTest, Multiplication) {
 
 TEST(lm_R_lTest, lm) {
   typedef Monomial<> M;
-  typedef Term<> T;
   lm_R_l<> e1 = lm_R_l<>::e(0);
   lm_R_l<> e2 = lm_R_l<>::e(1);
   lm_R_l<> e3 = lm_R_l<>::e(2);

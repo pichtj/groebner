@@ -15,7 +15,7 @@ template<class E = char, long VC = 5>
 class Monomial {
 public:
   typedef E ExponentType;
-  typedef Monomial<E> This;
+  typedef Monomial<E, VC> This;
   static const long VAR_COUNT = VC;
 
   Monomial() : mon() {}

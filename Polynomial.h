@@ -2,11 +2,15 @@
 #define POLYNOMIAL_H
 
 #include <ostream>
+#include <sstream>
 #include <set>
+#include <list>
 #include <forward_list>
 #include <stdexcept>
 
 #include "Term.h"
+
+#define MAX_PRINT_LENGTH 50
 
 template<class T = Term<int, Monomial<char> > >
 class Polynomial {
@@ -33,6 +37,14 @@ public:
     return terms_;
   }
 
+  std::list<CoefficientType> coefficients() const {
+    std::list<CoefficientType> result;
+    for (const auto& term : terms_) {
+      result.insert(result.end(), term.c());
+    }
+    return result;
+  }
+
   TermType operator[](const MonomialType& m) const {
     auto c = terms_.begin();
     while (c->m() >= m) ++c;
@@ -42,8 +54,8 @@ public:
   bool isZero() const { return terms_.empty(); }
   This& operator+=(const CoefficientType& c) { *this += T(c); return *this; }
   This operator+(const CoefficientType& c) const { This r = *this; r += c; return r; }
-  This& operator-=(const CoefficientType& c) { *this += (-1) * c; return *this; }
-  This operator-(const CoefficientType& c) const { return *this + (-1) * c; }
+  This& operator-=(const CoefficientType& c) { *this += CoefficientType(-1) * c; return *this; }
+  This operator-(const CoefficientType& c) const { return *this + CoefficientType(-1) * c; }
   This& operator+=(const T& t) {
     if (terms_.empty() || lm() < t.m()) {
       terms_.insert_after(terms_.before_begin(), t);
@@ -69,7 +81,7 @@ public:
     return *this;
   }
   This operator+(const T& t) const { This r = *this; r += t; return r; }
-  This& operator-=(const T& t) { *this += (-1) * t; return *this; }
+  This& operator-=(const T& t) { *this += CoefficientType(-1) * t; return *this; }
   This operator-(const T& t) const { This r = *this; r += t; return r; }
   This& operator+=(const This& other) {
     for (auto it = other.terms_.begin(); it != other.terms_.end(); ++it) {
@@ -96,7 +108,16 @@ public:
     }
     return *this;
   }
-  This operator-() const { This r = *this; r *= -1; return r; }
+  This& operator/=(const CoefficientType& c) {
+    if (c == CoefficientType()) {
+      throw std::domain_error("division by zero");
+    }
+    for (auto it = terms_.begin(); it != terms_.end(); ++it) {
+      *it /= c;
+    }
+    return *this;
+  }
+  This operator-() const { This r = *this; r *= CoefficientType(-1); return r; }
   This operator*(const CoefficientType& c) const { This r = *this; r *= c; return r; }
   This& operator*=(const T& t) {
     if (t.isZero()) {
@@ -178,16 +199,31 @@ Polynomial<T> operator*(const T& a, const Polynomial<T>& b) { return b.operator*
 
 template<class T>
 std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {
+  std::stringstream ss;
   bool termPrinted = false;
   for (auto it = p.terms_.begin(); it != p.terms_.end(); ++it) {
     if (termPrinted && it->c() > 0) {
-      out << "+";
+      ss << "+";
     }
-    out << *it;
+    ss << *it;
     termPrinted = true;
+    if (ss.str().length() > MAX_PRINT_LENGTH)
+      break;
   }
   if (!termPrinted) {
-    out << "0";
+    ss << "0";
+  }
+  if (ss.str().length() > MAX_PRINT_LENGTH) {
+    uint termCount = 0;
+    auto it = p.terms_.begin();
+    auto end = p.terms_.end();
+    while (it != end) {
+      ++termCount;
+      ++it;
+    }
+    out << ss.str().substr(0,MAX_PRINT_LENGTH) << "...{" << termCount << " terms}";
+  } else {
+    out << ss.str();
   }
   return out;
 }
