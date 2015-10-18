@@ -281,8 +281,9 @@ struct moGVWRunner {
             D("reducing " << *p << " with " << *r);
             stable = false;
             auto t = term->m() / r->lm();
-            *p *= r->lc();
-            *p -= *r * t * term->c();
+            auto rt = *r * t;
+            p->combine(r->lc(), rt, -term->c());
+            p->renormalize();
             D("to " << *p);
             terms = p->terms();
             term = terms.begin();
