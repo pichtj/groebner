@@ -1,5 +1,5 @@
 BUILDDIR := $(shell pwd)
-CFLAGS := -m64 -g -pg -I$(BUILDDIR)/include -L$(BUILDDIR)/lib -std=c++11 -lmpir -lmpirxx -lgmp -Wall
+CFLAGS := -m64 -g -pg -O3 -I$(BUILDDIR)/include -L$(BUILDDIR)/lib -std=c++11 -lmpir -lmpirxx -lgmp -Wall
 CPPFLAGS :=
 CC := $(shell which gcc-mp-4.9 || echo gcc)
 CXX := $(shell which g++-mp-4.9 || echo g++)
