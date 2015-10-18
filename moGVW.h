@@ -7,16 +7,11 @@
 #include <vector>
 #include <algorithm>
 
-#define DEBUG
-#include "debug.h"
-
 #include "style.h"
 #include "debug.h"
 #include "integral.h"
 #include "Polynomial.h"
 #include "LabelledMonomial.h"
-
-using namespace std;
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
 class moGVWRunner {
@@ -199,36 +194,28 @@ public:
         auto lcf = f.lc();
 
         if (u.lm() > v.lm()) {
-          auto lcgflcfg = lcg*f-lcf*g;
-          if (lcgflcfg.isZero()) {
+          auto r = P::combine(f, lcg, g, -lcf);
+          if (r.isZero()) {
             D("a row in HH reduced to zero!");
           } else {
-            auto divisor = gcd(lcgflcfg.coefficients());
-            if (divisor != 1) {
-              D("dividing " << lcgflcfg << " by gcd = " << divisor);
-              lcgflcfg /= divisor;
-            }
-            D("inserting " << MMType(lcg*u-lcf*v, lcgflcfg) << " into HH");
-            HH.insert(MMType(lcg*u-lcf*v, lcgflcfg));
-            todoInHH.insert(MMType(lcg*u-lcf*v, lcgflcfg));
+            r.renormalize();
+            D("inserting " << MMType(lcg*u-lcf*v, r) << " into HH");
+            HH.insert(MMType(lcg*u-lcf*v, r));
+            todoInHH.insert(MMType(lcg*u-lcf*v, r));
           }
         }
         if (u.lm() < v.lm()) {
           D("removing " << vg << " from HH");
           HH.erase(vg);
           todoInHH.erase(vg);
-          auto lcfglcgf = lcf*g-lcg*f;
-          if (lcfglcgf.isZero()) {
+          auto r = P::combine(f, -lcg, g, lcf);
+          if (r.isZero()) {
             D("a row in HH reduced to zero!");
           } else {
-            auto divisor = gcd(lcfglcgf.coefficients());
-            if (divisor != 1) {
-              D("dividing " << lcfglcgf << " by gcd = " << divisor);
-              lcfglcgf /= divisor;
-            }
-            D("inserting " << MMType(lcf*v-lcg*u, lcfglcgf) << " into HH");
-            HH.insert(MMType(lcf*v-lcg*u, lcfglcgf));
-            todoInHH.insert(MMType(lcf*v-lcg*u, lcfglcgf));
+            r.renormalize();
+            D("inserting " << MMType(lcf*v-lcg*u, r) << " into HH");
+            HH.insert(MMType(lcf*v-lcg*u, r));
+            todoInHH.insert(MMType(lcf*v-lcg*u, r));
           }
           D("inserting " << uf << " into HH");
           HH.insert(uf);
@@ -300,11 +287,7 @@ public:
     for (auto& p : intermediate) {
       if (p.isZero()) continue;
       if (p.lc() < 0) p *= -1;
-      auto divisor = gcd(p.coefficients());
-      if (divisor != 1) {
-        D("dividing " << p << " by gcd = " << divisor);
-        p /= divisor;
-      }
+      p.renormalize();
     }
     std::set<P> result(intermediate.begin(), intermediate.end());
     result.erase(P());
@@ -337,8 +320,8 @@ public:
         mindeg = min(mindeg, lm.first.degree());
       }
     }
-    D("liftdeg = " << liftdeg);
-    D("mindeg = " << mindeg);
+    I("liftdeg = " << liftdeg);
+    I("mindeg = " << mindeg);
 
     while (mindeg <= liftdeg) {
       unordered_map<MonomialType, MMType> todo;
@@ -347,13 +330,13 @@ public:
           todo[it->first] = it->second;
         }
       }
-      D("calling lift");
+      I("calling lift");
       MMSet HH = lift(todo, GG);
-      D("calling append");
+      I("calling append");
       append(HH, GG);
-      D("calling eliminate");
+      I("calling eliminate");
       MMSet PP = eliminate(HH);
-      D("calling update");
+      I("calling update");
       update(PP, GG);
 
       liftdeg = 0;
@@ -366,8 +349,8 @@ public:
           mindeg = min(mindeg, it->first.degree());
         }
       }
-      D("liftdeg = " << liftdeg);
-      D("mindeg = " << mindeg);
+      I("liftdeg = " << liftdeg);
+      I("mindeg = " << mindeg);
     }
 
     std::set<P> result;
@@ -376,9 +359,9 @@ public:
         result.insert(p.second.f());
       }
     }
-    D("calling interreduce");
+    I("calling interreduce");
     result = interreduce(result);
-    DD("returning gb = ", result);
+    II("returning gb = ", result);
     return result;
   }
 private:

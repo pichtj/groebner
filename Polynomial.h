@@ -9,11 +9,14 @@
 #include <stdexcept>
 
 #include "Term.h"
+#include "integral.h"
+#include "debug.h"
 
 #define MAX_PRINT_LENGTH 50
 
 template<class T = Term<int, Monomial<char> > >
 class Polynomial {
+  typedef typename T::CoefficientType C;
 public:
   typedef typename T::CoefficientType CoefficientType;
   typedef typename T::MonomialType MonomialType;
@@ -66,8 +69,7 @@ public:
     auto before = terms_.before_begin();
 
     while (current != terms_.end() && current->m() > t.m()) {
-      ++before;
-      ++current;
+      ++before; ++current;
     }
 
     if (current != terms_.end() && current->m() == t.m()) {
@@ -81,14 +83,70 @@ public:
     return *this;
   }
   This operator+(const T& t) const { This r = *this; r += t; return r; }
-  This& operator-=(const T& t) { *this += CoefficientType(-1) * t; return *this; }
+  This& operator-=(const T& t) { *this += C(-1) * t; return *this; }
   This operator-(const T& t) const { This r = *this; r -= t; return r; }
-  This& operator+=(const This& other) {
-    for (auto it = other.terms_.begin(); it != other.terms_.end(); ++it) {
-      operator+=(*it);
+  static This combine(const This& a, const C& afactor, const This& b, const C& bfactor) {
+    This r;
+    auto ait = a.terms_.begin();
+    auto aend = a.terms_.end();
+    auto bit = b.terms_.begin();
+    auto bend = b.terms_.end();
+    auto before = r.terms_.before_begin();
+
+    while (ait != aend && bit != bend) {
+      auto am = ait->m();
+      auto bm = bit->m();
+      if (am > bm) {
+        before = r.terms_.insert_after(before, T(afactor * ait->c(), am));
+        ++ait;
+      } else if (am < bm) {
+        before = r.terms_.insert_after(before, T(bfactor * bit->c(), bm));
+        ++bit;
+      } else {
+        C c = ait->c();
+        c *= afactor;
+        c += bfactor*bit->c();
+        if (c != C()) {
+          before = r.terms_.insert_after(before, T(c, am));
+        }
+        ++ait;
+        ++bit;
+      }
     }
+    while (ait != aend) {
+      before = r.terms_.insert_after(before, T(afactor * ait->c(), ait->m()));
+      ++ait;
+    }
+    while (bit != bend) {
+      before = r.terms_.insert_after(before, T(bfactor * bit->c(), bit->m()));
+      ++bit;
+    }
+    return r;
+  }
+  void renormalize() {
+    auto it = terms_.begin();
+    auto end = terms_.end();
+    if (it == end) return;
+    C d = it->c();
+    ++it;
+    while (it != end && d > C(1)) {
+      C e = it->c();
+      if (e < 0) e *= C(-1);
+      d = gcd(d, e);
+      ++it;
+    }
+    if (d <= 1) return;
+    it = terms_.begin();
+    while (it != end) {
+      it->c() /= d;
+      ++it;
+    }
+  }
+  This& combine(const C& afactor, const This& b, const C& bfactor) {
+    *this = combine(*this, afactor, b, bfactor);
     return *this;
   }
+  This& operator+=(const This& other) { return combine(C(1), other, C(1)); }
   This operator+(const This& other) const { This r = *this; r += other; return r; }
   This& operator-=(const This& other) {
     for (auto it = other.terms_.begin(); it != other.terms_.end(); ++it) {
@@ -98,8 +156,8 @@ public:
   }
   This operator-(const This& other) const { This r = *this; r -= other; return r; }
 
-  This& operator*=(const CoefficientType& c) {
-    if (c == CoefficientType()) {
+  This& operator*=(const C& c) {
+    if (c == C()) {
       terms_.clear();
       return *this;
     }
@@ -108,17 +166,8 @@ public:
     }
     return *this;
   }
-  This& operator/=(const CoefficientType& c) {
-    if (c == CoefficientType()) {
-      throw std::domain_error("division by zero");
-    }
-    for (auto it = terms_.begin(); it != terms_.end(); ++it) {
-      *it /= c;
-    }
-    return *this;
-  }
-  This operator-() const { This r = *this; r *= CoefficientType(-1); return r; }
-  This operator*(const CoefficientType& c) const { This r = *this; r *= c; return r; }
+  This operator-() const { This r = *this; r *= C(-1); return r; }
+  This operator*(const C& c) const { This r = *this; r *= c; return r; }
   This& operator*=(const T& t) {
     if (t.isZero()) {
       terms_.clear();
@@ -200,6 +249,7 @@ Polynomial<T> operator*(const T& a, const Polynomial<T>& b) { return b.operator*
 
 template<class T>
 std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {
+  typedef typename T::CoefficientType C;
   std::stringstream ss;
   bool termPrinted = false;
   for (auto it = p.terms_.begin(); it != p.terms_.end(); ++it) {
@@ -216,13 +266,17 @@ std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {
   }
   if (ss.str().length() > MAX_PRINT_LENGTH) {
     uint termCount = 0;
+    C max_abs_coefficient = C(0);
     auto it = p.terms_.begin();
     auto end = p.terms_.end();
     while (it != end) {
       ++termCount;
+      C c = it->c();
+      if (c < 0) c *= C(-1);
+      max_abs_coefficient = std::max(max_abs_coefficient, c);
       ++it;
     }
-    out << ss.str().substr(0,MAX_PRINT_LENGTH) << "...{" << termCount << " terms}";
+    out << ss.str().substr(0,MAX_PRINT_LENGTH) << "...{" << termCount << " terms, |c| <= " << max_abs_coefficient << "}";
   } else {
     out << ss.str();
   }

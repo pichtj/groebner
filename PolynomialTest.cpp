@@ -102,6 +102,7 @@ TEST(PolynomialTest, TermMultiplication) {
 }
 
 TEST(PolynomialTest, Multiplication) {
+  use_abc_var_names in_this_scope;
   // 5y^12+17
   Polynomial<> a(17);
   Monomial<> e;
@@ -155,4 +156,20 @@ TEST(PolynomialTest, Cyclic4Result) {
   Polynomial<> p = b*pow(d,4)-b+pow(d,5)-d;
 
   EXPECT_EQ("b*d^4-b+d^5-d", to_string(p));
+}
+
+TEST(PolynomialTest, Combine) {
+  use_abc_var_names in_this_scope;
+
+  Term<> a(1, Monomial<>::x(0));
+
+  Polynomial<> p = 3*a*a + 5*a + 7;
+  p.combine(2, a - 11, 13);
+
+  EXPECT_EQ(6*a*a+23*a-129, p);
+
+  Polynomial<> q = a - 11;
+  q.combine(13, 3*a*a + 5*a + 7, 2);
+
+  EXPECT_EQ(6*a*a+23*a-129, q);
 }
