@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "style.h"
+#include "integral.h"
 #include "Polynomial.h"
 #include "LabelledMonomial.h"
 
@@ -26,18 +27,16 @@ public:
 
   bool rejectedByLCMCriterion(const LM& muf, const LMSet& GG) {
     auto m = muf.m();
-    auto lmu = muf.u().lm();
     auto lmf = muf.f().lm();
     auto it = GG.find(m);
     if (it != GG.end()) {
       auto vg = it->second;
-      auto lmv = vg.u().lm();
       auto lmg = vg.f().lm();
       if (m == lcm(lmf, lmg)) {
         return false;
       }
       if (muf.signature() > LM(it->first, it->second).signature()) {
-        cout << "rejectedByLCMCriterion: rejecting " << muf << endl;
+        cout << "rejectedByLCMCriterion: rejecting " << muf << " because " << *it << " has smaller signature" << endl;
         return true;
       }
     }
@@ -74,7 +73,6 @@ public:
 
   MMSet lift(const LMSet& todo, LMSet& GG) {
     cout << "lift: todo = "; print("lift: ", todo);
-    cout << "lift: GG = "; print("lift: ", GG);
 
     MMSet HH;
     for (auto it = todo.begin(); it != todo.end(); ++it) {
@@ -111,9 +109,8 @@ public:
               HH.insert(t_g * MMType(nvg.u(), nvg.f()));
             }
           }
-          break;
         } else {
-          cout << "lift: no collision, inserting " << x_i_m << " into GG directly" << endl;
+          //cout << "lift: no collision, inserting " << x_i_m << " into GG directly" << endl;
           GG[x_i_m.m()] = MMType(x_i_m.u(), x_i_m.f());
         }
       }
@@ -170,20 +167,20 @@ public:
       todoInHH.erase(uf);
       bool found = false;
       auto vg = HH.begin();
-      while (vg != HH.end()) {
+      while (vg != HH.end() && !found) {
         if (vg->f().lm() == uf.f().lm()) {
           found = true;
-          break;
+        } else {
+          ++vg;
         }
-        ++vg;
       }
       if (!found) {
         vg = PP.begin();
-        while (vg != PP.end()) {
-          if (vg->f().lm() == uf.f().lm()) {
-            found = true;
-            break;
-          }
+      }
+      while (vg != PP.end() && !found) {
+        if (vg->f().lm() == uf.f().lm()) {
+          found = true;
+        } else {
           ++vg;
         }
       }
@@ -197,17 +194,37 @@ public:
         auto lcf = f.lc();
 
         if (u.lm() > v.lm()) {
-          cout << "eliminate: inserting " << MMType(lcg*u-lcf*v, lcg*f-lcf*g) << " into HH" << endl;
-          HH.insert(MMType(lcg*u-lcf*v, lcg*f-lcf*g));
-          todoInHH.insert(MMType(lcg*u-lcf*v, lcg*f-lcf*g));
+          auto lcgflcfg = lcg*f-lcf*g;
+          if (lcgflcfg.isZero()) {
+            cout << "eliminate: a row in HH reduced to zero!" << endl;
+          } else {
+            auto divisor = gcd(lcgflcfg.coefficients());
+            if (divisor != 1) {
+              cout << "eliminate: dividing " << lcgflcfg << " by gcd = " << divisor << endl;
+              lcgflcfg /= divisor;
+            }
+            cout << "eliminate: inserting " << MMType(lcg*u-lcf*v, lcgflcfg) << " into HH" << endl;
+            HH.insert(MMType(lcg*u-lcf*v, lcgflcfg));
+            todoInHH.insert(MMType(lcg*u-lcf*v, lcgflcfg));
+          }
         }
         if (u.lm() < v.lm()) {
           cout << "eliminate: removing " << *vg << " from HH" << endl;
           HH.erase(*vg);
           todoInHH.erase(*vg);
-          cout << "eliminate: inserting " << MMType(lcf*v-lcg*u, lcf*g-lcg*f) << " into HH" << endl;
-          HH.insert(MMType(lcf*v-lcg*u, lcf*g-lcg*f));
-          todoInHH.insert(MMType(lcf*v-lcg*u, lcf*g-lcg*f));
+          auto lcfglcgf = lcf*g-lcg*f;
+          if (lcfglcgf.isZero()) {
+            cout << "eliminate: a row in HH reduced to zero!" << endl;
+          } else {
+            auto divisor = gcd(lcfglcgf.coefficients());
+            if (divisor != 1) {
+              cout << "eliminate: dividing " << lcfglcgf << " by gcd = " << divisor << endl;
+              lcfglcgf /= divisor;
+            }
+            cout << "eliminate: inserting " << MMType(lcf*v-lcg*u, lcfglcgf) << " into HH" << endl;
+            HH.insert(MMType(lcf*v-lcg*u, lcfglcgf));
+            todoInHH.insert(MMType(lcf*v-lcg*u, lcfglcgf));
+          }
           cout << "eliminate: inserting " << uf << " into HH" << endl;
           HH.insert(uf);
         }
@@ -241,6 +258,7 @@ public:
       }
     }
     cout << "update: returning, GG = "; print("update: ", GG);
+    cout << "update: GG has " << GG.size() << " elements in " << GG.bucket_count() << " buckets" << endl;
   }
 
   template<class PSet>
@@ -276,8 +294,13 @@ public:
     } while (!stable);
 
     for (auto& p : intermediate) {
+      if (p.isZero()) continue;
       if (p.lc() < 0) p *= -1;
-      // TODO: divide by gcd(terms(p))
+      auto divisor = gcd(p.coefficients());
+      if (divisor != 1) {
+        cout << "interreduce: dividing " << p << " by gcd = " << divisor << endl;
+        p /= divisor;
+      }
     }
     PSet result(intermediate.begin(), intermediate.end());
     result.erase(typename PSet::value_type());

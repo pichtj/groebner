@@ -5,7 +5,6 @@
 TEST(TermTest, Multiplication) {
   typedef Term<> T;
   typedef Monomial<> M;
-  typedef typename T::CoefficientType C;
 
   M X = M::x(0);
   M Y = M::x(1);
@@ -42,7 +41,6 @@ TEST(TermTest, Multiplication) {
 TEST(TermTest, MultiplicationWithZero) {
   typedef Term<> T;
   typedef Monomial<> M;
-  typedef typename T::CoefficientType C;
 
   T t;
   EXPECT_EQ(0, t.c());

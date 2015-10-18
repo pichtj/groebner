@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <mpirxx.h>
 
 #include "moGVW.h"
 
@@ -141,11 +142,11 @@ TEST(moGVWTest, lift) {
 
 TEST(moGVWTest, moGVW) {
   use_abc_var_names in_this_scope;
-  typedef Monomial<> M;
-  typedef Term<> T;
-  typedef Polynomial<> P;
+  typedef Polynomial<Term<int, Monomial<char, 3> > > P;
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
   typedef unordered_set<P> PSet;
-  moGVWRunner<> runner;
+  moGVWRunner<P> runner;
 
   T a = T(1, M::x(0));
   T b = T(1, M::x(1));
@@ -164,11 +165,11 @@ TEST(moGVWTest, moGVW) {
 
 TEST(moGVWTest, cyclic3) {
   use_abc_var_names in_this_scope;
-  typedef Monomial<> M;
-  typedef Term<> T;
-  typedef Polynomial<> P;
+  typedef Polynomial<Term<int, Monomial<char, 3> > > P;
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
   typedef unordered_set<P> PSet;
-  moGVWRunner<> runner;
+  moGVWRunner<P> runner;
 
   T a = T(1, M::x(0));
   T b = T(1, M::x(1));
@@ -187,11 +188,11 @@ TEST(moGVWTest, cyclic3) {
 
 TEST(moGVWTest, cyclic4) {
   use_abc_var_names in_this_scope;
-  typedef Monomial<> M;
-  typedef Term<> T;
-  typedef Polynomial<> P;
+  typedef Polynomial<Term<int, Monomial<char, 4> > > P;
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
   typedef unordered_set<P> PSet;
-  moGVWRunner<> runner;
+  moGVWRunner<P> runner;
 
   T a = T(1, M::x(0));
   T b = T(1, M::x(1));
@@ -219,11 +220,11 @@ TEST(moGVWTest, cyclic4) {
 
 TEST(moGVWTest, cyclic5) {
   use_abc_var_names in_this_scope;
-  typedef Monomial<> M;
-  typedef Term<> T;
-  typedef Polynomial<> P;
+  typedef Polynomial<Term<mpz_class, Monomial<char, 5> > > P;
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
   typedef unordered_set<P> PSet;
-  moGVWRunner<> runner;
+  moGVWRunner<P> runner;
 
   T a = T(1, M::x(0));
   T b = T(1, M::x(1));
@@ -232,7 +233,7 @@ TEST(moGVWTest, cyclic5) {
   T e = T(1, M::x(4));
 
   PSet input = {
-    a*b*c*d*e -1,
+    a*b*c*d*e -1L,
     a*b*c*d + a*b*c*e + a*b*d*e + a*c*d*e + b*c*d*e,
     a*b*c + a*b*e + a*d*e + b*c*d + c*d*e,
     a*b + a*e + b*c + c*d + d*e,
@@ -242,16 +243,16 @@ TEST(moGVWTest, cyclic5) {
   PSet output = runner.moGVW(input);
 
   EXPECT_EQ(PSet({
-    pow(e,15)+122*pow(e,10)-122*pow(e,5)-1,
-    55*pow(d,2)*pow(e,5)-55*pow(d,2)-2*d*pow(e,11)-231*d*pow(e,6)+233*d*e-8*pow(e,12)-979*pow(e,7)+987*pow(e,2),
-    55*pow(d,7)+165*pow(d,6)*e+55*pow(d,5)*pow(e,2)-55*pow(d,2)-398*d*pow(e,11)-48554*d*pow(e,6)+48787*d*e-1042*pow(e,12)-127116*pow(e,7)+128103*pow(e,2),
-    55*c*pow(e,5)-55*c+pow(e,11)+143*pow(e,6)-144*e,
-    275*c*d-275*c*e+440*pow(d,6)*e+1210*pow(d,5)*pow(e,2)-275*pow(d,3)*pow(e,4)+275*pow(d,2)-442*d*pow(e,11)-53911*d*pow(e,6)+53913*d*e-1121*pow(e,12)-136763*pow(e,7)+136674*pow(e,2),
-    275*pow(c,3)+550*pow(c,2)*e-550*c*pow(e,2)+275*pow(d,6)*pow(e,2)+550*pow(d,5)*pow(e,3)-550*pow(d,4)*pow(e,4)+550*pow(d,2)*e-232*d*pow(e,12)-28336*d*pow(e,7)+28018*d*pow(e,2)-568*pow(e,13)-69289*pow(e,8)+69307*pow(e,3),
-    55*b*pow(e,5)-55*b+pow(e,11)+143*pow(e,6)-144*e,
-    275*b*d-275*b*e-110*pow(d,6)*e-440*pow(d,5)*pow(e,2)-275*pow(d,4)*pow(e,3)+275*pow(d,3)*pow(e,4)+124*d*pow(e,11)+15092*d*pow(e,6)-15106*d*e+346*pow(e,12)+42218*pow(e,7)-42124*pow(e,2),
-    275*b*c-275*b*e+275*pow(c,2)+550*c*e-330*pow(d,6)*e-1045*pow(d,5)*pow(e,2)-275*pow(d,4)*pow(e,3)+275*pow(d,3)*pow(e,4)-550*pow(d,2)+334*d*pow(e,11)+40722*d*pow(e,6)-40726*d*e+867*pow(e,12)+105776*pow(e,7)-105873*pow(e,2),
-    275*pow(b,2)+825*b*e+550*pow(d,6)*e+1650*pow(d,5)*pow(e,2)+275*pow(d,4)*pow(e,3)-550*pow(d,3)*pow(e,4)+275*pow(d,2)-566*d*pow(e,11)-69003*d*pow(e,6)+69019*d*e-1467*pow(e,12)-178981*pow(e,7)+179073*pow(e,2),
+    pow(e,15)+mpz_class(122)*pow(e,10)-mpz_class(122)*pow(e,5)-mpz_class(1),
+    mpz_class(55)*pow(d,2)*pow(e,5)-mpz_class(55)*pow(d,2)-mpz_class(2)*d*pow(e,11)-mpz_class(231)*d*pow(e,6)+mpz_class(233)*d*e-mpz_class(8)*pow(e,12)-mpz_class(979)*pow(e,7)+mpz_class(987)*pow(e,2),
+    mpz_class(55)*pow(d,7)+mpz_class(165)*pow(d,6)*e+mpz_class(55)*pow(d,5)*pow(e,2)-mpz_class(55)*pow(d,2)-mpz_class(398)*d*pow(e,11)-mpz_class(48554)*d*pow(e,6)+mpz_class(48787)*d*e-mpz_class(1042)*pow(e,12)-mpz_class(127116)*pow(e,7)+mpz_class(128103)*pow(e,2),
+    mpz_class(55)*c*pow(e,5)-mpz_class(55)*c+pow(e,11)+mpz_class(143)*pow(e,6)-mpz_class(144)*e,
+    mpz_class(275)*c*d-mpz_class(275)*c*e+mpz_class(440)*pow(d,6)*e+mpz_class(1210)*pow(d,5)*pow(e,2)-mpz_class(275)*pow(d,3)*pow(e,4)+mpz_class(275)*pow(d,2)-mpz_class(442)*d*pow(e,11)-mpz_class(53911)*d*pow(e,6)+mpz_class(53913)*d*e-mpz_class(1121)*pow(e,12)-mpz_class(136763)*pow(e,7)+mpz_class(136674)*pow(e,2),
+    mpz_class(275)*pow(c,3)+mpz_class(550)*pow(c,2)*e-mpz_class(550)*c*pow(e,2)+mpz_class(275)*pow(d,6)*pow(e,2)+mpz_class(550)*pow(d,5)*pow(e,3)-mpz_class(550)*pow(d,4)*pow(e,4)+mpz_class(550)*pow(d,2)*e-mpz_class(232)*d*pow(e,12)-mpz_class(28336)*d*pow(e,7)+mpz_class(28018)*d*pow(e,2)-mpz_class(568)*pow(e,13)-mpz_class(69289)*pow(e,8)+mpz_class(69307)*pow(e,3),
+    mpz_class(55)*b*pow(e,5)-mpz_class(55)*b+pow(e,11)+mpz_class(143)*pow(e,6)-mpz_class(144)*e,
+    mpz_class(275)*b*d-mpz_class(275)*b*e-mpz_class(110)*pow(d,6)*e-mpz_class(440)*pow(d,5)*pow(e,2)-mpz_class(275)*pow(d,4)*pow(e,3)+mpz_class(275)*pow(d,3)*pow(e,4)+mpz_class(124)*d*pow(e,11)+mpz_class(15092)*d*pow(e,6)-mpz_class(15106)*d*e+mpz_class(346)*pow(e,12)+mpz_class(42218)*pow(e,7)-mpz_class(42124)*pow(e,2),
+    mpz_class(275)*b*c-mpz_class(275)*b*e+mpz_class(275)*pow(c,2)+mpz_class(550)*c*e-mpz_class(330)*pow(d,6)*e-mpz_class(1045)*pow(d,5)*pow(e,2)-mpz_class(275)*pow(d,4)*pow(e,3)+mpz_class(275)*pow(d,3)*pow(e,4)-mpz_class(550)*pow(d,2)+mpz_class(334)*d*pow(e,11)+mpz_class(40722)*d*pow(e,6)-mpz_class(40726)*d*e+mpz_class(867)*pow(e,12)+mpz_class(105776)*pow(e,7)-mpz_class(105873)*pow(e,2),
+    mpz_class(275)*pow(b,2)+mpz_class(825)*b*e+mpz_class(550)*pow(d,6)*e+mpz_class(1650)*pow(d,5)*pow(e,2)+mpz_class(275)*pow(d,4)*pow(e,3)-mpz_class(550)*pow(d,3)*pow(e,4)+mpz_class(275)*pow(d,2)-mpz_class(566)*d*pow(e,11)-mpz_class(69003)*d*pow(e,6)+mpz_class(69019)*d*e-mpz_class(1467)*pow(e,12)-mpz_class(178981)*pow(e,7)+mpz_class(179073)*pow(e,2),
     a+b+c+d+e
   }), output);
 }

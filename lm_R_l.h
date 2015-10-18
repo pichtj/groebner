@@ -60,6 +60,7 @@ public:
       return *this;
     }
     m_ = std::max(m_, b.m_);
+    return *this;
   }
   This operator+(const This& b) const { This r(*this); r += b; return r; }
 
