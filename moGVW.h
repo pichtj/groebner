@@ -132,19 +132,17 @@ struct moGVWRunner {
 
   void append(MMSet& HH, const LMSet& GG) {
     MSet done;
-    for (auto wh = HH.begin(); wh != HH.end(); ++wh) {
-      done.insert(wh->f.lm());
+    for (const auto& wh : HH) {
+      done.insert(wh.f.lm());
     }
     DD("initialized done = ", done);
     MSet monomialsInHH;
-    for (auto wh : HH) {
-      std::forward_list<TermType> terms = wh.f.terms();
+    for (const auto& wh : HH) {
+      auto terms = wh.f.terms();
       for (const auto& term : terms) {
-        monomialsInHH.insert(term.m());
+        if (done.find(term.m()) == done.end())
+          monomialsInHH.insert(term.m());
       }
-    }
-    for (auto it = done.begin(); it != done.end(); ++it) {
-      monomialsInHH.erase(*it);
     }
     DD("monomials in HH that are not done = ", monomialsInHH);
     while (!monomialsInHH.empty()) {
@@ -156,13 +154,12 @@ struct moGVWRunner {
         MonomialType t = m / vg->f.lm();
         MMType newMM = t * *vg;
         HH.insert(newMM);
-        std::forward_list<TermType> terms = newMM.f.terms();
-        for (auto term : terms) {
+        for (const auto& term : newMM.f.terms()) {
           monomialsInHH.insert(term.m());
         }
       }
-      for (auto it = done.begin(); it != done.end(); ++it) {
-        auto found = monomialsInHH.find(*it);
+      for (const auto& it : done) {
+        auto found = monomialsInHH.find(it);
         if (found != monomialsInHH.end()) {
           monomialsInHH.erase(found);
         }
@@ -249,22 +246,22 @@ struct moGVWRunner {
   }
 
   void update(const MMSet& PP, LMSet& GG) {
-    for (auto wh = PP.begin(); wh != PP.end(); ++wh) {
-      if (wh->f.isZero()) continue;
-      auto m = wh->f.lm();
+    for (const auto& wh : PP) {
+      if (wh.f.isZero()) continue;
+      auto m = wh.f.lm();
       D("looking for lm(h) = " << m);
       auto mvg = GG.find(m);
       if (mvg != GG.end()) {
         auto v = mvg->second->u;
-        auto w = wh->u;
+        auto w = wh.u;
         auto g = mvg->second->f;
         if (((m / g.lm()) * v) > w) {
-          D("replacing " << mvg->second << " by " << *wh);
-          GG[m] = std::shared_ptr<MMType>(new MMType(*wh));
+          D("replacing " << mvg->second << " by " << wh);
+          GG[m] = std::shared_ptr<MMType>(new MMType(wh));
         }
       } else {
-        D("not found, adding (" << m << ", " << *wh << ") to GG");
-        GG[m] = std::shared_ptr<MMType>(new MMType(*wh));
+        D("not found, adding (" << m << ", " << wh << ") to GG");
+        GG[m] = std::shared_ptr<MMType>(new MMType(wh));
       }
     }
     DD("returning, GG = ", GG);
