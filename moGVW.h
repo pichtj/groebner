@@ -38,16 +38,14 @@ struct moGVWRunner {
   bool rejectedByLCMCriterion(const MonomialType& m, std::shared_ptr<MMType> uf, const LMSet& GG) {
     auto lmf = uf->f.lm();
     auto nvg = GG.find(m);
-    if (nvg != GG.end()) {
-      auto vg = *(nvg->second);
-      auto lmg = vg.f.lm();
-      if (m == lcm(lmf, lmg)) {
-        return false;
-      }
-      if (signature(m, *uf) > signature(*nvg)) {
-        D("rejecting (" << m << ", " << *uf << ") because " << *nvg << " has smaller signature");
-        return true;
-      }
+    if (nvg == GG.end()) return false;
+    auto lmg = nvg->second->f.lm();
+    if (m == lcm(lmf, lmg)) {
+      return false;
+    }
+    if (signature(m, *uf) > signature(*nvg)) {
+      D("rejecting (" << m << ", " << *uf << ") because " << *nvg << " has smaller signature");
+      return true;
     }
     return false;
   }
@@ -67,11 +65,12 @@ struct moGVWRunner {
 
   bool rejectedByRewrittenCriterion(const MonomialType& m, std::shared_ptr<MMType> uf, const LMSet& GG) {
     auto lmu = uf->u;
+    auto lmf = uf->f.lm();
     for (auto nvg = GG.begin(); nvg != GG.end(); ++nvg) {
       auto lmv = nvg->second->u;
       if (!lmv.divides(lmu)) continue;
       auto t = lmu / lmv;
-      if (t*nvg->second->f.lm() < uf->f.lm()) {
+      if (t*nvg->second->f.lm() < lmf) {
         D("rejecting " << *uf);
         return true;
       }
@@ -92,7 +91,6 @@ struct moGVWRunner {
         auto nvg = GG.find(xim_m);
         if (nvg != GG.end()) {
           auto vg = nvg->second;
-          auto f = uf->f;
           MonomialType t_f = xim_m / uf->f.lm();
           MonomialType t_g = xim_m / vg->f.lm();
           auto tf_lmu = t_f * uf->u;
@@ -101,10 +99,12 @@ struct moGVWRunner {
               && !rejectedByLCMCriterion(xim_m, uf, GG)
               && !rejectedBySyzygyCriterion(xim_m, uf, GG)
               && !rejectedByRewrittenCriterion(xim_m, uf, GG)) {
-            D("inserting " << t_f * *uf << " into HH");
-            HH.insert(t_f * *uf);
-            D("inserting " << t_g * *vg << " into HH");
-            HH.insert(t_g * *vg);
+            auto tf_uf = t_f * *uf;
+            auto tg_vg = t_g * *vg;
+            D("inserting " << tf_uf << " into HH");
+            HH.insert(tf_uf);
+            D("inserting " << tg_vg << " into HH");
+            HH.insert(tg_vg);
           }
           if (tf_lmu < tg_lmv) {
             D("replacing GG[" << xim_m << "] = " << *vg << " by " << *uf);
@@ -112,10 +112,12 @@ struct moGVWRunner {
             if (!rejectedByLCMCriterion(xim_m, vg, GG)
                 && !rejectedBySyzygyCriterion(xim_m, vg, GG)
                 && !rejectedByRewrittenCriterion(xim_m, vg, GG)) {
-              D("inserting " << t_f * *uf << " into HH");
-              HH.insert(t_f * *uf);
-              D("inserting " << t_g * *vg << " into HH");
-              HH.insert(t_g * *vg);
+              auto tf_uf = t_f * *uf;
+              auto tg_vg = t_g * *vg;
+              D("inserting " << tf_uf << " into HH");
+              HH.insert(tf_uf);
+              D("inserting " << tg_vg << " into HH");
+              HH.insert(tg_vg);
             }
           }
         } else {
