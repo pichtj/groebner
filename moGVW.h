@@ -16,26 +16,25 @@
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
 struct moGVWRunner {
-  typedef typename P::MonomialType MonomialType;
-  typedef typename P::TermType TermType;
+  typedef typename P::MonomialType M;
   typedef typename P::TermType T;
-  typedef typename P::CoefficientType CoefficientType;
-  typedef MM<P> MMType;
-  typedef MonRl<P> MonRlType;
-  typedef std::unordered_map<MonomialType, std::shared_ptr<MMType> > LMSet;
-  typedef std::unordered_set<MMType> MMSet;
-  typedef std::set<MonomialType> MSet;
+  typedef typename P::CoefficientType C;
+  typedef MM<P> MMP;
+  typedef MonRl<P> MonRlP;
+  typedef std::unordered_map<M, std::shared_ptr<MMP> > LMSet;
+  typedef std::unordered_set<MMP> MMSet;
+  typedef std::set<M> MSet;
 
-  MMType signature(const MonomialType& m, const MMType& uf) const {
-    MonomialType t = m / uf.f.lm();
-    return MMType(uf.u, T(1, t));
+  MMP signature(const M& m, const MMP& uf) const {
+    M t = m / uf.f.lm();
+    return MMP(uf.u, T(1, t));
   }
 
-  MMType signature(const std::pair<MonomialType, std::shared_ptr<MMType> >& muf) const {
+  MMP signature(const std::pair<M, std::shared_ptr<MMP> >& muf) const {
     return signature(muf.first, *(muf.second));
   }
 
-  bool rejectedByLCMCriterion(const MonomialType& m, std::shared_ptr<MMType> uf, const LMSet& GG) {
+  bool rejectedByLCMCriterion(const M& m, std::shared_ptr<MMP> uf, const LMSet& GG) {
     auto lmf = uf->f.lm();
     auto nvg = GG.find(m);
     if (nvg == GG.end()) return false;
@@ -50,7 +49,7 @@ struct moGVWRunner {
     return false;
   }
 
-  bool rejectedBySyzygyCriterion(const MonomialType& m, std::shared_ptr<MMType> uf, const LMSet& GG) {
+  bool rejectedBySyzygyCriterion(const M& m, std::shared_ptr<MMP> uf, const LMSet& GG) {
     auto lmu = uf->u;
     auto t_f = m / uf->f.lm();
     auto nvg = GG.find(t_f*lmu.m);
@@ -63,7 +62,7 @@ struct moGVWRunner {
     return false;
   }
 
-  bool rejectedByRewrittenCriterion(const MonomialType& m, std::shared_ptr<MMType> uf, const LMSet& GG) {
+  bool rejectedByRewrittenCriterion(const M& m, std::shared_ptr<MMP> uf, const LMSet& GG) {
     auto lmu = uf->u;
     auto lmf = uf->f.lm();
     for (auto nvg = GG.begin(); nvg != GG.end(); ++nvg) {
@@ -84,15 +83,15 @@ struct moGVWRunner {
     MMSet HH;
     for (const auto& muf : todo) {
       D("chose " << muf << " to lift");
-      for (uint i = 0; i < MonomialType::VAR_COUNT; ++i) {
+      for (uint i = 0; i < M::VAR_COUNT; ++i) {
         auto xim_m = muf.first;
         xim_m[i]++;
         auto uf = muf.second;
         auto nvg = GG.find(xim_m);
         if (nvg != GG.end()) {
           auto vg = nvg->second;
-          MonomialType t_f = xim_m / uf->f.lm();
-          MonomialType t_g = xim_m / vg->f.lm();
+          M t_f = xim_m / uf->f.lm();
+          M t_g = xim_m / vg->f.lm();
           auto tf_lmu = t_f * uf->u;
           auto tg_lmv = t_g * vg->u;
           if (tf_lmu > tg_lmv
@@ -146,13 +145,13 @@ struct moGVWRunner {
     }
     DD("monomials in HH that are not done = ", monomialsInHH);
     while (!monomialsInHH.empty()) {
-      MonomialType m = *(monomialsInHH.begin());
+      M m = *(monomialsInHH.begin());
       done.insert(m);
       auto it = GG.find(m);
       if (it != GG.end()) {
         auto vg = it->second;
-        MonomialType t = m / vg->f.lm();
-        MMType newMM = t * *vg;
+        M t = m / vg->f.lm();
+        MMP newMM = t * *vg;
         HH.insert(newMM);
         for (const auto& term : newMM.f.terms()) {
           monomialsInHH.insert(term.m());
@@ -211,8 +210,8 @@ struct moGVWRunner {
             D("a row in HH reduced to zero!");
           } else {
             r.renormalize();
-            MonRlType w(std::max(u.m, v.m), std::min(u.index, v.index));
-            MMType wr = MMType(w, r);
+            MonRlP w(std::max(u.m, v.m), std::min(u.index, v.index));
+            MMP wr = MMP(w, r);
             D("inserting " << wr << " into HH");
             HH.insert(wr);
             todoInHH.insert(wr);
@@ -227,8 +226,8 @@ struct moGVWRunner {
             D("a row in HH reduced to zero!");
           } else {
             r.renormalize();
-            MonRlType w(std::max(u.m, v.m), std::min(u.index, v.index));
-            MMType wr = MMType(w, r);
+            MonRlP w(std::max(u.m, v.m), std::min(u.index, v.index));
+            MMP wr = MMP(w, r);
             D("inserting " << wr << " into HH");
             HH.insert(wr);
             todoInHH.insert(wr);
@@ -257,11 +256,11 @@ struct moGVWRunner {
         auto g = mvg->second->f;
         if (((m / g.lm()) * v) > w) {
           D("replacing " << mvg->second << " by " << wh);
-          GG[m] = std::shared_ptr<MMType>(new MMType(wh));
+          GG[m] = std::shared_ptr<MMP>(new MMP(wh));
         }
       } else {
         D("not found, adding (" << m << ", " << wh << ") to GG");
-        GG[m] = std::shared_ptr<MMType>(new MMType(wh));
+        GG[m] = std::shared_ptr<MMP>(new MMP(wh));
       }
     }
     DD("returning, GG = ", GG);
@@ -311,7 +310,7 @@ struct moGVWRunner {
     return result;
   }
 
-  bool isPrimitive(const std::pair<MonomialType, std::shared_ptr<MMType> >& lm) const {
+  bool isPrimitive(const std::pair<M, std::shared_ptr<MMP> >& lm) const {
     return lm.first == lm.second->f.lm();
   }
 
@@ -320,7 +319,7 @@ struct moGVWRunner {
     wasLifted.clear();
     typename std::set<P>::size_type i = 0;
     for (const auto& p : input) {
-      GG[p.lm()] = std::shared_ptr<MMType>(new MMType(MonRl<P>::e(i), p));
+      GG[p.lm()] = std::shared_ptr<MMP>(new MMP(MonRl<P>::e(i), p));
       ++i;
     }
 
@@ -381,7 +380,7 @@ struct moGVWRunner {
     return result;
   }
 private:
-  std::unordered_map<MonomialType, bool> wasLifted;
+  std::unordered_map<M, bool> wasLifted;
 };
 
 template<class A, class B>
