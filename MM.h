@@ -1,6 +1,8 @@
 #ifndef MM_H
 #define MM_H
 
+#include <memory>
+
 #include "style.h"
 #include "operators.h"
 #include "MonRl.h"
@@ -14,10 +16,10 @@ struct MM {
   typedef MonRl<P> MonRlType;
   typedef MM<P> This;
 
-  MM() : u_(), f_() {}
-  MM(const MonRlType& v, const P& g) : u_(v), f_(g) {}
+  MM() : u_(), f_(std::shared_ptr<P>(new P())) {}
+  MM(const MonRlType& v, const P& g) : u_(v), f_(std::shared_ptr<P>(new P(g))) {}
 
-  const P& f() const { return f_; }
+  const P& f() const { return *f_; }
   const MonRlType& u() const { return u_; }
 
   bool operator<(const This& other) const {
@@ -28,17 +30,13 @@ struct MM {
     return u_ == other.u_ && f() == other.f();
   }
 
-  This& operator*=(const MonomialType& e) {
-    u_ *= e;
-    f_ *= e;
-    return *this;
+  This operator*(const MonomialType& e) const {
+    return This(u_ * e, f() * e);
   }
-
-  This operator*(const MonomialType& e) const { This r(*this); r *= e; return r; }
 
 private:
   MonRlType u_;
-  P f_;
+  std::shared_ptr<P> f_;
 };
 
 template<class P>
