@@ -3,7 +3,7 @@
 
 #include "style.h"
 #include "operators.h"
-#include "lm_R_l.h"
+#include "MonRl.h"
 #include "Polynomial.h"
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
@@ -11,11 +11,11 @@ struct MM {
   typedef typename P::MonomialType MonomialType;
   typedef typename P::TermType TermType;
   typedef P PolynomialType;
-  typedef lm_R_l<P> lm_R_lType;
+  typedef MonRl<P> MonRlType;
   typedef MM<P> This;
 
   MM() : u(), f() {}
-  MM(const lm_R_lType& v, const P& g) : u(v), f(g) {}
+  MM(const MonRlType& v, const P& g) : u(v), f(g) {}
 
   bool operator<(const This& other) const {
     return u < other.u;
@@ -33,7 +33,7 @@ struct MM {
 
   This operator*(const MonomialType& e) const { This r(*this); r *= e; return r; }
 
-  lm_R_lType u;
+  MonRlType u;
   P f;
 };
 

@@ -21,7 +21,7 @@ struct moGVWRunner {
   typedef typename P::TermType T;
   typedef typename P::CoefficientType CoefficientType;
   typedef MM<P> MMType;
-  typedef lm_R_l<P> lm_R_lType;
+  typedef MonRl<P> MonRlType;
   typedef std::unordered_map<MonomialType, std::shared_ptr<MMType> > LMSet;
   typedef std::unordered_set<MMType> MMSet;
   typedef std::set<MonomialType> MSet;
@@ -212,9 +212,11 @@ struct moGVWRunner {
             D("a row in HH reduced to zero!");
           } else {
             r.renormalize();
-            D("inserting " << MMType(lcg*u-lcf*v, r) << " into HH");
-            HH.insert(MMType(lcg*u-lcf*v, r));
-            todoInHH.insert(MMType(lcg*u-lcf*v, r));
+            MonRlType w(std::max(u.m, v.m), std::min(u.index, v.index));
+            MMType wr = MMType(w, r);
+            D("inserting " << wr << " into HH");
+            HH.insert(wr);
+            todoInHH.insert(wr);
           }
         }
         if (u < v) {
@@ -226,9 +228,11 @@ struct moGVWRunner {
             D("a row in HH reduced to zero!");
           } else {
             r.renormalize();
-            D("inserting " << MMType(lcf*v-lcg*u, r) << " into HH");
-            HH.insert(MMType(lcf*v-lcg*u, r));
-            todoInHH.insert(MMType(lcf*v-lcg*u, r));
+            MonRlType w(std::max(u.m, v.m), std::min(u.index, v.index));
+            MMType wr = MMType(w, r);
+            D("inserting " << wr << " into HH");
+            HH.insert(wr);
+            todoInHH.insert(wr);
           }
           D("inserting " << uf << " into HH");
           HH.insert(uf);
@@ -317,7 +321,7 @@ struct moGVWRunner {
     wasLifted.clear();
     typename std::set<P>::size_type i = 0;
     for (const auto& p : input) {
-      GG[p.lm()] = std::shared_ptr<MMType>(new MMType(lm_R_l<P>::e(i), p));
+      GG[p.lm()] = std::shared_ptr<MMType>(new MMType(MonRl<P>::e(i), p));
       ++i;
     }
 

@@ -1,5 +1,5 @@
-#ifndef LM_R_L_H
-#define LM_R_L_H
+#ifndef MONRL_H
+#define MONRL_H
 
 #include <ostream>
 #include <array>
@@ -11,14 +11,15 @@
 
 /* lead monomials of elements of R^l, i.e. x^{...}*e_i */
 template<class P = Polynomial<Term<int, Monomial<char> > > >
-class lm_R_l {
+class MonRl {
 public:
   typedef typename P::TermType::MonomialType MonomialType;
   typedef typename P::TermType::CoefficientType CoefficientType;
   typedef typename P::TermType TermType;
-  typedef lm_R_l<P> This;
+  typedef MonRl<P> This;
 
-  lm_R_l() : m(), index(std::numeric_limits<uint>::max()) {}
+  MonRl() : m(), index(std::numeric_limits<uint>::max()) {}
+  MonRl(const MonomialType& monomial, uint i) : m(monomial), index(i) {}
 
   static This e(int i) {
     This result;
@@ -47,21 +48,6 @@ public:
     return m / other.m;
   }
 
-  This& operator+=(const This& b) {
-    if (index < b.index) return *this;
-    if (index > b.index) {
-      index = b.index;
-      m = b.m;
-      return *this;
-    }
-    m = std::max(m, b.m);
-    return *this;
-  }
-  This operator+(const This& b) const { This r(*this); r += b; return r; }
-
-  This& operator-=(const This& b) { return operator+=(b); }
-  This operator-(const This& b) const { This r(*this); r -= b; return r; }
-
   This& operator*=(const TermType& b) { m *= b.m(); return *this; }
   This operator*(const TermType& b) const { This r(*this); r *= b; return r; }
 
@@ -69,26 +55,26 @@ public:
   This operator*(const MonomialType& b) const { This r(*this); r *= b; return r; }
 
   template<class P1>
-  friend std::ostream& operator<<(std::ostream&, const lm_R_l<P1>&);
+  friend std::ostream& operator<<(std::ostream&, const MonRl<P1>&);
 
   MonomialType m;
   uint index;
 };
 
 template<class P>
-lm_R_l<P> operator*(const typename P::MonomialType& a, const lm_R_l<P>& b) {
+MonRl<P> operator*(const typename P::MonomialType& a, const MonRl<P>& b) {
   return b * a;
 }
 
 template<class P>
-lm_R_l<P> operator*(const typename P::TermType& a, const lm_R_l<P>& b) {
+MonRl<P> operator*(const typename P::TermType& a, const MonRl<P>& b) {
   return b * a;
 }
 
 template<class P>
-std::ostream& operator<<(std::ostream& out, const lm_R_l<P>& u) {
+std::ostream& operator<<(std::ostream& out, const MonRl<P>& u) {
   if (!u.m.isConstant()) out << u.m << "*";
   return out << "e_" << u.index;
 }
 
-#endif // LM_R_L_H
+#endif // MONRL_H
