@@ -14,27 +14,31 @@ struct MM {
   typedef MonRl<P> MonRlType;
   typedef MM<P> This;
 
-  MM() : u(), f() {}
-  MM(const MonRlType& v, const P& g) : u(v), f(g) {}
+  MM() : u_(), f_() {}
+  MM(const MonRlType& v, const P& g) : u_(v), f_(g) {}
+
+  const P& f() const { return f_; }
+  const MonRlType& u() const { return u_; }
 
   bool operator<(const This& other) const {
-    return u < other.u;
+    return u_ < other.u_;
   }
 
   bool operator==(const This& other) const {
-    return u == other.u && f == other.f;
+    return u_ == other.u_ && f() == other.f();
   }
 
   This& operator*=(const MonomialType& e) {
-    u *= e;
-    f *= e;
+    u_ *= e;
+    f_ *= e;
     return *this;
   }
 
   This operator*(const MonomialType& e) const { This r(*this); r *= e; return r; }
 
-  MonRlType u;
-  P f;
+private:
+  MonRlType u_;
+  P f_;
 };
 
 template<class P>
@@ -44,7 +48,7 @@ MM<P> operator*(const typename P::MonomialType& e, const MM<P>& m) {
 
 template<class P>
 std::ostream& operator<<(std::ostream& out, const MM<P>& uf) {
-  return out << "(" << uf.u << ", " << uf.f << ")";
+  return out << "(" << uf.u() << ", " << uf.f() << ")";
 }
 
 namespace std {
@@ -53,7 +57,7 @@ namespace std {
     size_t operator()(const MM<P>& mm) const {
       size_t result = 0;
       hash<typename P::MonomialType> mhash;
-      result += mhash(mm.f.lm());
+      result += mhash(mm.f().lm());
       return result;
     }
   };

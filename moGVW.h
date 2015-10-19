@@ -26,8 +26,8 @@ struct moGVWRunner {
   typedef std::set<M> MSet;
 
   MMP signature(const M& m, const MMP& uf) const {
-    M t = m / uf.f.lm();
-    return MMP(uf.u, T(1, t));
+    M t = m / uf.f().lm();
+    return MMP(uf.u(), T(1, t));
   }
 
   MMP signature(const std::pair<M, std::shared_ptr<MMP> >& muf) const {
@@ -35,10 +35,10 @@ struct moGVWRunner {
   }
 
   bool rejectedByLCMCriterion(const M& m, std::shared_ptr<MMP> uf, const LMSet& GG) {
-    auto lmf = uf->f.lm();
+    auto lmf = uf->f().lm();
     auto nvg = GG.find(m);
     if (nvg == GG.end()) return false;
-    auto lmg = nvg->second->f.lm();
+    auto lmg = nvg->second->f().lm();
     if (m == lcm(lmf, lmg)) {
       return false;
     }
@@ -50,11 +50,11 @@ struct moGVWRunner {
   }
 
   bool rejectedBySyzygyCriterion(const M& m, std::shared_ptr<MMP> uf, const LMSet& GG) {
-    auto lmu = uf->u;
-    auto t_f = m / uf->f.lm();
+    auto lmu = uf->u();
+    auto t_f = m / uf->f().lm();
     auto nvg = GG.find(t_f*lmu.m);
     if (nvg == GG.end()) return false;
-    auto lmv = nvg->second->u;
+    auto lmv = nvg->second->u();
     if (lmu.index > lmv.index) {
       D("rejecting (" << m << ", " << *uf << ") because " << *nvg << " has smaller index");
       return true;
@@ -63,13 +63,13 @@ struct moGVWRunner {
   }
 
   bool rejectedByRewrittenCriterion(const M& m, std::shared_ptr<MMP> uf, const LMSet& GG) {
-    auto lmu = uf->u;
-    auto lmf = uf->f.lm();
+    auto lmu = uf->u();
+    auto lmf = uf->f().lm();
     for (auto nvg = GG.begin(); nvg != GG.end(); ++nvg) {
-      auto lmv = nvg->second->u;
+      auto lmv = nvg->second->u();
       if (!lmv.divides(lmu)) continue;
       auto t = lmu / lmv;
-      if (t*nvg->second->f.lm() < lmf) {
+      if (t*nvg->second->f().lm() < lmf) {
         D("rejecting " << *uf);
         return true;
       }
@@ -90,10 +90,10 @@ struct moGVWRunner {
         auto nvg = GG.find(xim_m);
         if (nvg != GG.end()) {
           auto vg = nvg->second;
-          M t_f = xim_m / uf->f.lm();
-          M t_g = xim_m / vg->f.lm();
-          auto tf_lmu = t_f * uf->u;
-          auto tg_lmv = t_g * vg->u;
+          M t_f = xim_m / uf->f().lm();
+          M t_g = xim_m / vg->f().lm();
+          auto tf_lmu = t_f * uf->u();
+          auto tg_lmv = t_g * vg->u();
           if (tf_lmu > tg_lmv
               && !rejectedByLCMCriterion(xim_m, uf, GG)
               && !rejectedBySyzygyCriterion(xim_m, uf, GG)
@@ -132,12 +132,12 @@ struct moGVWRunner {
   void append(MMSet& HH, const LMSet& GG) {
     MSet done;
     for (const auto& wh : HH) {
-      done.insert(wh.f.lm());
+      done.insert(wh.f().lm());
     }
     DD("initialized done = ", done);
     MSet monomialsInHH;
     for (const auto& wh : HH) {
-      auto terms = wh.f.terms();
+      auto terms = wh.f().terms();
       for (const auto& term : terms) {
         if (done.find(term.m()) == done.end())
           monomialsInHH.insert(term.m());
@@ -150,10 +150,10 @@ struct moGVWRunner {
       auto it = GG.find(m);
       if (it != GG.end()) {
         auto vg = it->second;
-        M t = m / vg->f.lm();
+        M t = m / vg->f().lm();
         MMP newMM = t * *vg;
         HH.insert(newMM);
-        for (const auto& term : newMM.f.terms()) {
+        for (const auto& term : newMM.f().terms()) {
           monomialsInHH.insert(term.m());
         }
       }
@@ -178,7 +178,7 @@ struct moGVWRunner {
       bool found = false;
       auto it = HH.begin();
       while (it != HH.end() && !found) {
-        if (it->f.lm() == uf.f.lm()) {
+        if (it->f().lm() == uf.f().lm()) {
           found = true;
         } else {
           ++it;
@@ -188,7 +188,7 @@ struct moGVWRunner {
         it = PP.begin();
       }
       while (it != PP.end() && !found) {
-        if (it->f.lm() == uf.f.lm()) {
+        if (it->f().lm() == uf.f().lm()) {
           found = true;
         } else {
           ++it;
@@ -197,10 +197,10 @@ struct moGVWRunner {
       if (found) {
         auto vg = *it;
         D("reducing " << uf << " with " << vg);
-        auto u = uf.u;
-        auto v = vg.u;
-        auto f = uf.f;
-        auto g = vg.f;
+        auto u = uf.u();
+        auto v = vg.u();
+        auto f = uf.f();
+        auto g = vg.f();
         auto lcg = g.lc();
         auto lcf = f.lc();
 
@@ -246,14 +246,14 @@ struct moGVWRunner {
 
   void update(const MMSet& PP, LMSet& GG) {
     for (const auto& wh : PP) {
-      if (wh.f.isZero()) continue;
-      auto m = wh.f.lm();
+      if (wh.f().isZero()) continue;
+      auto m = wh.f().lm();
       D("looking for lm(h) = " << m);
       auto mvg = GG.find(m);
       if (mvg != GG.end()) {
-        auto v = mvg->second->u;
-        auto w = wh.u;
-        auto g = mvg->second->f;
+        auto v = mvg->second->u();
+        auto w = wh.u();
+        auto g = mvg->second->f();
         if (((m / g.lm()) * v) > w) {
           D("replacing " << mvg->second << " by " << wh);
           GG[m] = std::shared_ptr<MMP>(new MMP(wh));
@@ -311,7 +311,7 @@ struct moGVWRunner {
   }
 
   bool isPrimitive(const std::pair<M, std::shared_ptr<MMP> >& lm) const {
-    return lm.first == lm.second->f.lm();
+    return lm.first == lm.second->f().lm();
   }
 
   std::set<P> moGVW(const std::set<P>& input) {
@@ -371,7 +371,7 @@ struct moGVWRunner {
     std::set<P> result;
     for (const auto& p : GG) {
       if (isPrimitive(p)) {
-        result.insert(p.second->f);
+        result.insert(p.second->f());
       }
     }
     I("calling interreduce");
