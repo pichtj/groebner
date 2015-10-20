@@ -25,10 +25,10 @@ TEST(moGVWTest, LCMCriterion) {
   MonRl<> e2 = MonRl<>::e(1);
   MonRl<> e3 = MonRl<>::e(2);
 
-  auto r1 = shared_ptr<MM<> >(new MM<>(e1, f1));
-  auto r2 = shared_ptr<MM<> >(new MM<>(e2, f2));
-  auto r3 = shared_ptr<MM<> >(new MM<>(e3, f3));
-  auto r4 = shared_ptr<MM<> >(new MM<>(e1, c - 1));
+  auto r1 = MM<>(e1, f1);
+  auto r2 = MM<>(e2, f2);
+  auto r3 = MM<>(e3, f3);
+  auto r4 = MM<>(e1, c - 1);
 
   LMSet GG;
   GG[(a*b).m()] = r2;
@@ -65,10 +65,10 @@ TEST(moGVWTest, lift) {
   MonRl<> e2 = MonRl<>::e(1);
   MonRl<> e3 = MonRl<>::e(2);
 
-  auto r1 = shared_ptr<MM<> >(new MM<>(e1, f1));
-  auto r2 = shared_ptr<MM<> >(new MM<>(e2, f2));
-  auto r3 = shared_ptr<MM<> >(new MM<>(e3, f3));
-  auto r4 = shared_ptr<MM<> >(new MM<>(e1, c - 1));
+  auto r1 = MM<>(e1, f1);
+  auto r2 = MM<>(e2, f2);
+  auto r3 = MM<>(e3, f3);
+  auto r4 = MM<>(e1, c - 1);
 
   LMSet GG;
   GG[(a*b*c).m()] = r1;

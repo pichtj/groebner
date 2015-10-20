@@ -21,56 +21,56 @@ struct moGVWRunner {
   typedef typename P::CoefficientType C;
   typedef MM<P> MMP;
   typedef MonRl<P> MonRlP;
-  typedef std::unordered_map<M, std::shared_ptr<MMP> > LMSet;
+  typedef std::unordered_map<M, MMP> LMSet;
   typedef std::unordered_set<MMP> MMSet;
   typedef std::set<M> MSet;
 
-  MMP signature(const M& m, const MMP& uf) const {
+  MMP signature(const M& m, MMP uf) const {
     M t = m / uf.f().lm();
     return MMP(uf.u(), T(1, t));
   }
 
-  MMP signature(const std::pair<M, std::shared_ptr<MMP> >& muf) const {
-    return signature(muf.first, *(muf.second));
+  MMP signature(const std::pair<M, MMP>& muf) const {
+    return signature(muf.first, muf.second);
   }
 
-  bool rejectedByLCMCriterion(const M& m, std::shared_ptr<MMP> uf, const LMSet& GG) {
-    auto lmf = uf->f().lm();
+  bool rejectedByLCMCriterion(const M& m, MMP uf, const LMSet& GG) {
+    auto lmf = uf.f().lm();
     auto nvg = GG.find(m);
     if (nvg == GG.end()) return false;
-    auto lmg = nvg->second->f().lm();
+    auto lmg = nvg->second.f().lm();
     if (m == lcm(lmf, lmg)) {
       return false;
     }
-    if (signature(m, *uf) > signature(*nvg)) {
-      D("rejecting (" << m << ", " << *uf << ") because " << *nvg << " has smaller signature");
+    if (signature(m, uf) > signature(*nvg)) {
+      D("rejecting (" << m << ", " << uf << ") because " << *nvg << " has smaller signature");
       return true;
     }
     return false;
   }
 
-  bool rejectedBySyzygyCriterion(const M& m, std::shared_ptr<MMP> uf, const LMSet& GG) {
-    auto lmu = uf->u();
-    auto t_f = m / uf->f().lm();
+  bool rejectedBySyzygyCriterion(const M& m, MMP uf, const LMSet& GG) {
+    auto lmu = uf.u();
+    auto t_f = m / uf.f().lm();
     auto nvg = GG.find(t_f*lmu.m);
     if (nvg == GG.end()) return false;
-    auto lmv = nvg->second->u();
+    auto lmv = nvg->second.u();
     if (lmu.index > lmv.index) {
-      D("rejecting (" << m << ", " << *uf << ") because " << *nvg << " has smaller index");
+      D("rejecting (" << m << ", " << uf << ") because " << *nvg << " has smaller index");
       return true;
     }
     return false;
   }
 
-  bool rejectedByRewrittenCriterion(const M& m, std::shared_ptr<MMP> uf, const LMSet& GG) {
-    auto lmu = uf->u();
-    auto lmf = uf->f().lm();
+  bool rejectedByRewrittenCriterion(const M& m, MMP uf, const LMSet& GG) {
+    auto lmu = uf.u();
+    auto lmf = uf.f().lm();
     for (auto nvg = GG.begin(); nvg != GG.end(); ++nvg) {
-      auto lmv = nvg->second->u();
+      auto lmv = nvg->second.u();
       if (!lmv.divides(lmu)) continue;
       auto t = lmu / lmv;
-      if (t*nvg->second->f().lm() < lmf) {
-        D("rejecting " << *uf);
+      if (t*nvg->second.f().lm() < lmf) {
+        D("rejecting " << uf);
         return true;
       }
     }
@@ -90,29 +90,29 @@ struct moGVWRunner {
         auto nvg = GG.find(xim_m);
         if (nvg != GG.end()) {
           auto vg = nvg->second;
-          M t_f = xim_m / uf->f().lm();
-          M t_g = xim_m / vg->f().lm();
-          auto tf_lmu = t_f * uf->u();
-          auto tg_lmv = t_g * vg->u();
+          M t_f = xim_m / uf.f().lm();
+          M t_g = xim_m / vg.f().lm();
+          auto tf_lmu = t_f * uf.u();
+          auto tg_lmv = t_g * vg.u();
           if (tf_lmu > tg_lmv
               && !rejectedByLCMCriterion(xim_m, uf, GG)
               && !rejectedBySyzygyCriterion(xim_m, uf, GG)
               && !rejectedByRewrittenCriterion(xim_m, uf, GG)) {
-            auto tf_uf = t_f * *uf;
-            auto tg_vg = t_g * *vg;
+            auto tf_uf = t_f * uf;
+            auto tg_vg = t_g * vg;
             D("inserting " << tf_uf << " into HH");
             HH.insert(tf_uf);
             D("inserting " << tg_vg << " into HH");
             HH.insert(tg_vg);
           }
           if (tf_lmu < tg_lmv) {
-            D("replacing GG[" << xim_m << "] = " << *vg << " by " << *uf);
+            D("replacing GG[" << xim_m << "] = " << vg << " by " << uf);
             GG[xim_m] = uf;
             if (!rejectedByLCMCriterion(xim_m, vg, GG)
                 && !rejectedBySyzygyCriterion(xim_m, vg, GG)
                 && !rejectedByRewrittenCriterion(xim_m, vg, GG)) {
-              auto tf_uf = t_f * *uf;
-              auto tg_vg = t_g * *vg;
+              auto tf_uf = t_f * uf;
+              auto tg_vg = t_g * vg;
               D("inserting " << tf_uf << " into HH");
               HH.insert(tf_uf);
               D("inserting " << tg_vg << " into HH");
@@ -150,8 +150,8 @@ struct moGVWRunner {
       auto it = GG.find(m);
       if (it != GG.end()) {
         auto vg = it->second;
-        M t = m / vg->f().lm();
-        MMP newMM = t * *vg;
+        M t = m / vg.f().lm();
+        MMP newMM = t * vg;
         HH.insert(newMM);
         for (const auto& term : newMM.f().terms()) {
           monomialsInHH.insert(term.m());
@@ -251,16 +251,16 @@ struct moGVWRunner {
       D("looking for lm(h) = " << m);
       auto mvg = GG.find(m);
       if (mvg != GG.end()) {
-        auto v = mvg->second->u();
+        auto v = mvg->second.u();
         auto w = wh.u();
-        auto g = mvg->second->f();
+        auto g = mvg->second.f();
         if (((m / g.lm()) * v) > w) {
           D("replacing " << mvg->second << " by " << wh);
-          GG[m] = std::shared_ptr<MMP>(new MMP(wh));
+          GG[m] = wh;
         }
       } else {
         D("not found, adding (" << m << ", " << wh << ") to GG");
-        GG[m] = std::shared_ptr<MMP>(new MMP(wh));
+        GG[m] = wh;
       }
     }
     DD("returning, GG = ", GG);
@@ -310,8 +310,8 @@ struct moGVWRunner {
     return result;
   }
 
-  bool isPrimitive(const std::pair<M, std::shared_ptr<MMP> >& lm) const {
-    return lm.first == lm.second->f().lm();
+  bool isPrimitive(const std::pair<M, MMP >& lm) const {
+    return lm.first == lm.second.f().lm();
   }
 
   std::set<P> moGVW(const std::set<P>& input) {
@@ -319,7 +319,7 @@ struct moGVWRunner {
     wasLifted.clear();
     typename std::set<P>::size_type i = 0;
     for (const auto& p : input) {
-      GG[p.lm()] = std::shared_ptr<MMP>(new MMP(MonRl<P>::e(i), p));
+      GG[p.lm()] = MMP(MonRl<P>::e(i), p);
       ++i;
     }
 
@@ -371,7 +371,7 @@ struct moGVWRunner {
     std::set<P> result;
     for (const auto& p : GG) {
       if (isPrimitive(p)) {
-        result.insert(p.second->f());
+        result.insert(p.second.f());
       }
     }
     I("calling interreduce");

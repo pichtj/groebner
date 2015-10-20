@@ -45,19 +45,19 @@ private:
 };
 
 template<class P>
-MM<P> operator*(const typename P::MonomialType& e, const MM<P>& m) {
+MM<P> operator*(const typename P::MonomialType& e, MM<P> m) {
   return m * e;
 }
 
 template<class P>
-std::ostream& operator<<(std::ostream& out, const MM<P>& uf) {
+std::ostream& operator<<(std::ostream& out, MM<P> uf) {
   return out << "(" << uf.u() << ", " << uf.f() << ")";
 }
 
 namespace std {
   template<class P>
   struct hash<MM<P> > { 
-    size_t operator()(const MM<P>& mm) const {
+    size_t operator()(MM<P> mm) const {
       size_t result = 0;
       hash<typename P::MonomialType> mhash;
       result += mhash(mm.f().lm());
