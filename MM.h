@@ -16,27 +16,32 @@ struct MM {
   typedef MonRl<P> MonRlType;
   typedef MM<P> This;
 
-  MM() : u_(), f_(std::shared_ptr<P>(new P())) {}
-  MM(const MonRlType& v, const P& g) : u_(v), f_(std::shared_ptr<P>(new P(g))) {}
+  MM() : mmData(std::make_shared<MMData>()) {}
+  MM(const MonRlType& v, const P& g) : mmData(std::make_shared<MMData>(v, g)) {}
 
-  const P& f() const { return *f_; }
-  const MonRlType& u() const { return u_; }
+  const P& f() const { return mmData->f_; }
+  const MonRlType& u() const { return mmData->u_; }
 
   bool operator<(const This& other) const {
-    return u_ < other.u_;
+    return u() < other.u();
   }
 
   bool operator==(const This& other) const {
-    return u_ == other.u_ && f() == other.f();
+    return u() == other.u() && f() == other.f();
   }
 
   This operator*(const MonomialType& e) const {
-    return This(u_ * e, f() * e);
+    return This(u() * e, f() * e);
   }
 
 private:
-  MonRlType u_;
-  std::shared_ptr<P> f_;
+  struct MMData {
+    MMData() : u_(), f_() {}
+    MMData(const MonRlType& u, const P& f) : u_(u), f_(f) {}
+    MonRlType u_;
+    P f_;
+  };
+  std::shared_ptr<MMData> mmData;
 };
 
 template<class P>
