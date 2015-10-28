@@ -29,3 +29,11 @@ su vagrant << EOF
 git config --global user.email "jonathan.picht@jpicht.de"
 git config --global user.name "Jonathan Picht"
 EOF
+
+cat > /home/vagrant/.vimrc << EOF
+set ruler
+set cindent
+set shiftwidth=2
+set expandtab
+EOF
+chown vagrant:vagrant /home/vagrant/.vimrc
