@@ -167,78 +167,96 @@ struct moGVWRunner {
     DD("returning HH = ", HH);
   }
 
-  MMSet eliminate(MMSet& HH) {
-    MMSet PP;
-    MMSet todoInHH = HH;
-    while (!todoInHH.empty()) {
-      auto uf = *(todoInHH.begin());
-      D("working on " << uf);
-      HH.erase(uf);
-      todoInHH.erase(uf);
-      bool found = false;
-      auto it = HH.begin();
-      while (it != HH.end() && !found) {
-        if (it->f().lm() == uf.f().lm()) {
-          found = true;
-        } else {
-          ++it;
-        }
-      }
-      if (!found) {
-        it = PP.begin();
-      }
-      while (it != PP.end() && !found) {
-        if (it->f().lm() == uf.f().lm()) {
-          found = true;
-        } else {
-          ++it;
-        }
-      }
-      if (found) {
-        auto vg = *it;
-        D("reducing " << uf << " with " << vg);
-        auto u = uf.u();
-        auto v = vg.u();
-        auto f = uf.f();
-        auto g = vg.f();
-        auto lcg = g.lc();
-        auto lcf = f.lc();
+  struct row {
+    row(MMP vg) : uf(vg), done(vg.f().isZero()) {}
 
-        if (u > v) {
-          auto r = P::combine(f, lcg, g, -lcf);
-          if (r.isZero()) {
-            D("a row in HH reduced to zero!");
-          } else {
-            r.renormalize();
-            MonRlP w(std::max(u.m, v.m), std::min(u.index, v.index));
-            MMP wr = MMP(w, r);
-            D("inserting " << wr << " into HH");
-            HH.insert(wr);
-            todoInHH.insert(wr);
-          }
+    bool operator<(row other) const {
+      return uf < other.uf;
+    }
+
+    MonRlP u() const { return uf.u(); }
+    const P& f() const { return uf.f(); }
+
+    MMP uf;
+    bool done;
+  };
+
+  struct PolynomialMatrix {
+    PolynomialMatrix(const MMSet& HH) {
+      for (auto uf : HH) {
+        rows.push_back(row(uf));
+        for (const auto& term : uf.f().terms()) {
+          monomials.insert(term.m());
         }
-        if (u < v) {
-          D("removing " << vg << " from HH");
-          HH.erase(vg);
-          todoInHH.erase(vg);
-          auto r = P::combine(f, -lcg, g, lcf);
-          if (r.isZero()) {
-            D("a row in HH reduced to zero!");
-          } else {
-            r.renormalize();
-            MonRlP w(std::max(u.m, v.m), std::min(u.index, v.index));
-            MMP wr = MMP(w, r);
-            D("inserting " << wr << " into HH");
-            HH.insert(wr);
-            todoInHH.insert(wr);
-          }
-          D("inserting " << uf << " into HH");
-          HH.insert(uf);
-        }
-      } else {
-        D("no reduction found for " << uf);
-        PP.insert(uf);
       }
+
+      std::stable_sort(rows.begin(), rows.end(), std::greater<row>());
+    }
+
+    void dump() const {
+      I("[" << rows.size() << "x" << monomials.size() << "]");
+#ifdef DEBUG
+      if (monomials.size() > 20) return;
+      std::stringstream line;
+      for (const auto& monomial : monomials) {
+        line << "\t" << monomial;
+      }
+      D(line.str());
+      for (const auto& row : rows) {
+        line.str("");
+        for (const auto& monomial : monomials) {
+          auto c = row.f()[monomial];
+          line << "\t";
+          if (c != C())
+            line << c;
+        }
+        D(line.str());
+      }
+#endif // DEBUG
+    }
+
+    std::vector<row> rows;
+    std::set<M, std::greater<M> > monomials;
+  };
+
+  MMSet eliminate(const MMSet& HH) {
+    PolynomialMatrix m(HH);
+
+    m.dump();
+
+    auto begin = m.rows.begin();
+    auto end = m.rows.end();
+
+    for (const auto& monomial : m.monomials) {
+      I("reducing column " << monomial);
+
+      auto i = begin;
+
+      while (i != end && (i->done || i->f().lm() != monomial)) ++i;
+      if (i == end) continue;
+
+      const auto& f = i->f();
+      const auto fc = f.lc();
+
+      auto j = i;
+      for (++j; j != end; ++j) {
+        if (j->done) continue;
+        const auto& g = j->f();
+        if (g.lm() != monomial) continue;
+        const auto gc = g.lc();
+
+        I("reducing...");
+        D("reducing " << g << " with " << f);
+        *j = row(MMP(std::max(j->u(), i->u()), P::combineAndRenormalize(g, fc, f, -gc)));
+      }
+      i->done = true;
+      //m.dump();
+    }
+
+    MMSet PP;
+    for (const auto& row : m.rows) {
+      if (!row.f().isZero())
+        PP.insert(row.uf);
     }
     DD("returning PP = ", PP);
     return PP;

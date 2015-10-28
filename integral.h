@@ -49,4 +49,19 @@ typename C::value_type gcd(const C& c) {
   return result;
 }
 
+template<class C>
+size_t log2(const C& c) {
+  size_t result = 0;
+  while (c > 0) {
+    c /= 2;
+    ++result;
+  }
+  return result;
+}
+
+template<>
+inline size_t log2(const mpz_class& c) {
+  return mpz_sizeinbase(c.get_mpz_t(), 2);
+}
+
 #endif // INTEGRAL_H

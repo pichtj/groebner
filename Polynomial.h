@@ -22,6 +22,7 @@ public:
   typedef typename T::MonomialType MonomialType;
   typedef T TermType;
   typedef Polynomial<T> This;
+
   Polynomial() {}
   Polynomial(const CoefficientType& c) : terms_({T(c)}) {}
   Polynomial(const T& t) : terms_({t}) {}
@@ -33,11 +34,12 @@ public:
     return terms_;
   }
 
-  TermType operator[](const MonomialType& m) const {
+  CoefficientType operator[](const MonomialType& m) const {
     auto c = terms_.begin();
-    while (c->m() >= m) ++c;
-    if (c->m() == m) return *c;
-    return TermType();
+    while (c != terms_.end() && c->m() > m) ++c;
+    if (c == terms_.end()) return CoefficientType();
+    if (c->m() == m) return c->c();
+    return CoefficientType();
   }
   bool isZero() const { return terms_.empty(); }
   This& operator+=(const CoefficientType& c) { *this += T(c); return *this; }
@@ -126,6 +128,11 @@ public:
       it->c() /= d;
       ++it;
     }
+  }
+  static This combineAndRenormalize(const This& a, const C& afactor, const This& b, const C& bfactor) {
+    This r = combine(a, afactor, b, bfactor);
+    r.renormalize();
+    return r;
   }
   This& combine(const C& afactor, const This& b, const C& bfactor) {
     *this = combine(*this, afactor, b, bfactor);
