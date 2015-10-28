@@ -2,6 +2,7 @@
 #define MM_H
 
 #include <memory>
+#include <future>
 
 #include "style.h"
 #include "operators.h"
@@ -10,17 +11,18 @@
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
 struct MM {
-  typedef typename P::MonomialType MonomialType;
-  typedef typename P::TermType TermType;
-  typedef P PolynomialType;
+  typedef typename P::MonomialType M;
+  typedef typename P::TermType T;
+  typedef typename P::CoefficientType C;
   typedef MonRl<P> MonRlType;
   typedef MM<P> This;
 
-  MM() : mmData(std::make_shared<MMData>()) {}
-  MM(const MonRlType& v, const P& g) : mmData(std::make_shared<MMData>(v, g)) {}
+  MM() : mmData(std::async([] { return std::make_shared<MMData>(); })) { mmData.get(); }
+  MM(const MonRlType& v, const P& g)
+  : mmData(std::async([&] { return std::make_shared<MMData>(v, g); })) { mmData.get(); }
 
-  const P& f() const { return mmData->f_; }
-  const MonRlType& u() const { return mmData->u_; }
+  const P& f() const { return mmData.get()->f_; }
+  const MonRlType& u() const { return mmData.get()->u_; }
 
   bool operator<(const This& other) const {
     return u() < other.u();
@@ -30,8 +32,19 @@ struct MM {
     return u() == other.u() && f() == other.f();
   }
 
-  This operator*(const MonomialType& e) const {
+  This operator*(const M& e) const {
     return This(u() * e, f() * e);
+  }
+
+  void combineAndRenormalize(const C& afactor, This b, const C& bfactor) {
+    D("sending reduction to background");
+    auto a = mmData.get();
+    mmData = std::shared_future<std::shared_ptr<MMData> >(std::async(std::launch::async, [=] {
+      D("reducing...");
+      auto result = std::make_shared<MMData>(std::max(a->u_, b.u()), P::combineAndRenormalize(a->f_, afactor, b.f(), bfactor));
+      D("reducing... done");
+      return result;
+    }));
   }
 
 private:
@@ -41,7 +54,7 @@ private:
     MonRlType u_;
     P f_;
   };
-  std::shared_ptr<MMData> mmData;
+  std::shared_future<std::shared_ptr<MMData> > mmData;
 };
 
 template<class P>

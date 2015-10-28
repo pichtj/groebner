@@ -245,9 +245,8 @@ struct moGVWRunner {
         if (g.lm() != monomial) continue;
         const auto gc = g.lc();
 
-        I("reducing...");
         D("reducing " << g << " with " << f);
-        *j = row(MMP(std::max(j->u(), i->u()), P::combineAndRenormalize(g, fc, f, -gc)));
+        j->uf.combineAndRenormalize(fc, i->uf, -gc);
       }
       i->done = true;
       //m.dump();
