@@ -11,16 +11,16 @@
 extern std::string (*get_var_name)(uint);
 extern std::string (*default_get_var_name)(uint);
 
-template<class E = char, long VC = 5>
+template<class E = char, uint VC = 5>
 class Monomial {
 public:
   typedef E ExponentType;
   typedef Monomial<E, VC> This;
-  static const long VAR_COUNT = VC;
+  static const uint VAR_COUNT = VC;
 
   Monomial() : mon() {}
-  E& operator[](const uint& index) { return mon[index]; }
-  const E& operator[](const uint& index) const { return mon[index]; }
+  E& operator[](uint index) { return mon[index]; }
+  E operator[](uint index) const { return mon[index]; }
 
   uint degree() const {
     uint result = 0;
@@ -114,7 +114,7 @@ private:
 };
 
 namespace std {
-  template<typename E, long VC>
+  template<typename E, uint VC>
   struct hash<Monomial<E, VC> > {
     size_t operator()(const Monomial<E, VC>& e) const {
       size_t result = 0;
@@ -127,7 +127,7 @@ namespace std {
   };
 }
 
-template<class E, long VC>
+template<class E, uint VC>
 Monomial<E, VC> pow(const Monomial<E, VC>& m, uint e) {
   Monomial<E, VC> result;
   for (uint i = 0; i < Monomial<E, VC>::VAR_COUNT; ++i) {
@@ -136,7 +136,7 @@ Monomial<E, VC> pow(const Monomial<E, VC>& m, uint e) {
   return result;
 }
 
-template<class E, long VC>
+template<class E, uint VC>
 Monomial<E, VC> lcm(const Monomial<E, VC>& a, const Monomial<E, VC>& b) {
   Monomial<E, VC> result;
   for (uint i = 0; i < Monomial<E, VC>::VAR_COUNT; ++i) {
@@ -145,7 +145,7 @@ Monomial<E, VC> lcm(const Monomial<E, VC>& a, const Monomial<E, VC>& b) {
   return result;
 }
 
-template<class E, long VC>
+template<class E, uint VC>
 std::ostream& operator<<(std::ostream& out, const Monomial<E, VC>& mon) {
   out << "{";
   for (uint i = 0; i < Monomial<E, VC>::VAR_COUNT; ++i) {
@@ -156,7 +156,7 @@ std::ostream& operator<<(std::ostream& out, const Monomial<E, VC>& mon) {
   return out;
 }
 
-template<long VC>
+template<uint VC>
 inline std::ostream& operator<<(std::ostream& out, const Monomial<char, VC>& mon) {
   bool termPrinted = false;
   for (uint i = 0; i < Monomial<char, VC>::VAR_COUNT; ++i) {

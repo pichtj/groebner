@@ -1,5 +1,6 @@
 BUILDDIR := $(shell pwd)
-CFLAGS := -m64 -g -I$(BUILDDIR)/include -L$(BUILDDIR)/lib -std=c++11 -lmpir -lmpirxx -lgmp -Wall
+CFLAGS := -m64 -O3 -march=native -mtune=native -I$(BUILDDIR)/include -L$(BUILDDIR)/lib -std=c++11 -lmpir -lmpirxx -lgmp -Wall
+CPPFLAGS :=
 CC := $(shell which gcc-mp-4.9 || echo gcc)
 CXX := $(shell which g++-mp-4.9 || echo g++)
 MPIR := mpir-2.7.0
@@ -8,10 +9,10 @@ GTEST := gtest-1.7.0
 all: moGVW test
 
 moGVW: main.o Monomial.o lib/libmpirxx.a lib/libmpir.a
-	$(CXX) $(CFLAGS) -o $@ $^ -lmpirxx -lmpir
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -o $@ $^ -lmpirxx -lmpir
 
-main.o: main.cpp Polynomial.h LabelledMonomial.h include/mpir.h include/mpirxx.h
-	$(CXX) $(CFLAGS) -c -o $@ $<
+main.o: main.cpp Polynomial.h include/mpir.h include/mpirxx.h
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 clean:
 	rm -rf moGVW *.o test-runner
@@ -40,13 +41,13 @@ test: test-runner
 	./test-runner
 
 %Test.o: %Test.cpp %.h $(GTEST)
-	$(CXX) $(CFLAGS) -c -o $@ $< -isystem $(GTEST)/include
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $< -isystem $(GTEST)/include
 
 gtest-all.o: $(GTEST)/src/gtest-all.cc
-	$(CXX) $(CFLAGS) -isystem $(GTEST)/include -I$(GTEST) -pthread -c $<
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -isystem $(GTEST)/include -I$(GTEST) -pthread -c $<
 
 gtest_main.o: $(GTEST)/src/gtest_main.cc
-	$(CXX) $(CFLAGS) -isystem $(GTEST)/include -I$(GTEST) -pthread -c $<
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -isystem $(GTEST)/include -I$(GTEST) -pthread -c $<
 
 TEST_OBJECTS := $(shell ls *Test.cpp | sed -e s/cpp$$/o/g)
 
@@ -54,5 +55,5 @@ test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o
 	$(CXX) $^ $(CFLAGS) -pthread -o test-runner
 
 %.o: %.cpp
-	$(CXX) $(CFLAGS) -c -o $@ $<
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
