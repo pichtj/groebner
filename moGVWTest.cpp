@@ -205,7 +205,7 @@ TEST(moGVWTest, cyclic5mpz_class) {
   }), output);
 }
 
-TEST(moGVWTest, cyclic6mpz_class) {
+TEST(moGVWTest, DISABLED_cyclic6mpz_class) {
   use_abc_var_names in_this_scope;
   typedef Polynomial<Term<mpz_class, Monomial<char, 6> > > P;
   typedef typename P::TermType T;

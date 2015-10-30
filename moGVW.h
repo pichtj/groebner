@@ -193,26 +193,26 @@ struct moGVWRunner {
       std::stable_sort(rows.begin(), rows.end(), std::greater<row>());
     }
 
-    void dump() const {
-      I("[" << rows.size() << "x" << monomials.size() << "]");
+    friend std::ostream& operator<<(std::ostream& out, const typename moGVWRunner<P>::PolynomialMatrix& m) {
+      out << "[" << m.rows.size() << "x" << m.monomials.size() << "]";
 #ifdef DEBUG
-      if (monomials.size() > 20) return;
-      std::stringstream line;
-      for (const auto& monomial : monomials) {
-        line << "\t" << monomial;
+      if (monomials.size() > 20) return out;
+      out << std::endl;
+      for (const auto& monomial : m.monomials) {
+        out << "\t" << monomial;
       }
-      D(line.str());
-      for (const auto& row : rows) {
-        line.str("");
-        for (const auto& monomial : monomials) {
+      for (const auto& row : m.rows) {
+        out << std::endl;
+        for (const auto& monomial : m.monomials) {
           auto c = row.f()[monomial];
-          line << "\t";
+          out << "\t";
           if (c != C())
-            line << c;
+            out << c;
         }
-        D(line.str());
+        out << "\t" << row.uf.u();
       }
 #endif // DEBUG
+      return out;
     }
 
     std::vector<row> rows;
@@ -222,13 +222,13 @@ struct moGVWRunner {
   MMSet eliminate(const MMSet& HH) {
     PolynomialMatrix m(HH);
 
-    m.dump();
+    I(m);
 
     auto begin = m.rows.begin();
     auto end = m.rows.end();
 
     for (const auto& monomial : m.monomials) {
-      I("reducing column " << monomial);
+      D("reducing column " << monomial);
 
       auto i = begin;
 
@@ -249,7 +249,7 @@ struct moGVWRunner {
         j->uf.combineAndRenormalize(fc, i->uf, -gc);
       }
       i->done = true;
-      //m.dump();
+      D("m = " << m);
     }
 
     MMSet PP;

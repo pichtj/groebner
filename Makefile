@@ -1,7 +1,7 @@
 BUILDDIR := $(shell pwd)
 CFLAGS := -std=c++11 -m64 -O3 -march=native -mtune=native -I$(BUILDDIR)/include -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -lmpir -lmpirxx -lgmp
-CPPFLAGS := -DDEBUG
+CPPFLAGS :=
 CC := gcc
 CXX := g++
 MPIR := mpir-2.7.0

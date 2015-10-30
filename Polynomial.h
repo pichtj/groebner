@@ -268,7 +268,7 @@ std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {
       max_abs_coefficient = std::max(max_abs_coefficient, c);
       ++it;
     }
-    out << ss.str().substr(0,MAX_PRINT_LENGTH) << "...{" << termCount << " terms, |c| <= " << max_abs_coefficient << "}";
+    out << ss.str().substr(0,MAX_PRINT_LENGTH) << "...{" << termCount << " terms, |c| <= 2^" << log2(max_abs_coefficient) << "}";
   } else {
     out << ss.str();
   }
