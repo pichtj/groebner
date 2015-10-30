@@ -226,9 +226,9 @@ Polynomial<T> operator-(const T& a, const typename T::CoefficientType& b) {
 template<class T>
 Polynomial<T> operator-(const typename T::CoefficientType& a, const T& b) { return b - a; }
 
-template<class T>
-Polynomial<T> operator-(const T& a, const T& b) {
-  Polynomial<T> r(a);
+template<class C, class M>
+Polynomial<Term<C, M> > operator-(const Term<C, M>& a, const Term<C, M>& b) {
+  Polynomial<Term<C, M> > r(a);
   r -= b;
   return r;
 }
