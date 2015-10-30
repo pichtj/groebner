@@ -18,8 +18,7 @@ struct MM {
   typedef MM<P> This;
 
   MM() : mmData(std::async([] { return std::make_shared<MMData>(); })) { mmData.get(); }
-  MM(const MonRlType& v, const P& g)
-  : mmData(std::async([&] { return std::make_shared<MMData>(v, g); })) { mmData.get(); }
+  MM(const MonRlType& v, const P& g) : mmData(std::async([&] { return std::make_shared<MMData>(v, g); })) { mmData.get(); }
 
   const P& f() const { return mmData.get()->f_; }
   const MonRlType& u() const { return mmData.get()->u_; }
@@ -37,13 +36,17 @@ struct MM {
   }
 
   void combineAndRenormalize(const C& afactor, This b, const C& bfactor) {
-    D("sending reduction to background");
     auto a = mmData.get();
     mmData = std::shared_future<std::shared_ptr<MMData> >(std::async(std::launch::async, [=] {
-      D("reducing...");
-      auto result = std::make_shared<MMData>(std::max(a->u_, b.u()), P::combineAndRenormalize(a->f_, afactor, b.f(), bfactor));
-      D("reducing... done");
-      return result;
+#ifdef DEBUG
+      D("a.u < b.u is " << (a->u_ < b.u() ? "TRUE" : "FALSE") << ": a.u = " << a->u_ << ", b.u = " << b.u());
+      D("a.u == b.u is " << (a->u_ == b.u() ? "TRUE" : "FALSE") << ": a.u = " << a->u_ << ", b.u = " << b.u());
+      if (a->u_ == b.u()) {
+        D("a.f = " << a->f_);
+        D("b.f = " << b.f());
+      }
+#endif // DEBUG
+      return std::make_shared<MMData>(std::max(a->u_, b.u()), P::combineAndRenormalize(a->f_, afactor, b.f(), bfactor));
     }));
   }
 
