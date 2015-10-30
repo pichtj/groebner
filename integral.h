@@ -52,8 +52,9 @@ typename C::value_type gcd(const C& c) {
 template<class C>
 size_t log2(const C& c) {
   size_t result = 0;
-  while (c > 0) {
-    c /= 2;
+  auto d = c - 1;
+  while (d > 0) {
+    d /= 2;
     ++result;
   }
   return result;
@@ -61,7 +62,9 @@ size_t log2(const C& c) {
 
 template<>
 inline size_t log2(const mpz_class& c) {
-  return mpz_sizeinbase(c.get_mpz_t(), 2);
+  if (c == 0 || c == 1) return 0;
+  mpz_class d = c - 1;
+  return mpz_sizeinbase(d.get_mpz_t(), 2);
 }
 
 #endif // INTEGRAL_H

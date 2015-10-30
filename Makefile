@@ -1,7 +1,7 @@
 BUILDDIR := $(shell pwd)
 CFLAGS := -std=c++11 -m64 -O3 -march=native -mtune=native -I$(BUILDDIR)/include -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -lmpir -lmpirxx -lgmp
-CPPFLAGS :=
+CPPFLAGS := -DDEBUG
 CC := gcc
 CXX := g++
 MPIR := mpir-2.7.0
@@ -45,15 +45,15 @@ test: test-runner
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $< -isystem $(GTEST)/include
 
 gtest-all.o: $(GTEST)/src/gtest-all.cc
-	$(CXX) $(CFLAGS) $(CPPFLAGS) -isystem $(GTEST)/include -I$(GTEST) -pthread -c $<
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -isystem $(GTEST)/include -I$(GTEST) -c $<
 
 gtest_main.o: $(GTEST)/src/gtest_main.cc
-	$(CXX) $(CFLAGS) $(CPPFLAGS) -isystem $(GTEST)/include -I$(GTEST) -pthread -c $<
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -isystem $(GTEST)/include -I$(GTEST) -c $<
 
 TEST_OBJECTS := $(shell ls *Test.cpp | sed -e s/cpp$$/o/g)
 
 test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o
-	$(CXX) $^ $(CFLAGS) -pthread -o test-runner $(LDFLAGS)
+	$(CXX) $^ $(CFLAGS) -o test-runner $(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
