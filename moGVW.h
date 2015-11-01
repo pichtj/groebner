@@ -196,7 +196,7 @@ struct moGVWRunner {
     friend std::ostream& operator<<(std::ostream& out, const typename moGVWRunner<P>::PolynomialMatrix& m) {
       out << "[" << m.rows.size() << "x" << m.monomials.size() << "]";
 #ifdef DEBUG
-      if (monomials.size() > 20) return out;
+      if (m.monomials.size() > 20) return out;
       out << std::endl;
       for (const auto& monomial : m.monomials) {
         out << "\t" << monomial;
@@ -250,6 +250,7 @@ struct moGVWRunner {
       }
       i->done = true;
       D("m = " << m);
+//      std::stable_sort(m.rows.begin(), m.rows.end(), std::greater<row>());
     }
 
     MMSet PP;

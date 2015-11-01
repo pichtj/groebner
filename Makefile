@@ -1,6 +1,6 @@
 BUILDDIR := $(shell pwd)
-CFLAGS := -std=c++11 -m64 -O3 -march=native -mtune=native -I$(BUILDDIR)/include -Wall
-LDFLAGS := -L$(BUILDDIR)/lib -lmpir -lmpirxx -lgmp
+CFLAGS := -std=c++11 -m64 -pg -O3 -march=native -mtune=native -I$(BUILDDIR)/include -Wall
+LDFLAGS := -L$(BUILDDIR)/lib -lmpir -lmpirxx -lgmp -pthread
 CPPFLAGS :=
 CC := gcc
 CXX := g++

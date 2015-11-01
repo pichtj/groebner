@@ -3,6 +3,7 @@
 
 #include "style.h"
 #include "operators.h"
+#include "Order.h"
 
 #include <functional>
 #include <ostream>
@@ -11,11 +12,11 @@
 extern std::string (*get_var_name)(uint);
 extern std::string (*default_get_var_name)(uint);
 
-template<class E = char, uint VC = 5>
+template<class E = char, uint VC = 5, class O = lex>
 class Monomial {
 public:
   typedef E ExponentType;
-  typedef Monomial<E, VC> This;
+  typedef Monomial<E, VC, O> This;
   static const uint VAR_COUNT = VC;
 
   Monomial() : mon() {}
@@ -78,13 +79,7 @@ public:
   }
 
   bool operator<(const This& other) const {
-    // lex order for simplicity
-    for (uint i = 0; i < VAR_COUNT; ++i) {
-      if (mon[i] != other[i]) {
-        return mon[i] < other[i];
-      }
-    }
-    return false;
+    return O()(*this, other);
   }
 
   bool operator==(const This& other) const {
