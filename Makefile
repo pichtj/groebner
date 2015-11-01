@@ -1,11 +1,13 @@
 BUILDDIR := $(shell pwd)
-CFLAGS := -std=c++11 -m64 -pg -O3 -march=native -mtune=native -I$(BUILDDIR)/include -Wall
-LDFLAGS := -L$(BUILDDIR)/lib -lmpir -lmpirxx -lgmp -pthread
+CFLAGS := -std=c++11 -m64 -pg -O3 -march=native -mtune=native -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -Wall
+LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp -pthread
 CPPFLAGS :=
 CC := gcc
 CXX := g++
 MPIR := mpir-2.7.0
 GTEST := gtest-1.7.0
+FLINT := flint-2.5.2
+MPFR := mpfr-3.1.3
 
 all: moGVW test
 
@@ -19,7 +21,7 @@ clean:
 	rm -rf moGVW *.o test-runner
 
 distclean: clean
-	rm -rf include lib share $(MPIR)* $(GTEST)*
+	rm -rf include lib share $(MPIR)* $(MPFR)* $(FLINT)* $(GTEST)*
 
 $(MPIR).tar.bz2:
 	wget http://mpir.org/$(MPIR).tar.bz2
@@ -27,8 +29,26 @@ $(MPIR).tar.bz2:
 $(MPIR): $(MPIR).tar.bz2
 	tar jxvf $<
 
-lib/libmpir.a include/mpir.h include/mpirxx.h: $(MPIR)
+lib/libmpir.a include/mpir.h include/mpirxx.h lib/libgmp.a include/gmp.h: $(MPIR)
 	cd $< && CC="$(CC)" ./configure --enable-gmpcompat --enable-cxx --disable-shared --enable-static --prefix=$(BUILDDIR) && make && make install
+
+$(MPFR).tar.bz2:
+	wget http://www.mpfr.org/mpfr-current/$(MPFR).tar.bz2
+
+$(MPFR): $(MPFR).tar.bz2
+	tar jxvf $<
+
+lib/libmpfr.a include/mpfr.h: $(MPFR) lib/libgmp.a
+	cd $< && ./configure --disable-shared --with-gmp=$(BUILDDIR) --prefix=$(BUILDDIR) && make && make install
+
+$(FLINT).tar.gz:
+	wget http://www.flintlib.org/$(FLINT).tar.gz
+
+$(FLINT): $(FLINT).tar.gz
+	tar zxvf $<
+
+lib/libflint.a include/flint/flint.h: $(FLINT) lib/libmpfr.a
+	cd $< && ./configure --with-mpir=$(BUILDDIR) --with-gmp=$(BUILDDIR) --disable-shared --enable-cxx --prefix=$(BUILDDIR) && make && make install
 
 $(GTEST).zip:
 	wget https://googletest.googlecode.com/files/$(GTEST).zip
@@ -36,7 +56,7 @@ $(GTEST).zip:
 $(GTEST): $(GTEST).zip
 	test -e $@ || unzip $<
 
-libs: lib/libmpir.a
+libs: lib/libmpir.a lib/libflint.a
 
 test: test-runner
 	./test-runner

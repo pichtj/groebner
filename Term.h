@@ -16,6 +16,12 @@ public:
   Term() : coeff(), exp() {}
   Term(const C& c) : coeff(c), exp() {}
   Term(const C& c, const M& e) : coeff(c), exp(e) {}
+
+  bool operator==(const This& b) const {
+    return m() == b.m() && c() == b.c();
+  }
+  bool operator!=(const This& b) const { return !operator==(b); }
+
   This& operator*=(const This& t) {
     if (!isZero()) {
       if (t.isZero()) {
@@ -57,11 +63,6 @@ private:
 };
 
 template<class C, class M>
-bool operator==(const Term<C, M>& a, const Term<C, M>& b) {
-  return a.m() == b.m() && a.c() == b.c();
-}
-
-template<class C, class M>
 Term<C, M> operator*(const C& c, const Term<C, M>& t) {
   return t * c;
 }
@@ -80,7 +81,7 @@ Term<C, M> operator*(const Term<C, M>& a, const Term<C, M>& b) {
 
 template<class C, class M>
 Term<C, M> pow(const Term<C, M>& base, uint exp) {
-  Term<C, M> result(1);
+  Term<C, M> result(C(1));
   for (uint i = 0; i < exp; ++i) {
     result *= base;
   }

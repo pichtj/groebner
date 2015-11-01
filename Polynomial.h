@@ -44,7 +44,7 @@ public:
   bool isZero() const { return terms_.empty(); }
   This& operator+=(const CoefficientType& c) { *this += T(c); return *this; }
   This operator+(const CoefficientType& c) const { This r = *this; r += c; return r; }
-  This& operator-=(const CoefficientType& c) { *this += CoefficientType(-1) * c; return *this; }
+  This& operator-=(const CoefficientType& c) { C d = c; d *= -1; *this += d; return *this; }
   This operator-(const CoefficientType& c) const { This r = *this; r -= c; return r; }
   This& operator+=(const T& t) {
     if (terms_.empty() || lm() < t.m()) {
@@ -84,10 +84,14 @@ public:
       auto am = ait->m();
       auto bm = bit->m();
       if (am > bm) {
-        before = r.terms_.insert_after(before, T(afactor * ait->c(), am));
+        auto ac = ait->c();
+        ac *= afactor;
+        before = r.terms_.insert_after(before, T(ac, am));
         ++ait;
       } else if (am < bm) {
-        before = r.terms_.insert_after(before, T(bfactor * bit->c(), bm));
+        auto bc = bit->c();
+        bc *= bfactor;
+        before = r.terms_.insert_after(before, T(bc, bm));
         ++bit;
       } else {
         C c = ait->c();
@@ -101,11 +105,15 @@ public:
       }
     }
     while (ait != aend) {
-      before = r.terms_.insert_after(before, T(afactor * ait->c(), ait->m()));
+      auto ac = ait->c();
+      ac *= afactor;
+      before = r.terms_.insert_after(before, T(ac, ait->m()));
       ++ait;
     }
     while (bit != bend) {
-      before = r.terms_.insert_after(before, T(bfactor * bit->c(), bit->m()));
+      auto bc = bit->c();
+      bc *= bfactor;
+      before = r.terms_.insert_after(before, T(bc, bit->m()));
       ++bit;
     }
     return r;
@@ -115,14 +123,15 @@ public:
     auto end = terms_.end();
     if (it == end) return;
     C d = it->c();
+    if (d == C(1)) return;
     ++it;
-    while (it != end && d > C(1)) {
+    while (it != end) {
       C e = it->c();
       if (e < 0) e *= C(-1);
       d = gcd(d, e);
+      if (d == C(1)) return;
       ++it;
     }
-    if (d <= 1) return;
     it = terms_.begin();
     while (it != end) {
       it->c() /= d;
@@ -245,7 +254,7 @@ std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {
   std::stringstream ss;
   bool termPrinted = false;
   for (auto it = p.terms_.begin(); it != p.terms_.end(); ++it) {
-    if (termPrinted && it->c() > 0) {
+    if (termPrinted && it->c() > C(0)) {
       ss << "+";
     }
     ss << *it;

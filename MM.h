@@ -5,7 +5,6 @@
 #include <future>
 
 #include "style.h"
-#include "operators.h"
 #include "MonRl.h"
 #include "Polynomial.h"
 
@@ -26,6 +25,7 @@ struct MM {
   bool operator<(const This& other) const {
     return u() < other.u();
   }
+  bool operator>(const This& other) const { return other < *this; }
 
   bool operator==(const This& other) const {
     return u() == other.u() && f() == other.f();

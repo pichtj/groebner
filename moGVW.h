@@ -27,7 +27,7 @@ struct moGVWRunner {
 
   MMP signature(const M& m, MMP uf) const {
     M t = m / uf.f().lm();
-    return MMP(uf.u(), T(1, t));
+    return MMP(uf.u(), T(C(1), t));
   }
 
   MMP signature(const std::pair<M, MMP>& muf) const {
@@ -173,6 +173,7 @@ struct moGVWRunner {
     bool operator<(row other) const {
       return uf < other.uf;
     }
+    bool operator>(row other) const { return other < *this; }
 
     MonRlP u() const { return uf.u(); }
     const P& f() const { return uf.f(); }
@@ -235,18 +236,19 @@ struct moGVWRunner {
       while (i != end && (i->done || i->f().lm() != monomial)) ++i;
       if (i == end) continue;
 
-      const auto& f = i->f();
-      const auto fc = f.lc();
+      const P& f = i->f();
+      const C fc = f.lc();
 
       auto j = i;
       for (++j; j != end; ++j) {
         if (j->done) continue;
-        const auto& g = j->f();
+        const P& g = j->f();
         if (g.lm() != monomial) continue;
-        const auto gc = g.lc();
+        C gc = g.lc();
+        gc *= -1;
 
         D("reducing " << g << " with " << f);
-        j->uf.combineAndRenormalize(fc, i->uf, -gc);
+        j->uf.combineAndRenormalize(fc, i->uf, gc);
       }
       i->done = true;
       D("m = " << m);
@@ -304,7 +306,9 @@ struct moGVWRunner {
             stable = false;
             auto t = term->m() / r->lm();
             auto rt = *r * t;
-            p->combine(r->lc(), rt, -term->c());
+            C c = term->c();
+            c *= -1;
+            p->combine(r->lc(), rt, c);
             p->renormalize();
             D("to " << *p);
             terms = p->terms();
@@ -319,7 +323,7 @@ struct moGVWRunner {
 
     for (auto& p : intermediate) {
       if (p.isZero()) continue;
-      if (p.lc() < 0) p *= -1;
+      if (p.lc() < 0) p *= C(-1);
       p.renormalize();
     }
     std::set<P> result(intermediate.begin(), intermediate.end());

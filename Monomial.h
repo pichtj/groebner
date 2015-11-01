@@ -2,7 +2,6 @@
 #define MONOMIAL_H
 
 #include "style.h"
-#include "operators.h"
 #include "Order.h"
 
 #include <functional>
@@ -81,6 +80,7 @@ public:
   bool operator<(const This& other) const {
     return O()(*this, other);
   }
+  bool operator>(const This& other) const { return other < *this; }
 
   bool operator==(const This& other) const {
     for (uint i = 0; i < VAR_COUNT; ++i) {
@@ -90,6 +90,7 @@ public:
     }
     return true;
   }
+  bool operator!=(const This& other) const { return !(operator==(other)); }
   bool isZero() const {
     for (uint i = 0; i < VAR_COUNT; ++i) {
       if (mon[i] != 0) {

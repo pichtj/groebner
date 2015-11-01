@@ -4,6 +4,8 @@
 #include <algorithm>
 
 #include <mpirxx.h>
+#include <flint/fmpz.h>
+#include <flint/fmpzxx.h>
 
 template<class T>
 T gcd(T m, T n) {
@@ -37,6 +39,13 @@ inline mpz_class gcd(mpz_class m, mpz_class n) {
   return result;
 }
 
+template<>
+inline flint::fmpzxx gcd(flint::fmpzxx m, flint::fmpzxx n) {
+  flint::fmpzxx result;
+  fmpz_gcd(result._fmpz(), m._fmpz(), n._fmpz());
+  return result;
+}
+
 template<class C>
 typename C::value_type gcd(const C& c) {
   auto it = c.begin();
@@ -65,6 +74,14 @@ inline size_t log2(const mpz_class& c) {
   if (c == 0 || c == 1) return 0;
   mpz_class d = c - 1;
   return mpz_sizeinbase(d.get_mpz_t(), 2);
+}
+
+template<>
+inline size_t log2(const flint::fmpzxx& c) {
+  if (c == 0 || c == 1) return 0;
+  flint::fmpzxx d = c;
+  d -= flint::fmpzxx(1);
+  return fmpz_sizeinbase(d._fmpz(), 2);
 }
 
 #endif // INTEGRAL_H
