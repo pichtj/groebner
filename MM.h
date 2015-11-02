@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <future>
+#include <boost/intrusive_ptr.hpp>
 
 #include "style.h"
 #include "MonRl.h"
@@ -16,8 +17,8 @@ struct MM {
   typedef MonRl<P> MonRlType;
   typedef MM<P> This;
 
-  MM() : mmData(std::async([] { return std::make_shared<MMData>(); })) { mmData.get(); }
-  MM(const MonRlType& v, const P& g) : mmData(std::async([&] { return std::make_shared<MMData>(v, g); })) { mmData.get(); }
+  MM() : mmData(std::async(std::launch::deferred, [] { return boost::intrusive_ptr<MMData>(new MMData()); })) { mmData.get(); }
+  MM(const MonRlType& v, const P& g) : mmData(std::async(std::launch::deferred, [&] { return boost::intrusive_ptr<MMData>(new MMData(v, g)); })) { mmData.get(); }
 
   const P& f() const { return mmData.get()->f_; }
   const MonRlType& u() const { return mmData.get()->u_; }
@@ -37,7 +38,7 @@ struct MM {
 
   void combineAndRenormalize(const C& afactor, This b, const C& bfactor) {
     auto a = mmData.get();
-    mmData = std::shared_future<std::shared_ptr<MMData> >(std::async(std::launch::async, [=] {
+    mmData = std::shared_future<boost::intrusive_ptr<MMData> >(std::async(std::launch::async, [=] {
 #ifdef DEBUG
       D("a.u < b.u is " << (a->u_ < b.u() ? "TRUE" : "FALSE") << ": a.u = " << a->u_ << ", b.u = " << b.u());
       D("a.u == b.u is " << (a->u_ == b.u() ? "TRUE" : "FALSE") << ": a.u = " << a->u_ << ", b.u = " << b.u());
@@ -46,19 +47,28 @@ struct MM {
         D("b.f = " << b.f());
       }
 #endif // DEBUG
-      return std::make_shared<MMData>(std::max(a->u_, b.u()), P::combineAndRenormalize(a->f_, afactor, b.f(), bfactor));
+      return boost::intrusive_ptr<MMData>(new MMData(std::max(a->u_, b.u()), P::combineAndRenormalize(a->f_, afactor, b.f(), bfactor)));
     }));
   }
 
 private:
   struct MMData {
-    MMData() : u_(), f_() {}
-    MMData(const MonRlType& u, const P& f) : u_(u), f_(f) {}
+    MMData() : u_(), f_(), refcount(0) {}
+    MMData(const MonRlType& u, const P& f) : u_(u), f_(f), refcount(0) {}
     MonRlType u_;
     P f_;
+    mutable uint refcount;
   };
-  std::shared_future<std::shared_ptr<MMData> > mmData;
+  friend void intrusive_ptr_add_ref(const MM::MMData* p) {
+    ++p->refcount;
+  }
+
+  friend void intrusive_ptr_release(const MM::MMData* p) {
+    if (--p->refcount == 0) delete p;
+  }
+  std::shared_future<boost::intrusive_ptr<MMData> > mmData;
 };
+
 
 template<class P>
 MM<P> operator*(const typename P::MonomialType& e, MM<P> m) {

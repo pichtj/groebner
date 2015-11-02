@@ -2,6 +2,7 @@
 #define ORDER_H
 
 #include <stdexcept>
+#include <iostream>
 
 struct lex {
   template<class M>
@@ -22,11 +23,11 @@ struct degrevlex {
     auto rd = rhs.degree();
     if (ld != rd) return ld < rd;
     for (uint i = 0; i < M::VAR_COUNT; ++i) {
-      if (lhs[M::VC - i - 1] != rhs[M::VC - i -1]) {
-        return lhs[M::VC - i - 1] > rhs[M::VC - i - 1];
+      if (lhs[M::VAR_COUNT - i - 1] != rhs[M::VAR_COUNT - i - 1]) {
+        return lhs[M::VAR_COUNT - i - 1] > rhs[M::VAR_COUNT - i - 1];
       }
     }
-    throw std::logic_error("this should never happen");
+    return false;
   }
 };
 

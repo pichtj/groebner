@@ -5,6 +5,10 @@ include
 lib
 mpir-2.7.0.tar.bz2
 mpir-2.7.0
+mpfr-3.1.3.tar.bz2
+mpfr-3.1.3
+flint-2.5.2.tar.gz
+flint-2.5.2
 share
 .vagrant
 gtest-1.7.0
