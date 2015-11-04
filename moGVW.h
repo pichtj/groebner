@@ -29,10 +29,7 @@ struct moGVWRunner {
     M t = m / uf.f().lm();
     return MMP(uf.u(), T(C(1), t));
   }
-
-  MMP signature(const std::pair<M, MMP>& muf) const {
-    return signature(muf.first, muf.second);
-  }
+  MMP signature(const std::pair<M, MMP>& muf) const { return signature(muf.first, muf.second); }
 
   bool rejectedByLCMCriterion(const M& m, MMP uf, const LMSet& GG) {
     auto lmf = uf.f().lm();

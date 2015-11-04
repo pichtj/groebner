@@ -84,4 +84,15 @@ inline size_t log2(const flint::fmpzxx& c) {
   return fmpz_sizeinbase(d._fmpz(), 2);
 }
 
+inline std::istream& operator>>(std::istream& in, flint::fmpzxx& i) {
+  auto next = in.peek();
+  std::string s;
+  while (!in.eof() && (std::isdigit(next) || next == '+' || next == '-')) {
+    s += in.get();
+    next = in.peek();
+  }
+  i = flint::fmpzxx(s.c_str());
+  return in;
+}
+
 #endif // INTEGRAL_H

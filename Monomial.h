@@ -2,6 +2,7 @@
 #define MONOMIAL_H
 
 #include "style.h"
+#include "debug.h"
 #include "Order.h"
 
 #include <functional>
@@ -166,6 +167,69 @@ inline std::ostream& operator<<(std::ostream& out, const Monomial<char, VC, O>& 
   }
   if (!termPrinted) out << "1";
   return out;
+}
+
+inline std::string read_monomial_name(std::istream& in) {
+  std::string result;
+  while (!in.eof()) {
+    auto next = in.peek();
+    if (std::isalpha(next) || (!result.empty() && std::isdigit(next))) {
+      result += next;
+      in.get();
+    } else {
+      break;
+    }
+  }
+  return result;
+}
+
+template<class E>
+E read_exponent(std::istream& in) {
+  E result;
+  in >> result;
+  return result;
+}
+
+template<>
+inline char read_exponent(std::istream& in) {
+  int result;
+  in >> result;
+  return (char)result;
+}
+
+template<class E, uint VC, class O>
+std::istream& operator>>(std::istream& in, Monomial<E, VC, O>& m) {
+  m = Monomial<E, VC, O>();
+  std::string current_monomial_name;
+  while (!in.eof()) {
+    if (in.peek() == '*' && !m.isConstant()) {
+      in.get();
+    }
+    current_monomial_name = read_monomial_name(in);
+    if (current_monomial_name.empty()) {
+      return in;
+    }
+    bool found = false;
+    uint i;
+    for (i = 0; i < VC; ++i) {
+      if (get_var_name(i) == current_monomial_name) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) throw std::invalid_argument(std::string("unknown monomial name: ") + current_monomial_name);
+    auto next = in.peek();
+    if (next == '^') {
+      in.get();
+      E exp = read_exponent<E>(in);
+      m[i] += exp;
+    } else {
+      m[i]++;
+    }
+    in.peek();
+  }
+  D("read " << m);
+  return in;
 }
 
 struct use_abc_var_names {

@@ -173,3 +173,17 @@ TEST(PolynomialTest, Combine) {
 
   EXPECT_EQ(6*a*a+23*a-129, q);
 }
+
+TEST(PolynomialTest, Input) {
+  typedef Polynomial<> P;
+  use_abc_var_names in_this_scope;
+
+  Term<> a(1, Monomial<>::x(0));
+  Term<> b(1, Monomial<>::x(1));
+  Term<> c(1, Monomial<>::x(2));
+  Term<> d(1, Monomial<>::x(3));
+  Term<> e(1, Monomial<>::x(4));
+
+  EXPECT_EQ(6*pow(a, 2) + 23*b + 17, from_string<P>("6*a^2+23*b+17"));
+  EXPECT_EQ(2*b*e-2*b*c+3*pow(c,2)*d-3*pow(c,2)*b, from_string<P>("2*b*e-2*b*c+3*c^2*d-3*c^2*b,"));
+}

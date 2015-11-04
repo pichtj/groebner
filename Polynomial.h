@@ -47,6 +47,7 @@ public:
   This& operator-=(const CoefficientType& c) { C d = c; d *= -1; *this += d; return *this; }
   This operator-(const CoefficientType& c) const { This r = *this; r -= c; return r; }
   This& operator+=(const T& t) {
+    if (t.isZero()) return *this;
     if (terms_.empty() || lm() < t.m()) {
       terms_.insert_after(terms_.before_begin(), t);
       return *this;
@@ -149,12 +150,7 @@ public:
   }
   This& operator+=(const This& other) { return combine(C(1), other, C(1)); }
   This operator+(const This& other) const { This r = *this; r += other; return r; }
-  This& operator-=(const This& other) {
-    for (auto it = other.terms_.begin(); it != other.terms_.end(); ++it) {
-      operator-=(*it);
-    }
-    return *this;
-  }
+  This& operator-=(const This& other) { return combine(C(1), other, C(-1)); }
   This operator-(const This& other) const { This r = *this; r -= other; return r; }
 
   This& operator*=(const C& c) {
@@ -282,6 +278,20 @@ std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {
     out << ss.str();
   }
   return out;
+}
+
+template<class T>
+std::istream& operator>>(std::istream& in, Polynomial<T>& p) {
+  p = Polynomial<T>();
+  auto next = in.peek();
+  while (!in.eof() && (std::isalnum(next) || next == '+' || next == '-')) {
+    T t;
+    in >> t;
+    if (!t.isZero()) p += t;
+    next = in.peek();
+  }
+  D("read " << p);
+  return in;
 }
 
 namespace std {

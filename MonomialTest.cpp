@@ -6,7 +6,7 @@
 
 using namespace std;
 
-TEST(MonomialTest, Order) {
+TEST(MonomialTest, lex) {
   Monomial<> e;
   Monomial<> f;
   Monomial<> g;
@@ -20,6 +20,21 @@ TEST(MonomialTest, Order) {
   EXPECT_TRUE(h > e);
   EXPECT_TRUE(g < h);
   EXPECT_FALSE(h < g);
+}
+
+TEST(MonomialTest, degrevlex) {
+  use_abc_var_names in_this_scope;
+  Monomial<> a = Monomial<>::x(0);
+  Monomial<> b = Monomial<>::x(1);
+  Monomial<> c = Monomial<>::x(2);
+
+  EXPECT_FALSE(a < b);
+  EXPECT_FALSE(b < c);
+  EXPECT_TRUE(b < a);
+  EXPECT_TRUE(c < b);
+  EXPECT_TRUE(a*b*b > b*b*c);
+  EXPECT_TRUE(a*b*c < a*a*c);
+  EXPECT_TRUE(a*b*c < pow(a, 5));
 }
 
 TEST(MonomialTest, Equal) {
@@ -108,4 +123,16 @@ TEST(MonomialTest, Division) {
   EXPECT_EQ(pow(x, 2)*pow(y, 2), a / x);
   EXPECT_EQ(pow(x, 2)*pow(y, 2), b / y);
   EXPECT_EQ(pow(x, 2)*pow(y, 2), p);
+}
+
+TEST(MonomialTest, Input) {
+  typedef Monomial<> M;
+  use_abc_var_names in_this_scope;
+
+  EXPECT_EQ(M::x(0), from_string<M>("a"));
+  EXPECT_EQ(M::x(1), from_string<M>("b"));
+  EXPECT_EQ(pow(M::x(0), 3), from_string<M>("a^3"));
+  EXPECT_EQ(pow(M::x(1), 4), from_string<M>("b^4"));
+  EXPECT_EQ(pow(M::x(0), 1) * pow(M::x(1), 4), from_string<M>("a*b^4"));
+  EXPECT_EQ(pow(M::x(0), 3) * pow(M::x(1), 4), from_string<M>("a^3*b^4"));
 }

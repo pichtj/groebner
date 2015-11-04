@@ -54,9 +54,9 @@ public:
   C& c() { return coeff; }
   M m() const { return exp; }
   uint degree() { return exp.degree(); }
-  bool isZero() const { return coeff == 0 && exp.isConstant(); }
+  bool isZero() const { return coeff == 0; }
   bool isOne() const { return coeff == 1 && exp.isConstant(); }
-  bool isConstant() const { return exp.isConstant(); }
+  bool isConstant() const { return coeff == 0 || exp.isConstant(); }
 private:
   C coeff;
   M exp;
@@ -95,6 +95,32 @@ std::ostream& operator<<(std::ostream& out, const Term<C, M>& t) {
   if (t.c() == -1) return out << "-" << t.m();
   if (t.m() == M()) return out << t.c();
   return out << t.c() << "*" << t.m();
+}
+
+template<class C, class M>
+std::istream& operator>>(std::istream& in, Term<C, M>& t) {
+  auto next = in.peek();
+  C coefficient = C(1);
+  if (next == '+' || next == '-' || std::isdigit(next)) {
+    in >> coefficient;
+    next = in.peek();
+    if (next != '*') {
+      t = Term<C, M>(coefficient);
+      return in;
+    } else {
+      in.get();
+      next = in.peek();
+    }
+  }
+  M monomial;
+  in >> monomial;
+  if (coefficient == C(0)) {
+    t = Term<C, M>();
+  } else {
+    t = Term<C, M>(coefficient, monomial);
+  }
+  D("read " << t);
+  return in;
 }
 
 #endif // TERM_H
