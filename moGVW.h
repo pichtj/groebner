@@ -14,6 +14,11 @@
 #include "Polynomial.h"
 #include "MM.h"
 
+#include <boost/gil/image.hpp>
+#include <boost/gil/typedefs.hpp>
+#include <boost/gil/extension/io/png_io.hpp>
+using namespace boost::gil;
+
 template<class P = Polynomial<Term<int, Monomial<char> > > >
 struct moGVWRunner {
   typedef typename P::MonomialType M;
@@ -143,6 +148,9 @@ struct moGVWRunner {
     DD("monomials in HH that are not done = ", monomialsInHH);
     while (!monomialsInHH.empty()) {
       M m = *(monomialsInHH.begin());
+      if (done.size() % 1000 == 0) {
+        I(done.size() << " / " << monomialsInHH.size() << ", looking at " << m);
+      }
       done.insert(m);
       auto it = GG.find(m);
       if (it != GG.end()) {
@@ -213,6 +221,42 @@ struct moGVWRunner {
       return out;
     }
 
+    typedef point2<ptrdiff_t>   point_t;
+
+    typedef PolynomialMatrix    const_t;
+    typedef gray8_pixel_t       value_type;
+    typedef value_type          reference;
+    typedef value_type          const_reference;
+    typedef point_t             argument_type;
+    typedef reference           result_type;
+    BOOST_STATIC_CONSTANT(bool, is_mutable=false);
+
+    result_type operator()(const point_t& p) const {
+      auto monomial = monomials.begin();
+      for (uint i = 0; i < p.y; ++i) ++monomial;
+      value_type result;
+      if (rows[p.x].f()[*monomial] == C(0)) {
+        for (int k = 0; k < num_channels<value_type>::value; ++k)
+          result[k] = (typename channel_type<value_type>::type)(0);
+      } else {
+        for (int k = 0; k < num_channels<value_type>::value; ++k)
+          result[k] = (typename channel_type<value_type>::type)(255);
+      }
+      return result;
+    }
+
+    void save(const std::string& filename) {
+      typedef virtual_2d_locator<PolynomialMatrix, false> locator_t;
+      typedef image_view<locator_t> my_virt_view_t;
+
+      if (rows.size() == 0 || monomials.size() == 0) return;
+
+      point_t dims(rows.size(), monomials.size());
+
+      my_virt_view_t view(dims, locator_t(point_t(0, 0), point_t(1, 1), *this));
+      png_write_view(filename.c_str(), view);
+    }
+
     std::vector<row> rows;
     std::set<M, std::greater<M> > monomials;
   };
@@ -221,6 +265,9 @@ struct moGVWRunner {
     PolynomialMatrix m(HH);
 
     I(m);
+    static uint step;
+
+    m.save("matrix" + to_string(step++) + ".png");
 
     auto begin = m.rows.begin();
     auto end = m.rows.end();

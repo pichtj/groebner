@@ -119,7 +119,7 @@ std::istream& operator>>(std::istream& in, Term<C, M>& t) {
   } else {
     t = Term<C, M>(coefficient, monomial);
   }
-  D("read " << t);
+  D("read term " << t);
   return in;
 }
 

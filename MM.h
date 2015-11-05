@@ -39,14 +39,6 @@ struct MM {
   void combineAndRenormalize(const C& afactor, This b, const C& bfactor) {
     auto a = mmData.get();
     mmData = std::shared_future<boost::intrusive_ptr<MMData> >(std::async(std::launch::async, [=] {
-#ifdef DEBUG
-      D("a.u < b.u is " << (a->u_ < b.u() ? "TRUE" : "FALSE") << ": a.u = " << a->u_ << ", b.u = " << b.u());
-      D("a.u == b.u is " << (a->u_ == b.u() ? "TRUE" : "FALSE") << ": a.u = " << a->u_ << ", b.u = " << b.u());
-      if (a->u_ == b.u()) {
-        D("a.f = " << a->f_);
-        D("b.f = " << b.f());
-      }
-#endif // DEBUG
       return boost::intrusive_ptr<MMData>(new MMData(std::max(a->u_, b.u()), P::combineAndRenormalize(a->f_, afactor, b.f(), bfactor)));
     }));
   }
