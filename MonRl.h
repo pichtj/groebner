@@ -37,6 +37,7 @@ public:
     if (i == j && m < other.m) return true;
     return false;
   }
+  bool operator>(const This& other) const { return other < *this; }
 
   bool divides(const This& other) const {
     if (index != other.index) return false;

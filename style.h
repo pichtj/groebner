@@ -14,4 +14,12 @@ std::string to_string(const T& t) {
   return s.str();
 }
 
+template<class T>
+T from_string(const std::string& s) {
+  T t;
+  std::stringstream ss(s);
+  ss >> t;
+  return t;
+}
+
 #endif // STYLE_H

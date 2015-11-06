@@ -14,6 +14,11 @@
 #include "Polynomial.h"
 #include "MM.h"
 
+#include <boost/gil/image.hpp>
+#include <boost/gil/typedefs.hpp>
+#include <boost/gil/extension/io/png_io.hpp>
+using namespace boost::gil;
+
 template<class P = Polynomial<Term<int, Monomial<char> > > >
 struct moGVWRunner {
   typedef typename P::MonomialType M;
@@ -27,12 +32,9 @@ struct moGVWRunner {
 
   MMP signature(const M& m, MMP uf) const {
     M t = m / uf.f().lm();
-    return MMP(uf.u(), T(1, t));
+    return MMP(uf.u(), T(C(1), t));
   }
-
-  MMP signature(const std::pair<M, MMP>& muf) const {
-    return signature(muf.first, muf.second);
-  }
+  MMP signature(const std::pair<M, MMP>& muf) const { return signature(muf.first, muf.second); }
 
   bool rejectedByLCMCriterion(const M& m, MMP uf, const LMSet& GG) {
     auto lmf = uf.f().lm();
@@ -83,6 +85,7 @@ struct moGVWRunner {
     MMSet HH;
     for (const auto& muf : todo) {
       D("chose " << muf << " to lift");
+      std::cerr << "." << std::flush;
       for (uint i = 0; i < M::VAR_COUNT; ++i) {
         auto xim_m = muf.first;
         xim_m[i]++;
@@ -129,41 +132,31 @@ struct moGVWRunner {
     return HH;
   }
 
-  void append(MMSet& HH, const LMSet& GG) {
-    MSet done;
-    for (const auto& wh : HH) {
-      done.insert(wh.f().lm());
+  void append(MMSet& HH, const LMSet& GG, MMP vg) {
+    if (HH.size() % 1000 == 999) {
+      I(HH.size() << " elements in HH");
     }
-    DD("initialized done = ", done);
-    MSet monomialsInHH;
-    for (const auto& wh : HH) {
-      auto terms = wh.f().terms();
-      for (const auto& term : terms) {
-        if (done.find(term.m()) == done.end())
-          monomialsInHH.insert(term.m());
-      }
-    }
-    DD("monomials in HH that are not done = ", monomialsInHH);
-    while (!monomialsInHH.empty()) {
-      M m = *(monomialsInHH.begin());
-      done.insert(m);
+    HH.insert(vg);
+    for (const auto& term : vg.f()) {
+      auto m = term.m();
       auto it = GG.find(m);
       if (it != GG.end()) {
         auto vg = it->second;
         M t = m / vg.f().lm();
         MMP newMM = t * vg;
-        HH.insert(newMM);
-        for (const auto& term : newMM.f().terms()) {
-          monomialsInHH.insert(term.m());
-        }
-      }
-      for (const auto& it : done) {
-        auto found = monomialsInHH.find(it);
-        if (found != monomialsInHH.end()) {
-          monomialsInHH.erase(found);
+        if (HH.find(newMM) == HH.end()) {
+          append(HH, GG, newMM);
         }
       }
     }
+  }
+
+  void append(MMSet& HH, const LMSet& GG) {
+    MMSet HH2;
+    for (const auto& wh : HH) {
+      append(HH2, GG, wh);
+    }
+    HH.insert(HH2.begin(), HH2.end());
     DD("returning HH = ", HH);
   }
 
@@ -173,6 +166,7 @@ struct moGVWRunner {
     bool operator<(row other) const {
       return uf < other.uf;
     }
+    bool operator>(row other) const { return other < *this; }
 
     MonRlP u() const { return uf.u(); }
     const P& f() const { return uf.f(); }
@@ -185,7 +179,7 @@ struct moGVWRunner {
     PolynomialMatrix(const MMSet& HH) {
       for (auto uf : HH) {
         rows.push_back(row(uf));
-        for (const auto& term : uf.f().terms()) {
+        for (const auto& term : uf.f()) {
           monomials.insert(term.m());
         }
       }
@@ -196,7 +190,7 @@ struct moGVWRunner {
     friend std::ostream& operator<<(std::ostream& out, const typename moGVWRunner<P>::PolynomialMatrix& m) {
       out << "[" << m.rows.size() << "x" << m.monomials.size() << "]";
 #ifdef DEBUG
-      if (monomials.size() > 20) return out;
+      if (m.monomials.size() > 20) return out;
       out << std::endl;
       for (const auto& monomial : m.monomials) {
         out << "\t" << monomial;
@@ -215,6 +209,45 @@ struct moGVWRunner {
       return out;
     }
 
+    typedef point2<ptrdiff_t>   point_t;
+
+    typedef PolynomialMatrix    const_t;
+    typedef gray8_pixel_t       value_type;
+    typedef value_type          reference;
+    typedef value_type          const_reference;
+    typedef point_t             argument_type;
+    typedef reference           result_type;
+    BOOST_STATIC_CONSTANT(bool, is_mutable=false);
+
+    result_type operator()(const point_t& p) const {
+      auto monomial = monomials.begin();
+      for (uint i = 0; i < p.y; ++i) ++monomial;
+      value_type result;
+      if (rows[p.x].f()[*monomial] == C(0)) {
+        for (int k = 0; k < num_channels<value_type>::value; ++k)
+          result[k] = (typename channel_type<value_type>::type)(0);
+      } else {
+        for (int k = 0; k < num_channels<value_type>::value; ++k)
+          result[k] = (typename channel_type<value_type>::type)(255);
+      }
+      return result;
+    }
+
+    void save(const std::string& filename) {
+      return;
+      if (rows.size() == 0 || monomials.size() == 0) return;
+
+      typedef virtual_2d_locator<PolynomialMatrix, false> locator_t;
+      typedef image_view<locator_t> my_virt_view_t;
+
+      I("saving " + filename + "...");
+      point_t dims(rows.size(), monomials.size());
+
+      my_virt_view_t view(dims, locator_t(point_t(0, 0), point_t(1, 1), *this));
+      png_write_view(filename.c_str(), view);
+      I("saving " + filename + "... done");
+    }
+
     std::vector<row> rows;
     std::set<M, std::greater<M> > monomials;
   };
@@ -223,11 +256,20 @@ struct moGVWRunner {
     PolynomialMatrix m(HH);
 
     I(m);
+    static uint step;
+
+    m.save("matrix" + to_string(step++) + ".png");
 
     auto begin = m.rows.begin();
     auto end = m.rows.end();
 
+    auto size = m.monomials.size();
+    uint k = 0;
     for (const auto& monomial : m.monomials) {
+      if (k % 1000 == 0) {
+        std::cerr << (100*(double)k/size) << "%" << std::flush;
+      }
+      ++k;
       D("reducing column " << monomial);
 
       auto i = begin;
@@ -235,21 +277,24 @@ struct moGVWRunner {
       while (i != end && (i->done || i->f().lm() != monomial)) ++i;
       if (i == end) continue;
 
-      const auto& f = i->f();
-      const auto fc = f.lc();
+      const P& f = i->f();
+      const C fc = f.lc();
 
       auto j = i;
       for (++j; j != end; ++j) {
         if (j->done) continue;
-        const auto& g = j->f();
+        const P& g = j->f();
         if (g.lm() != monomial) continue;
-        const auto gc = g.lc();
+        C gc = g.lc();
+        gc *= -1;
 
         D("reducing " << g << " with " << f);
-        j->uf.combineAndRenormalize(fc, i->uf, -gc);
+        std::cerr << "." << std::flush;
+        j->uf.combineAndRenormalize(fc, i->uf, gc);
       }
       i->done = true;
       D("m = " << m);
+//      std::stable_sort(m.rows.begin(), m.rows.end(), std::greater<row>());
     }
 
     MMSet PP;
@@ -291,9 +336,8 @@ struct moGVWRunner {
     do {
       stable = true;
       for (auto p = intermediate.begin(); p != intermediate.end(); ++p) {
-        auto terms = p->terms();
-        auto term = terms.begin();
-        while (term != terms.end()) {
+        auto term = p->begin();
+        while (term != p->end()) {
           auto r = intermediate.begin();
           while (r != intermediate.end() && (r->isZero() || r == p || !r->lm().divides(term->m()))) {
             ++r;
@@ -303,11 +347,12 @@ struct moGVWRunner {
             stable = false;
             auto t = term->m() / r->lm();
             auto rt = *r * t;
-            p->combine(r->lc(), rt, -term->c());
+            C c = term->c();
+            c *= -1;
+            p->combine(r->lc(), rt, c);
             p->renormalize();
             D("to " << *p);
-            terms = p->terms();
-            term = terms.begin();
+            term = p->begin();
             DD("intermediate = ", intermediate);
           } else {
             ++term;
@@ -318,7 +363,7 @@ struct moGVWRunner {
 
     for (auto& p : intermediate) {
       if (p.isZero()) continue;
-      if (p.lc() < 0) p *= -1;
+      if (p.lc() < 0) p *= C(-1);
       p.renormalize();
     }
     std::set<P> result(intermediate.begin(), intermediate.end());

@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
 #include <mpirxx.h>
+#include <flint/fmpzxx.h>
 
 #include "moGVW.h"
 
 using namespace std;
+using namespace flint;
 
 TEST(moGVWTest, LCMCriterion) {
   use_abc_var_names in_this_scope;
@@ -136,6 +138,28 @@ TEST(moGVWTest, cyclic3) {
   EXPECT_EQ(set<P>({pow(c,3)-1, pow(b,2)+b*c+pow(c,2), a+b+c}), output);
 }
 
+TEST(moGVWTest, cyclic3_degrevlex) {
+  use_abc_var_names in_this_scope;
+  typedef Polynomial<Term<int, Monomial<char, 3, degrevlex> > > P;
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
+  moGVWRunner<P> runner;
+
+  T a = T(1, M::x(0));
+  T b = T(1, M::x(1));
+  T c = T(1, M::x(2));
+
+  set<P> input = {
+    a + b + c,
+    a*b + a*c + b*c,
+    a*b*c - 1
+  };
+
+  set<P> output = runner.moGVW(input);
+
+  EXPECT_EQ(set<P>({a+b+c, pow(b,2)+b*c+pow(c,2), pow(c,3)-1}), output);
+}
+
 TEST(moGVWTest, cyclic4) {
   use_abc_var_names in_this_scope;
   typedef Polynomial<Term<int, Monomial<char, 4> > > P;
@@ -164,6 +188,38 @@ TEST(moGVWTest, cyclic4) {
     b*c-b*d+pow(c,2)*pow(d,4)+c*d-2*pow(d,2),
     pow(b,2)+2*b*d+pow(d,2),
     a+b+c+d
+  }), output);
+}
+
+TEST(moGVWTest, cyclic4_degrevlex) {
+  use_abc_var_names in_this_scope;
+  typedef Polynomial<Term<int, Monomial<char, 4, degrevlex> > > P;
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
+  moGVWRunner<P> runner;
+
+  T a = T(1, M::x(0));
+  T b = T(1, M::x(1));
+  T c = T(1, M::x(2));
+  T d = T(1, M::x(3));
+
+  set<P> input = {
+    a + b + c + d,
+    a*b + b*c + a*d + c*d,
+    a*b*c + a*b*d + a*c*d + b*c*d,
+    a*b*c*d - 1
+  };
+
+  set<P> output = runner.moGVW(input);
+
+  EXPECT_EQ(set<P>({
+    a+b+c+d,
+    pow(b, 2)+2*b*d+pow(d, 2),
+    b*pow(c, 2)+pow(c, 2)*d-b*pow(d, 2)-pow(d, 3),
+    b*c*pow(d, 2)+pow(c, 2)*pow(d, 2)-b*pow(d, 3)+c*pow(d, 3)-pow(d, 4)-1,
+    b*pow(d, 4)+pow(d, 5)-b-d,
+    pow(c, 3)*pow(d, 2)+pow(c, 2)*pow(d, 3)-c-d,
+    pow(c, 2)*pow(d, 4)+b*c-b*d+c*d-2*pow(d, 2)
   }), output);
 }
 
@@ -202,6 +258,155 @@ TEST(moGVWTest, cyclic5mpz_class) {
     mpz_class(275)*b*c-mpz_class(275)*b*e+mpz_class(275)*pow(c,2)+mpz_class(550)*c*e-mpz_class(330)*pow(d,6)*e-mpz_class(1045)*pow(d,5)*pow(e,2)-mpz_class(275)*pow(d,4)*pow(e,3)+mpz_class(275)*pow(d,3)*pow(e,4)-mpz_class(550)*pow(d,2)+mpz_class(334)*d*pow(e,11)+mpz_class(40722)*d*pow(e,6)-mpz_class(40726)*d*e+mpz_class(867)*pow(e,12)+mpz_class(105776)*pow(e,7)-mpz_class(105873)*pow(e,2),
     mpz_class(275)*pow(b,2)+mpz_class(825)*b*e+mpz_class(550)*pow(d,6)*e+mpz_class(1650)*pow(d,5)*pow(e,2)+mpz_class(275)*pow(d,4)*pow(e,3)-mpz_class(550)*pow(d,3)*pow(e,4)+mpz_class(275)*pow(d,2)-mpz_class(566)*d*pow(e,11)-mpz_class(69003)*d*pow(e,6)+mpz_class(69019)*d*e-mpz_class(1467)*pow(e,12)-mpz_class(178981)*pow(e,7)+mpz_class(179073)*pow(e,2),
     a+b+c+d+e
+  }), output);
+}
+
+TEST(moGVWTest, cyclic5fmpzxx) {
+  use_abc_var_names in_this_scope;
+  typedef Polynomial<Term<fmpzxx, Monomial<char, 5> > > P;
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
+  moGVWRunner<P> runner;
+
+  T a = T(fmpzxx(1), M::x(0));
+  T b = T(fmpzxx(1), M::x(1));
+  T c = T(fmpzxx(1), M::x(2));
+  T d = T(fmpzxx(1), M::x(3));
+  T e = T(fmpzxx(1), M::x(4));
+
+  set<P> input = {
+    a*b*c*d*e - fmpzxx(1),
+    a*b*c*d + a*b*c*e + a*b*d*e + a*c*d*e + b*c*d*e,
+    a*b*c + a*b*e + a*d*e + b*c*d + c*d*e,
+    a*b + a*e + b*c + c*d + d*e,
+    a + b + c + d + e
+  };
+
+  set<P> output = runner.moGVW(input);
+
+  EXPECT_EQ(set<P>({
+    pow(e,15)+fmpzxx(122)*pow(e,10)-fmpzxx(122)*pow(e,5)-fmpzxx(1),
+    fmpzxx(55)*pow(d,2)*pow(e,5)-fmpzxx(55)*pow(d,2)-fmpzxx(2)*d*pow(e,11)-fmpzxx(231)*d*pow(e,6)+fmpzxx(233)*d*e-fmpzxx(8)*pow(e,12)-fmpzxx(979)*pow(e,7)+fmpzxx(987)*pow(e,2),
+    fmpzxx(55)*pow(d,7)+fmpzxx(165)*pow(d,6)*e+fmpzxx(55)*pow(d,5)*pow(e,2)-fmpzxx(55)*pow(d,2)-fmpzxx(398)*d*pow(e,11)-fmpzxx(48554)*d*pow(e,6)+fmpzxx(48787)*d*e-fmpzxx(1042)*pow(e,12)-fmpzxx(127116)*pow(e,7)+fmpzxx(128103)*pow(e,2),
+    fmpzxx(55)*c*pow(e,5)-fmpzxx(55)*c+pow(e,11)+fmpzxx(143)*pow(e,6)-fmpzxx(144)*e,
+    fmpzxx(275)*c*d-fmpzxx(275)*c*e+fmpzxx(440)*pow(d,6)*e+fmpzxx(1210)*pow(d,5)*pow(e,2)-fmpzxx(275)*pow(d,3)*pow(e,4)+fmpzxx(275)*pow(d,2)-fmpzxx(442)*d*pow(e,11)-fmpzxx(53911)*d*pow(e,6)+fmpzxx(53913)*d*e-fmpzxx(1121)*pow(e,12)-fmpzxx(136763)*pow(e,7)+fmpzxx(136674)*pow(e,2),
+    fmpzxx(275)*pow(c,3)+fmpzxx(550)*pow(c,2)*e-fmpzxx(550)*c*pow(e,2)+fmpzxx(275)*pow(d,6)*pow(e,2)+fmpzxx(550)*pow(d,5)*pow(e,3)-fmpzxx(550)*pow(d,4)*pow(e,4)+fmpzxx(550)*pow(d,2)*e-fmpzxx(232)*d*pow(e,12)-fmpzxx(28336)*d*pow(e,7)+fmpzxx(28018)*d*pow(e,2)-fmpzxx(568)*pow(e,13)-fmpzxx(69289)*pow(e,8)+fmpzxx(69307)*pow(e,3),
+    fmpzxx(55)*b*pow(e,5)-fmpzxx(55)*b+pow(e,11)+fmpzxx(143)*pow(e,6)-fmpzxx(144)*e,
+    fmpzxx(275)*b*d-fmpzxx(275)*b*e-fmpzxx(110)*pow(d,6)*e-fmpzxx(440)*pow(d,5)*pow(e,2)-fmpzxx(275)*pow(d,4)*pow(e,3)+fmpzxx(275)*pow(d,3)*pow(e,4)+fmpzxx(124)*d*pow(e,11)+fmpzxx(15092)*d*pow(e,6)-fmpzxx(15106)*d*e+fmpzxx(346)*pow(e,12)+fmpzxx(42218)*pow(e,7)-fmpzxx(42124)*pow(e,2),
+    fmpzxx(275)*b*c-fmpzxx(275)*b*e+fmpzxx(275)*pow(c,2)+fmpzxx(550)*c*e-fmpzxx(330)*pow(d,6)*e-fmpzxx(1045)*pow(d,5)*pow(e,2)-fmpzxx(275)*pow(d,4)*pow(e,3)+fmpzxx(275)*pow(d,3)*pow(e,4)-fmpzxx(550)*pow(d,2)+fmpzxx(334)*d*pow(e,11)+fmpzxx(40722)*d*pow(e,6)-fmpzxx(40726)*d*e+fmpzxx(867)*pow(e,12)+fmpzxx(105776)*pow(e,7)-fmpzxx(105873)*pow(e,2),
+    fmpzxx(275)*pow(b,2)+fmpzxx(825)*b*e+fmpzxx(550)*pow(d,6)*e+fmpzxx(1650)*pow(d,5)*pow(e,2)+fmpzxx(275)*pow(d,4)*pow(e,3)-fmpzxx(550)*pow(d,3)*pow(e,4)+fmpzxx(275)*pow(d,2)-fmpzxx(566)*d*pow(e,11)-fmpzxx(69003)*d*pow(e,6)+fmpzxx(69019)*d*e-fmpzxx(1467)*pow(e,12)-fmpzxx(178981)*pow(e,7)+fmpzxx(179073)*pow(e,2),
+    a+b+c+d+e
+  }), output);
+}
+
+TEST(moGVWTest, cyclic5fmpzxx_degrevlex_minimal) {
+  use_abc_var_names in_this_scope;
+  typedef Polynomial<Term<fmpzxx, Monomial<char, 5, degrevlex> > > P;
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
+  moGVWRunner<P> runner;
+
+  T a = T(fmpzxx(1), M::x(0));
+  T b = T(fmpzxx(1), M::x(1));
+  T c = T(fmpzxx(1), M::x(2));
+  T d = T(fmpzxx(1), M::x(3));
+  T e = T(fmpzxx(1), M::x(4));
+
+  set<P> input = {
+    a+b+c+d+e,
+    pow(b, 2)+b*d-c*d+fmpzxx(2)*b*e+c*e+pow(e, 2),
+    b*pow(c, 2)-b*c*d+pow(c, 2)*d-pow(c, 2)*e+b*d*e+c*d*e+pow(d, 2)*e-b*pow(e, 2)-fmpzxx(2)*c*pow(e, 2)+d*pow(e, 2)-pow(e, 3),
+    pow(c, 3)*e+b*c*d*e-fmpzxx(2)*b*pow(d, 2)*e-c*pow(d, 2)*e-pow(d, 3)*e+fmpzxx(3)*pow(c, 2)*pow(e, 2)-fmpzxx(2)*b*d*pow(e, 2)-fmpzxx(2)*c*d*pow(e, 2)-fmpzxx(3)*pow(d, 2)*pow(e, 2)+fmpzxx(3)*b*pow(e, 3)+fmpzxx(3)*c*pow(e, 3)-fmpzxx(2)*d*pow(e, 3)+fmpzxx(2)*pow(e, 4),
+    pow(d, 4)+fmpzxx(14)*b*c*d*e+fmpzxx(6)*pow(c, 2)*d*e-fmpzxx(27)*b*pow(d, 2)*e+fmpzxx(2)*c*pow(d, 2)*e-fmpzxx(15)*pow(d, 3)*e-b*c*pow(e, 2)+fmpzxx(7)*pow(c, 2)*pow(e, 2)-fmpzxx(10)*b*d*pow(e, 2)-fmpzxx(9)*c*d*pow(e, 2)-fmpzxx(33)*pow(d, 2)*pow(e, 2)+fmpzxx(24)*b*pow(e, 3)+fmpzxx(33)*c*pow(e, 3)-fmpzxx(14)*d*pow(e, 3)+fmpzxx(22)*pow(e, 4),
+    c*pow(d, 3)-fmpzxx(2)*b*c*d*e-pow(c, 2)*d*e+fmpzxx(5)*b*pow(d, 2)*e+fmpzxx(4)*pow(d, 3)*e-b*c*pow(e, 2)-fmpzxx(2)*pow(c, 2)*pow(e, 2)+fmpzxx(2)*b*d*pow(e, 2)+fmpzxx(7)*pow(d, 2)*pow(e, 2)-fmpzxx(4)*b*pow(e, 3)-fmpzxx(7)*c*pow(e, 3)+fmpzxx(2)*d*pow(e, 3)-fmpzxx(4)*pow(e, 4),
+    b*pow(d, 3)-fmpzxx(5)*b*c*d*e-fmpzxx(2)*pow(c, 2)*d*e+fmpzxx(10)*b*pow(d, 2)*e+c*pow(d, 2)*e+fmpzxx(6)*pow(d, 3)*e-fmpzxx(3)*pow(c, 2)*pow(e, 2)+fmpzxx(2)*b*d*pow(e, 2)+fmpzxx(2)*c*d*pow(e, 2)+fmpzxx(13)*pow(d, 2)*pow(e, 2)-fmpzxx(8)*b*pow(e, 3)-fmpzxx(13)*c*pow(e, 3)+fmpzxx(4)*d*pow(e, 3)-fmpzxx(8)*pow(e, 4),
+    pow(c, 2)*pow(d, 2)+b*c*d*e-fmpzxx(2)*b*pow(d, 2)*e+fmpzxx(2)*c*pow(d, 2)*e-pow(d, 3)*e-fmpzxx(2)*b*d*pow(e, 2)-fmpzxx(2)*c*d*pow(e, 2)-fmpzxx(2)*pow(d, 2)*pow(e, 2)+fmpzxx(3)*b*pow(e, 3)+fmpzxx(2)*c*pow(e, 3)-fmpzxx(2)*d*pow(e, 3)+fmpzxx(2)*pow(e, 4),
+    b*c*pow(d, 2)+b*c*d*e+pow(c, 2)*d*e-b*pow(d, 2)*e+c*pow(d, 2)*e-pow(d, 3)*e-b*c*pow(e, 2)-b*d*pow(e, 2)-fmpzxx(2)*pow(d, 2)*pow(e, 2)+b*pow(e, 3)+c*pow(e, 3)-d*pow(e, 3)+pow(e, 4),
+    pow(c, 3)*d+b*c*d*e+fmpzxx(3)*pow(c, 2)*d*e-fmpzxx(3)*b*pow(d, 2)*e+c*pow(d, 2)*e-pow(d, 3)*e-b*c*pow(e, 2)-pow(c, 2)*pow(e, 2)-fmpzxx(2)*c*d*pow(e, 2)+fmpzxx(3)*b*pow(e, 3)-c*pow(e, 3)-d*pow(e, 3)+pow(e, 4),
+    pow(c, 4)-fmpzxx(4)*b*c*d*e-pow(c, 2)*d*e+fmpzxx(5)*b*pow(d, 2)*e+fmpzxx(4)*c*pow(d, 2)*e+fmpzxx(3)*pow(d, 3)*e+b*c*pow(e, 2)-fmpzxx(8)*pow(c, 2)*pow(e, 2)+fmpzxx(4)*b*d*pow(e, 2)+fmpzxx(2)*c*d*pow(e, 2)+fmpzxx(9)*pow(d, 2)*pow(e, 2)-fmpzxx(6)*b*pow(e, 3)-fmpzxx(9)*c*pow(e, 3)+fmpzxx(4)*d*pow(e, 3)-fmpzxx(5)*pow(e, 4),
+    fmpzxx(2)*b*c*d*pow(e, 2)+pow(c, 2)*d*pow(e, 2)+fmpzxx(2)*c*pow(d, 2)*pow(e, 2)-b*c*pow(e, 3)-fmpzxx(2)*b*d*pow(e, 3)-c*d*pow(e, 3)-pow(d, 2)*pow(e, 3)+b*pow(e, 4)+c*pow(e, 4)-fmpzxx(2)*d*pow(e, 4)+pow(e, 5)-fmpzxx(1),
+    b*pow(e, 5)-c*pow(e, 5)-b+c,
+    fmpzxx(15)*c*pow(d, 2)*pow(e, 3)+fmpzxx(10)*pow(d, 3)*pow(e, 3)-fmpzxx(20)*b*c*pow(e, 4)-fmpzxx(20)*pow(c, 2)*pow(e, 4)+fmpzxx(5)*b*d*pow(e, 4)-fmpzxx(25)*c*d*pow(e, 4)+fmpzxx(30)*pow(d, 2)*pow(e, 4)-fmpzxx(23)*c*pow(e, 5)-fmpzxx(3)*d*pow(e, 5)-fmpzxx(4)*pow(e, 6)+fmpzxx(15)*b-fmpzxx(7)*c+fmpzxx(3)*d+fmpzxx(24)*e,
+    fmpzxx(3)*b*pow(d, 2)*pow(e, 3)+pow(d, 3)*pow(e, 3)+b*c*pow(e, 4)+pow(c, 2)*pow(e, 4)-b*d*pow(e, 4)+fmpzxx(2)*c*d*pow(e, 4)-fmpzxx(2)*c*pow(e, 5)-pow(e, 6)-fmpzxx(3)*b+fmpzxx(2)*c-fmpzxx(3)*e,
+    fmpzxx(2)*c*d*pow(e, 5)+pow(d, 2)*pow(e, 5)+fmpzxx(8)*c*pow(e, 6)+d*pow(e, 6)+fmpzxx(3)*pow(e, 7)-fmpzxx(2)*c*d-pow(d, 2)-fmpzxx(8)*c*e-d*e-fmpzxx(3)*pow(e, 2),
+    pow(c, 2)*pow(e, 5)+fmpzxx(3)*c*pow(e, 6)+pow(e, 7)-pow(c, 2)-fmpzxx(3)*c*e-pow(e, 2),
+    fmpzxx(5)*pow(d, 3)*pow(e, 4)+fmpzxx(11)*pow(d, 2)*pow(e, 5)+fmpzxx(9)*c*pow(e, 6)+fmpzxx(2)*d*pow(e, 6)+fmpzxx(3)*pow(e, 7)-fmpzxx(10)*b*c-fmpzxx(10)*pow(c, 2)+fmpzxx(10)*b*d-fmpzxx(5)*c*d+fmpzxx(4)*pow(d, 2)-fmpzxx(24)*c*e-fmpzxx(2)*d*e+fmpzxx(7)*pow(e, 2),
+    fmpzxx(177881)*pow(e, 8)-fmpzxx(19363958)*pow(c, 3)-fmpzxx(11892956)*b*c*d+fmpzxx(3735501)*pow(c, 2)*d+fmpzxx(9377551)*b*pow(d, 2)+fmpzxx(26834960)*c*pow(d, 2)+fmpzxx(9580503)*pow(d, 3)-fmpzxx(13518956)*b*c*e-fmpzxx(67875329)*pow(c, 2)*e+fmpzxx(41040369)*b*d*e+fmpzxx(15425505)*c*d*e+fmpzxx(54356373)*pow(d, 2)*e-fmpzxx(25006008)*b*pow(e, 2)-fmpzxx(54356373)*c*pow(e, 2)+fmpzxx(31256914)*d*pow(e, 2)+fmpzxx(228023)*pow(e, 3),
+    fmpzxx(177881)*d*pow(e, 7)-fmpzxx(10265418)*pow(c, 3)-fmpzxx(29832328)*b*c*d-fmpzxx(9783455)*pow(c, 2)*d+fmpzxx(29780648)*b*pow(d, 2)+fmpzxx(20938278)*c*pow(d, 2)+fmpzxx(17202777)*pow(d, 3)+fmpzxx(5158549)*b*c*e-fmpzxx(35421160)*pow(c, 2)*e+fmpzxx(14482882)*b*d*e+fmpzxx(2386974)*c*d*e+fmpzxx(52141974)*pow(d, 2)*e-fmpzxx(19589751)*b*pow(e, 2)-fmpzxx(52141974)*c*pow(e, 2)+fmpzxx(39919865)*d*pow(e, 2)-fmpzxx(25155742)*pow(e, 3),
+    fmpzxx(355762)*c*pow(e, 7)+fmpzxx(14797269)*pow(c, 3)+fmpzxx(9105077)*b*c*d-fmpzxx(2846096)*pow(c, 2)*d-fmpzxx(7181532)*b*pow(d, 2)-fmpzxx(20489461)*c*pow(d, 2)-fmpzxx(7326267)*pow(d, 3)+fmpzxx(10317098)*b*c*e+fmpzxx(51862809)*pow(c, 2)*e-fmpzxx(31373348)*b*d*e-fmpzxx(11806438)*c*d*e-fmpzxx(41545711)*pow(d, 2)*e+fmpzxx(19132705)*b*pow(e, 2)+fmpzxx(41189949)*c*pow(e, 2)-fmpzxx(23902346)*d*pow(e, 2)-fmpzxx(289470)*pow(e, 3),
+    fmpzxx(177881)*pow(d, 2)*pow(e, 6)+fmpzxx(1380212)*pow(c, 3)+fmpzxx(6360880)*b*c*d+fmpzxx(2490334)*pow(c, 2)*d-fmpzxx(6495925)*b*pow(d, 2)-fmpzxx(3514784)*c*pow(d, 2)-fmpzxx(3514784)*pow(d, 3)-fmpzxx(1956691)*b*c*e+fmpzxx(4674279)*pow(c, 2)*e-fmpzxx(1159495)*b*d*e+fmpzxx(263553)*c*d*e-fmpzxx(9477066)*pow(d, 2)*e+fmpzxx(3251231)*b*pow(e, 2)+fmpzxx(9299185)*c*pow(e, 2)-fmpzxx(7741092)*d*pow(e, 2)+fmpzxx(5962282)*pow(e, 3)
+  };
+
+  set<P> output = runner.moGVW(input);
+
+  EXPECT_EQ(set<P>({
+    a+b+c+d+e,
+    pow(b, 2)+b*d-c*d+fmpzxx(2)*b*e+c*e+pow(e, 2),
+    pow(c, 3)+b*c*d-fmpzxx(2)*b*pow(d, 2)-c*pow(d, 2)-pow(d, 3)+fmpzxx(3)*pow(c, 2)*e-fmpzxx(2)*b*d*e-fmpzxx(2)*c*d*e-fmpzxx(3)*pow(d, 2)*e+fmpzxx(3)*b*pow(e, 2)+fmpzxx(3)*c*pow(e, 2)-fmpzxx(2)*d*pow(e, 2)+fmpzxx(2)*pow(e, 3),
+    b*pow(c, 2)-b*c*d+pow(c, 2)*d-pow(c, 2)*e+b*d*e+c*d*e+pow(d, 2)*e-b*pow(e, 2)-fmpzxx(2)*c*pow(e, 2)+d*pow(e, 2)-pow(e, 3),
+    pow(d, 4)+fmpzxx(14)*b*c*d*e+fmpzxx(6)*pow(c, 2)*d*e-fmpzxx(27)*b*pow(d, 2)*e+fmpzxx(2)*c*pow(d, 2)*e-fmpzxx(15)*pow(d, 3)*e-b*c*pow(e, 2)+fmpzxx(7)*pow(c, 2)*pow(e, 2)-fmpzxx(10)*b*d*pow(e, 2)-fmpzxx(9)*c*d*pow(e, 2)-fmpzxx(33)*pow(d, 2)*pow(e, 2)+fmpzxx(24)*b*pow(e, 3)+fmpzxx(33)*c*pow(e, 3)-fmpzxx(14)*d*pow(e, 3)+fmpzxx(22)*pow(e, 4),
+    c*pow(d, 3)-fmpzxx(2)*b*c*d*e-pow(c, 2)*d*e+fmpzxx(5)*b*pow(d, 2)*e+fmpzxx(4)*pow(d, 3)*e-b*c*pow(e, 2)-fmpzxx(2)*pow(c, 2)*pow(e, 2)+fmpzxx(2)*b*d*pow(e, 2)+fmpzxx(7)*pow(d, 2)*pow(e, 2)-fmpzxx(4)*b*pow(e, 3)-fmpzxx(7)*c*pow(e, 3)+fmpzxx(2)*d*pow(e, 3)-fmpzxx(4)*pow(e, 4),
+    b*pow(d, 3)-fmpzxx(5)*b*c*d*e-fmpzxx(2)*pow(c, 2)*d*e+fmpzxx(10)*b*pow(d, 2)*e+c*pow(d, 2)*e+fmpzxx(6)*pow(d, 3)*e-fmpzxx(3)*pow(c, 2)*pow(e, 2)+fmpzxx(2)*b*d*pow(e, 2)+fmpzxx(2)*c*d*pow(e, 2)+fmpzxx(13)*pow(d, 2)*pow(e, 2)-fmpzxx(8)*b*pow(e, 3)-fmpzxx(13)*c*pow(e, 3)+fmpzxx(4)*d*pow(e, 3)-fmpzxx(8)*pow(e, 4),
+    pow(c, 2)*pow(d, 2)+b*c*d*e-fmpzxx(2)*b*pow(d, 2)*e+fmpzxx(2)*c*pow(d, 2)*e-pow(d, 3)*e-fmpzxx(2)*b*d*pow(e, 2)-fmpzxx(2)*c*d*pow(e, 2)-fmpzxx(2)*pow(d, 2)*pow(e, 2)+fmpzxx(3)*b*pow(e, 3)+fmpzxx(2)*c*pow(e, 3)-fmpzxx(2)*d*pow(e, 3)+fmpzxx(2)*pow(e, 4),
+    b*c*pow(d, 2)+b*c*d*e+pow(c, 2)*d*e-b*pow(d, 2)*e+c*pow(d, 2)*e-pow(d, 3)*e-b*c*pow(e, 2)-b*d*pow(e, 2)-fmpzxx(2)*pow(d, 2)*pow(e, 2)+b*pow(e, 3)+c*pow(e, 3)-d*pow(e, 3)+pow(e, 4),
+    fmpzxx(2)*b*c*d*pow(e, 2)+pow(c, 2)*d*pow(e, 2)+fmpzxx(2)*c*pow(d, 2)*pow(e, 2)-b*c*pow(e, 3)-fmpzxx(2)*b*d*pow(e, 3)-c*d*pow(e, 3)-pow(d, 2)*pow(e, 3)+b*pow(e, 4)+c*pow(e, 4)-fmpzxx(2)*d*pow(e, 4)+pow(e, 5)-fmpzxx(1),
+    b*pow(e, 5)-c*pow(e, 5)-b+c,
+    fmpzxx(15)*c*pow(d, 2)*pow(e, 3)+fmpzxx(10)*pow(d, 3)*pow(e, 3)-fmpzxx(20)*b*c*pow(e, 4)-fmpzxx(20)*pow(c, 2)*pow(e, 4)+fmpzxx(5)*b*d*pow(e, 4)-fmpzxx(25)*c*d*pow(e, 4)+fmpzxx(30)*pow(d, 2)*pow(e, 4)-fmpzxx(23)*c*pow(e, 5)-fmpzxx(3)*d*pow(e, 5)-fmpzxx(4)*pow(e, 6)+fmpzxx(15)*b-fmpzxx(7)*c+fmpzxx(3)*d+fmpzxx(24)*e,
+    fmpzxx(3)*b*pow(d, 2)*pow(e, 3)+pow(d, 3)*pow(e, 3)+b*c*pow(e, 4)+pow(c, 2)*pow(e, 4)-b*d*pow(e, 4)+fmpzxx(2)*c*d*pow(e, 4)-fmpzxx(2)*c*pow(e, 5)-pow(e, 6)-fmpzxx(3)*b+fmpzxx(2)*c-fmpzxx(3)*e,
+    fmpzxx(2)*c*d*pow(e, 5)+pow(d, 2)*pow(e, 5)+fmpzxx(8)*c*pow(e, 6)+d*pow(e, 6)+fmpzxx(3)*pow(e, 7)-fmpzxx(2)*c*d-pow(d, 2)-fmpzxx(8)*c*e-d*e-fmpzxx(3)*pow(e, 2),
+    pow(c, 2)*pow(e, 5)+fmpzxx(3)*c*pow(e, 6)+pow(e, 7)-pow(c, 2)-fmpzxx(3)*c*e-pow(e, 2),
+    fmpzxx(5)*pow(d, 3)*pow(e, 4)+fmpzxx(11)*pow(d, 2)*pow(e, 5)+fmpzxx(9)*c*pow(e, 6)+fmpzxx(2)*d*pow(e, 6)+fmpzxx(3)*pow(e, 7)-fmpzxx(10)*b*c-fmpzxx(10)*pow(c, 2)+fmpzxx(10)*b*d-fmpzxx(5)*c*d+fmpzxx(4)*pow(d, 2)-fmpzxx(24)*c*e-fmpzxx(2)*d*e+fmpzxx(7)*pow(e, 2),
+    pow(e, 8)+fmpzxx(42)*b*c*d+fmpzxx(21)*pow(c, 2)*d-fmpzxx(165)*b*pow(d, 2)+fmpzxx(42)*c*pow(d, 2)-fmpzxx(55)*pow(d, 3)-fmpzxx(76)*b*c*e-fmpzxx(55)*pow(c, 2)*e+fmpzxx(13)*b*d*e-fmpzxx(131)*c*d*e-fmpzxx(21)*pow(d, 2)*e+fmpzxx(186)*b*pow(e, 2)+fmpzxx(21)*c*pow(e, 2)-fmpzxx(42)*d*pow(e, 2)+fmpzxx(219)*pow(e, 3),
+    d*pow(e, 7)-fmpzxx(110)*b*c*d-fmpzxx(55)*pow(c, 2)*d+fmpzxx(52)*b*pow(d, 2)+fmpzxx(60)*c*pow(d, 2)+fmpzxx(39)*pow(d, 3)+fmpzxx(29)*b*c*e-fmpzxx(26)*pow(c, 2)*e-fmpzxx(34)*b*d*e-fmpzxx(102)*c*d*e+fmpzxx(120)*pow(d, 2)*e+fmpzxx(63)*b*pow(e, 2)-fmpzxx(120)*c*pow(e, 2)+fmpzxx(109)*d*pow(e, 2)-fmpzxx(26)*pow(e, 3),
+    c*pow(e, 7)-fmpzxx(16)*b*c*d-fmpzxx(8)*pow(c, 2)*d+fmpzxx(63)*b*pow(d, 2)-fmpzxx(16)*c*pow(d, 2)+fmpzxx(21)*pow(d, 3)+fmpzxx(29)*b*c*e+fmpzxx(21)*pow(c, 2)*e-fmpzxx(5)*b*d*e+fmpzxx(50)*c*d*e+fmpzxx(8)*pow(d, 2)*e-fmpzxx(71)*b*pow(e, 2)-fmpzxx(9)*c*pow(e, 2)+fmpzxx(16)*d*pow(e, 2)-fmpzxx(84)*pow(e, 3),
+    pow(d, 2)*pow(e, 6)+fmpzxx(28)*b*c*d+fmpzxx(14)*pow(c, 2)*d-fmpzxx(21)*b*pow(d, 2)-fmpzxx(12)*c*pow(d, 2)-fmpzxx(12)*pow(d, 3)-fmpzxx(11)*b*c*e+fmpzxx(3)*pow(c, 2)*e+fmpzxx(9)*b*d*e+fmpzxx(17)*c*d*e-fmpzxx(30)*pow(d, 2)*e-fmpzxx(5)*b*pow(e, 2)+fmpzxx(29)*c*pow(e, 2)-fmpzxx(28)*d*pow(e, 2)+fmpzxx(18)*pow(e, 3)
+  }), output);
+}
+
+TEST(moGVWTest, DISABLED_cyclic5fmpzxx_degrevlex) {
+  use_abc_var_names in_this_scope;
+  typedef Polynomial<Term<fmpzxx, Monomial<char, 5, degrevlex> > > P;
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
+  moGVWRunner<P> runner;
+
+  T a = T(fmpzxx(1), M::x(0));
+  T b = T(fmpzxx(1), M::x(1));
+  T c = T(fmpzxx(1), M::x(2));
+  T d = T(fmpzxx(1), M::x(3));
+  T e = T(fmpzxx(1), M::x(4));
+
+  set<P> input = {
+    a*b*c*d*e - fmpzxx(1),
+    a*b*c*d + a*b*c*e + a*b*d*e + a*c*d*e + b*c*d*e,
+    a*b*c + a*b*e + a*d*e + b*c*d + c*d*e,
+    a*b + a*e + b*c + c*d + d*e,
+    a + b + c + d + e
+  };
+
+  set<P> output = runner.moGVW(input);
+
+  EXPECT_EQ(set<P>({
+    a+b+c+d+e,
+    pow(b, 2)+b*d-c*d+fmpzxx(2)*b*e+c*e+pow(e, 2),
+    pow(c, 3)+b*c*d-fmpzxx(2)*b*pow(d, 2)-c*pow(d, 2)-pow(d, 3)+fmpzxx(3)*pow(c, 2)*e-fmpzxx(2)*b*d*e-fmpzxx(2)*c*d*e-fmpzxx(3)*pow(d, 2)*e+fmpzxx(3)*b*pow(e, 2)+fmpzxx(3)*c*pow(e, 2)-fmpzxx(2)*d*pow(e, 2)+fmpzxx(2)*pow(e, 3),
+    b*pow(c, 2)-b*c*d+pow(c, 2)*d-pow(c, 2)*e+b*d*e+c*d*e+pow(d, 2)*e-b*pow(e, 2)-fmpzxx(2)*c*pow(e, 2)+d*pow(e, 2)-pow(e, 3),
+    pow(d, 4)+fmpzxx(14)*b*c*d*e+fmpzxx(6)*pow(c, 2)*d*e-fmpzxx(27)*b*pow(d, 2)*e+fmpzxx(2)*c*pow(d, 2)*e-fmpzxx(15)*pow(d, 3)*e-b*c*pow(e, 2)+fmpzxx(7)*pow(c, 2)*pow(e, 2)-fmpzxx(10)*b*d*pow(e, 2)-fmpzxx(9)*c*d*pow(e, 2)-fmpzxx(33)*pow(d, 2)*pow(e, 2)+fmpzxx(24)*b*pow(e, 3)+fmpzxx(33)*c*pow(e, 3)-fmpzxx(14)*d*pow(e, 3)+fmpzxx(22)*pow(e, 4),
+    c*pow(d, 3)-fmpzxx(2)*b*c*d*e-pow(c, 2)*d*e+fmpzxx(5)*b*pow(d, 2)*e+fmpzxx(4)*pow(d, 3)*e-b*c*pow(e, 2)-fmpzxx(2)*pow(c, 2)*pow(e, 2)+fmpzxx(2)*b*d*pow(e, 2)+fmpzxx(7)*pow(d, 2)*pow(e, 2)-fmpzxx(4)*b*pow(e, 3)-fmpzxx(7)*c*pow(e, 3)+fmpzxx(2)*d*pow(e, 3)-fmpzxx(4)*pow(e, 4),
+    b*pow(d, 3)-fmpzxx(5)*b*c*d*e-fmpzxx(2)*pow(c, 2)*d*e+fmpzxx(10)*b*pow(d, 2)*e+c*pow(d, 2)*e+fmpzxx(6)*pow(d, 3)*e-fmpzxx(3)*pow(c, 2)*pow(e, 2)+fmpzxx(2)*b*d*pow(e, 2)+fmpzxx(2)*c*d*pow(e, 2)+fmpzxx(13)*pow(d, 2)*pow(e, 2)-fmpzxx(8)*b*pow(e, 3)-fmpzxx(13)*c*pow(e, 3)+fmpzxx(4)*d*pow(e, 3)-fmpzxx(8)*pow(e, 4),
+    pow(c, 2)*pow(d, 2)+b*c*d*e-fmpzxx(2)*b*pow(d, 2)*e+fmpzxx(2)*c*pow(d, 2)*e-pow(d, 3)*e-fmpzxx(2)*b*d*pow(e, 2)-fmpzxx(2)*c*d*pow(e, 2)-fmpzxx(2)*pow(d, 2)*pow(e, 2)+fmpzxx(3)*b*pow(e, 3)+fmpzxx(2)*c*pow(e, 3)-fmpzxx(2)*d*pow(e, 3)+fmpzxx(2)*pow(e, 4),
+    b*c*pow(d, 2)+b*c*d*e+pow(c, 2)*d*e-b*pow(d, 2)*e+c*pow(d, 2)*e-pow(d, 3)*e-b*c*pow(e, 2)-b*d*pow(e, 2)-fmpzxx(2)*pow(d, 2)*pow(e, 2)+b*pow(e, 3)+c*pow(e, 3)-d*pow(e, 3)+pow(e, 4),
+    fmpzxx(2)*b*c*d*pow(e, 2)+pow(c, 2)*d*pow(e, 2)+fmpzxx(2)*c*pow(d, 2)*pow(e, 2)-b*c*pow(e, 3)-fmpzxx(2)*b*d*pow(e, 3)-c*d*pow(e, 3)-pow(d, 2)*pow(e, 3)+b*pow(e, 4)+c*pow(e, 4)-fmpzxx(2)*d*pow(e, 4)+pow(e, 5)-fmpzxx(1),
+    b*pow(e, 5)-c*pow(e, 5)-b+c,
+    fmpzxx(15)*c*pow(d, 2)*pow(e, 3)+fmpzxx(10)*pow(d, 3)*pow(e, 3)-fmpzxx(20)*b*c*pow(e, 4)-fmpzxx(20)*pow(c, 2)*pow(e, 4)+fmpzxx(5)*b*d*pow(e, 4)-fmpzxx(25)*c*d*pow(e, 4)+fmpzxx(30)*pow(d, 2)*pow(e, 4)-fmpzxx(23)*c*pow(e, 5)-fmpzxx(3)*d*pow(e, 5)-fmpzxx(4)*pow(e, 6)+fmpzxx(15)*b-fmpzxx(7)*c+fmpzxx(3)*d+fmpzxx(24)*e,
+    fmpzxx(3)*b*pow(d, 2)*pow(e, 3)+pow(d, 3)*pow(e, 3)+b*c*pow(e, 4)+pow(c, 2)*pow(e, 4)-b*d*pow(e, 4)+fmpzxx(2)*c*d*pow(e, 4)-fmpzxx(2)*c*pow(e, 5)-pow(e, 6)-fmpzxx(3)*b+fmpzxx(2)*c-fmpzxx(3)*e,
+    fmpzxx(2)*c*d*pow(e, 5)+pow(d, 2)*pow(e, 5)+fmpzxx(8)*c*pow(e, 6)+d*pow(e, 6)+fmpzxx(3)*pow(e, 7)-fmpzxx(2)*c*d-pow(d, 2)-fmpzxx(8)*c*e-d*e-fmpzxx(3)*pow(e, 2),
+    pow(c, 2)*pow(e, 5)+fmpzxx(3)*c*pow(e, 6)+pow(e, 7)-pow(c, 2)-fmpzxx(3)*c*e-pow(e, 2),
+    fmpzxx(5)*pow(d, 3)*pow(e, 4)+fmpzxx(11)*pow(d, 2)*pow(e, 5)+fmpzxx(9)*c*pow(e, 6)+fmpzxx(2)*d*pow(e, 6)+fmpzxx(3)*pow(e, 7)-fmpzxx(10)*b*c-fmpzxx(10)*pow(c, 2)+fmpzxx(10)*b*d-fmpzxx(5)*c*d+fmpzxx(4)*pow(d, 2)-fmpzxx(24)*c*e-fmpzxx(2)*d*e+fmpzxx(7)*pow(e, 2),
+    pow(e, 8)+fmpzxx(42)*b*c*d+fmpzxx(21)*pow(c, 2)*d-fmpzxx(165)*b*pow(d, 2)+fmpzxx(42)*c*pow(d, 2)-fmpzxx(55)*pow(d, 3)-fmpzxx(76)*b*c*e-fmpzxx(55)*pow(c, 2)*e+fmpzxx(13)*b*d*e-fmpzxx(131)*c*d*e-fmpzxx(21)*pow(d, 2)*e+fmpzxx(186)*b*pow(e, 2)+fmpzxx(21)*c*pow(e, 2)-fmpzxx(42)*d*pow(e, 2)+fmpzxx(219)*pow(e, 3),
+    d*pow(e, 7)-fmpzxx(110)*b*c*d-fmpzxx(55)*pow(c, 2)*d+fmpzxx(52)*b*pow(d, 2)+fmpzxx(60)*c*pow(d, 2)+fmpzxx(39)*pow(d, 3)+fmpzxx(29)*b*c*e-fmpzxx(26)*pow(c, 2)*e-fmpzxx(34)*b*d*e-fmpzxx(102)*c*d*e+fmpzxx(120)*pow(d, 2)*e+fmpzxx(63)*b*pow(e, 2)-fmpzxx(120)*c*pow(e, 2)+fmpzxx(109)*d*pow(e, 2)-fmpzxx(26)*pow(e, 3),
+    c*pow(e, 7)-fmpzxx(16)*b*c*d-fmpzxx(8)*pow(c, 2)*d+fmpzxx(63)*b*pow(d, 2)-fmpzxx(16)*c*pow(d, 2)+fmpzxx(21)*pow(d, 3)+fmpzxx(29)*b*c*e+fmpzxx(21)*pow(c, 2)*e-fmpzxx(5)*b*d*e+fmpzxx(50)*c*d*e+fmpzxx(8)*pow(d, 2)*e-fmpzxx(71)*b*pow(e, 2)-fmpzxx(9)*c*pow(e, 2)+fmpzxx(16)*d*pow(e, 2)-fmpzxx(84)*pow(e, 3),
+    pow(d, 2)*pow(e, 6)+fmpzxx(28)*b*c*d+fmpzxx(14)*pow(c, 2)*d-fmpzxx(21)*b*pow(d, 2)-fmpzxx(12)*c*pow(d, 2)-fmpzxx(12)*pow(d, 3)-fmpzxx(11)*b*c*e+fmpzxx(3)*pow(c, 2)*e+fmpzxx(9)*b*d*e+fmpzxx(17)*c*d*e-fmpzxx(30)*pow(d, 2)*e-fmpzxx(5)*b*pow(e, 2)+fmpzxx(29)*c*pow(e, 2)-fmpzxx(28)*d*pow(e, 2)+fmpzxx(18)*pow(e, 3)
   }), output);
 }
 
