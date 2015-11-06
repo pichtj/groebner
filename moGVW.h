@@ -85,6 +85,7 @@ struct moGVWRunner {
     MMSet HH;
     for (const auto& muf : todo) {
       D("chose " << muf << " to lift");
+      std::cerr << "." << std::flush;
       for (uint i = 0; i < M::VAR_COUNT; ++i) {
         auto xim_m = muf.first;
         xim_m[i]++;
@@ -131,44 +132,31 @@ struct moGVWRunner {
     return HH;
   }
 
-  void append(MMSet& HH, const LMSet& GG) {
-    MSet done;
-    for (const auto& wh : HH) {
-      done.insert(wh.f().lm());
+  void append(MMSet& HH, const LMSet& GG, MMP vg) {
+    if (HH.size() % 1000 == 999) {
+      I(HH.size() << " elements in HH");
     }
-    DD("initialized done = ", done);
-    MSet monomialsInHH;
-    for (const auto& wh : HH) {
-      auto terms = wh.f().terms();
-      for (const auto& term : terms) {
-        if (done.find(term.m()) == done.end())
-          monomialsInHH.insert(term.m());
-      }
-    }
-    DD("monomials in HH that are not done = ", monomialsInHH);
-    while (!monomialsInHH.empty()) {
-      M m = *(monomialsInHH.begin());
-      if (done.size() % 1000 == 0) {
-        I(done.size() << " / " << monomialsInHH.size() << ", looking at " << m);
-      }
-      done.insert(m);
+    HH.insert(vg);
+    for (const auto& term : vg.f()) {
+      auto m = term.m();
       auto it = GG.find(m);
       if (it != GG.end()) {
         auto vg = it->second;
         M t = m / vg.f().lm();
         MMP newMM = t * vg;
-        HH.insert(newMM);
-        for (const auto& term : newMM.f().terms()) {
-          monomialsInHH.insert(term.m());
-        }
-      }
-      for (const auto& it : done) {
-        auto found = monomialsInHH.find(it);
-        if (found != monomialsInHH.end()) {
-          monomialsInHH.erase(found);
+        if (HH.find(newMM) == HH.end()) {
+          append(HH, GG, newMM);
         }
       }
     }
+  }
+
+  void append(MMSet& HH, const LMSet& GG) {
+    MMSet HH2;
+    for (const auto& wh : HH) {
+      append(HH2, GG, wh);
+    }
+    HH.insert(HH2.begin(), HH2.end());
     DD("returning HH = ", HH);
   }
 
@@ -191,7 +179,7 @@ struct moGVWRunner {
     PolynomialMatrix(const MMSet& HH) {
       for (auto uf : HH) {
         rows.push_back(row(uf));
-        for (const auto& term : uf.f().terms()) {
+        for (const auto& term : uf.f()) {
           monomials.insert(term.m());
         }
       }
@@ -246,15 +234,18 @@ struct moGVWRunner {
     }
 
     void save(const std::string& filename) {
+      return;
+      if (rows.size() == 0 || monomials.size() == 0) return;
+
       typedef virtual_2d_locator<PolynomialMatrix, false> locator_t;
       typedef image_view<locator_t> my_virt_view_t;
 
-      if (rows.size() == 0 || monomials.size() == 0) return;
-
+      I("saving " + filename + "...");
       point_t dims(rows.size(), monomials.size());
 
       my_virt_view_t view(dims, locator_t(point_t(0, 0), point_t(1, 1), *this));
       png_write_view(filename.c_str(), view);
+      I("saving " + filename + "... done");
     }
 
     std::vector<row> rows;
@@ -272,7 +263,13 @@ struct moGVWRunner {
     auto begin = m.rows.begin();
     auto end = m.rows.end();
 
+    auto size = m.monomials.size();
+    uint k = 0;
     for (const auto& monomial : m.monomials) {
+      if (k % 1000 == 0) {
+        std::cerr << (100*(double)k/size) << "%" << std::flush;
+      }
+      ++k;
       D("reducing column " << monomial);
 
       auto i = begin;
@@ -292,6 +289,7 @@ struct moGVWRunner {
         gc *= -1;
 
         D("reducing " << g << " with " << f);
+        std::cerr << "." << std::flush;
         j->uf.combineAndRenormalize(fc, i->uf, gc);
       }
       i->done = true;
@@ -338,9 +336,8 @@ struct moGVWRunner {
     do {
       stable = true;
       for (auto p = intermediate.begin(); p != intermediate.end(); ++p) {
-        auto terms = p->terms();
-        auto term = terms.begin();
-        while (term != terms.end()) {
+        auto term = p->begin();
+        while (term != p->end()) {
           auto r = intermediate.begin();
           while (r != intermediate.end() && (r->isZero() || r == p || !r->lm().divides(term->m()))) {
             ++r;
@@ -355,8 +352,7 @@ struct moGVWRunner {
             p->combine(r->lc(), rt, c);
             p->renormalize();
             D("to " << *p);
-            terms = p->terms();
-            term = terms.begin();
+            term = p->begin();
             DD("intermediate = ", intermediate);
           } else {
             ++term;

@@ -363,7 +363,7 @@ TEST(moGVWTest, cyclic5fmpzxx_degrevlex_minimal) {
   }), output);
 }
 
-TEST(moGVWTest, cyclic5fmpzxx_degrevlex) {
+TEST(moGVWTest, DISABLED_cyclic5fmpzxx_degrevlex) {
   use_abc_var_names in_this_scope;
   typedef Polynomial<Term<fmpzxx, Monomial<char, 5, degrevlex> > > P;
   typedef typename P::TermType T;

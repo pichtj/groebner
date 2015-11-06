@@ -14,7 +14,7 @@ all: moGVW test
 moGVW: main.o Monomial.o lib/libmpirxx.a lib/libmpir.a
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -o $@ $^ $(LDFLAGS)
 
-main.o: main.cpp Polynomial.h include/mpir.h include/mpirxx.h
+main.o: main.cpp *.h include/mpir.h include/mpirxx.h
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 clean:
