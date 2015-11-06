@@ -3,6 +3,7 @@
 #include <flint/fmpzxx.h>
 
 #include "moGVW.h"
+#include "CachedMonomial.h"
 
 using namespace std;
 using namespace flint;
@@ -264,6 +265,44 @@ TEST(moGVWTest, cyclic5mpz_class) {
 TEST(moGVWTest, cyclic5fmpzxx) {
   use_abc_var_names in_this_scope;
   typedef Polynomial<Term<fmpzxx, Monomial<char, 5> > > P;
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
+  moGVWRunner<P> runner;
+
+  T a = T(fmpzxx(1), M::x(0));
+  T b = T(fmpzxx(1), M::x(1));
+  T c = T(fmpzxx(1), M::x(2));
+  T d = T(fmpzxx(1), M::x(3));
+  T e = T(fmpzxx(1), M::x(4));
+
+  set<P> input = {
+    a*b*c*d*e - fmpzxx(1),
+    a*b*c*d + a*b*c*e + a*b*d*e + a*c*d*e + b*c*d*e,
+    a*b*c + a*b*e + a*d*e + b*c*d + c*d*e,
+    a*b + a*e + b*c + c*d + d*e,
+    a + b + c + d + e
+  };
+
+  set<P> output = runner.moGVW(input);
+
+  EXPECT_EQ(set<P>({
+    pow(e,15)+fmpzxx(122)*pow(e,10)-fmpzxx(122)*pow(e,5)-fmpzxx(1),
+    fmpzxx(55)*pow(d,2)*pow(e,5)-fmpzxx(55)*pow(d,2)-fmpzxx(2)*d*pow(e,11)-fmpzxx(231)*d*pow(e,6)+fmpzxx(233)*d*e-fmpzxx(8)*pow(e,12)-fmpzxx(979)*pow(e,7)+fmpzxx(987)*pow(e,2),
+    fmpzxx(55)*pow(d,7)+fmpzxx(165)*pow(d,6)*e+fmpzxx(55)*pow(d,5)*pow(e,2)-fmpzxx(55)*pow(d,2)-fmpzxx(398)*d*pow(e,11)-fmpzxx(48554)*d*pow(e,6)+fmpzxx(48787)*d*e-fmpzxx(1042)*pow(e,12)-fmpzxx(127116)*pow(e,7)+fmpzxx(128103)*pow(e,2),
+    fmpzxx(55)*c*pow(e,5)-fmpzxx(55)*c+pow(e,11)+fmpzxx(143)*pow(e,6)-fmpzxx(144)*e,
+    fmpzxx(275)*c*d-fmpzxx(275)*c*e+fmpzxx(440)*pow(d,6)*e+fmpzxx(1210)*pow(d,5)*pow(e,2)-fmpzxx(275)*pow(d,3)*pow(e,4)+fmpzxx(275)*pow(d,2)-fmpzxx(442)*d*pow(e,11)-fmpzxx(53911)*d*pow(e,6)+fmpzxx(53913)*d*e-fmpzxx(1121)*pow(e,12)-fmpzxx(136763)*pow(e,7)+fmpzxx(136674)*pow(e,2),
+    fmpzxx(275)*pow(c,3)+fmpzxx(550)*pow(c,2)*e-fmpzxx(550)*c*pow(e,2)+fmpzxx(275)*pow(d,6)*pow(e,2)+fmpzxx(550)*pow(d,5)*pow(e,3)-fmpzxx(550)*pow(d,4)*pow(e,4)+fmpzxx(550)*pow(d,2)*e-fmpzxx(232)*d*pow(e,12)-fmpzxx(28336)*d*pow(e,7)+fmpzxx(28018)*d*pow(e,2)-fmpzxx(568)*pow(e,13)-fmpzxx(69289)*pow(e,8)+fmpzxx(69307)*pow(e,3),
+    fmpzxx(55)*b*pow(e,5)-fmpzxx(55)*b+pow(e,11)+fmpzxx(143)*pow(e,6)-fmpzxx(144)*e,
+    fmpzxx(275)*b*d-fmpzxx(275)*b*e-fmpzxx(110)*pow(d,6)*e-fmpzxx(440)*pow(d,5)*pow(e,2)-fmpzxx(275)*pow(d,4)*pow(e,3)+fmpzxx(275)*pow(d,3)*pow(e,4)+fmpzxx(124)*d*pow(e,11)+fmpzxx(15092)*d*pow(e,6)-fmpzxx(15106)*d*e+fmpzxx(346)*pow(e,12)+fmpzxx(42218)*pow(e,7)-fmpzxx(42124)*pow(e,2),
+    fmpzxx(275)*b*c-fmpzxx(275)*b*e+fmpzxx(275)*pow(c,2)+fmpzxx(550)*c*e-fmpzxx(330)*pow(d,6)*e-fmpzxx(1045)*pow(d,5)*pow(e,2)-fmpzxx(275)*pow(d,4)*pow(e,3)+fmpzxx(275)*pow(d,3)*pow(e,4)-fmpzxx(550)*pow(d,2)+fmpzxx(334)*d*pow(e,11)+fmpzxx(40722)*d*pow(e,6)-fmpzxx(40726)*d*e+fmpzxx(867)*pow(e,12)+fmpzxx(105776)*pow(e,7)-fmpzxx(105873)*pow(e,2),
+    fmpzxx(275)*pow(b,2)+fmpzxx(825)*b*e+fmpzxx(550)*pow(d,6)*e+fmpzxx(1650)*pow(d,5)*pow(e,2)+fmpzxx(275)*pow(d,4)*pow(e,3)-fmpzxx(550)*pow(d,3)*pow(e,4)+fmpzxx(275)*pow(d,2)-fmpzxx(566)*d*pow(e,11)-fmpzxx(69003)*d*pow(e,6)+fmpzxx(69019)*d*e-fmpzxx(1467)*pow(e,12)-fmpzxx(178981)*pow(e,7)+fmpzxx(179073)*pow(e,2),
+    a+b+c+d+e
+  }), output);
+}
+
+TEST(moGVWTest, cyclic5fmpzxx_cached) {
+  use_abc_var_names in_this_scope;
+  typedef Polynomial<Term<fmpzxx, CachedMonomial<Monomial<char, 5> > > > P;
   typedef typename P::TermType T;
   typedef typename P::MonomialType M;
   moGVWRunner<P> runner;

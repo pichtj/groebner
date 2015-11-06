@@ -1,5 +1,5 @@
 BUILDDIR := $(shell pwd)
-CFLAGS := -std=c++11 -m64 -pg -O3 -march=native -mtune=native -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -Wall
+CFLAGS := -std=c++11 -m64 -O3 -march=native -mtune=native -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp -lpng -pthread
 CPPFLAGS := -DINFO
 CC := gcc

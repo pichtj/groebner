@@ -88,7 +88,7 @@ struct moGVWRunner {
       std::cerr << "." << std::flush;
       for (uint i = 0; i < M::VAR_COUNT; ++i) {
         auto xim_m = muf.first;
-        xim_m[i]++;
+        xim_m *= M::x(i);
         auto uf = muf.second;
         auto nvg = GG.find(xim_m);
         if (nvg != GG.end()) {
@@ -134,7 +134,8 @@ struct moGVWRunner {
 
   void append(MMSet& HH, const LMSet& GG, MMP vg) {
     if (HH.size() % 1000 == 999) {
-      I(HH.size() << " elements in HH");
+      D(HH.size() << " elements in HH");
+      std::cerr << "." << std::flush;
     }
     HH.insert(vg);
     for (const auto& term : vg.f()) {

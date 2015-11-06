@@ -54,7 +54,6 @@ private:
   friend void intrusive_ptr_add_ref(const MM::MMData* p) {
     ++p->refcount;
   }
-
   friend void intrusive_ptr_release(const MM::MMData* p) {
     if (--p->refcount == 0) delete p;
   }
