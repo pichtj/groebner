@@ -1,0 +1,2 @@
+a,b,c,d,e,f
+a*b*c*d*e*f-1,a*b*c*d*e+a*b*c*d*f+a*b*c*e*f+a*b*d*e*f+a*c*d*e*f+b*c*d*e*f,a*b*c*d+b*c*d*e+c*d*e*f+d*e*f*a+e*f*a*b+f*a*b*c,a*b*c+b*c*d+c*d*e+d*e*f+e*f*a+f*a*b,a*b+b*c+c*d+d*e+e*f+f*a,a+b+c+d+e+f

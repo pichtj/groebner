@@ -50,15 +50,10 @@ string var_name(uint index) {
 int main(int argc, char* argv[]) {
   get_var_name = var_name;
 
-  typedef Polynomial<Term<fmpzxx, CachedMonomial<Monomial<char, 64, lex> > > > P;
+  typedef Polynomial<Term<fmpzxx, Monomial<char, 64, lex> > > P;
   auto input = read_input<P>();
-  cout << "Input:" << endl;
-  for (auto it = input.begin(); it != input.end(); ++it) {
-    cout << *it << endl;
-  }
   moGVWRunner<P> runner;
   auto output = runner.moGVW(input);
-  cout << "Output:" << endl;
   for (auto it = output.begin(); it != output.end(); ++it) {
     cout << *it << endl;
   }
