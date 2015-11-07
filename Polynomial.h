@@ -18,6 +18,7 @@
 template<class T = Term<int, Monomial<char> > >
 class Polynomial {
   typedef typename T::CoefficientType C;
+  typedef typename T::MonomialType M;
 public:
   typedef typename T::CoefficientType CoefficientType;
   typedef typename T::MonomialType MonomialType;
@@ -25,11 +26,11 @@ public:
   typedef Polynomial<T> This;
 
   Polynomial() {}
-  Polynomial(const CoefficientType& c) : terms({T(c)}) {}
+  Polynomial(const C& c) : terms({T(c)}) {}
   Polynomial(const T& t) : terms({t}) {}
   T lterm() const { return terms.front(); }
-  CoefficientType lc() const { if (!terms.empty()) { return terms.front().c(); } else { return CoefficientType(); } }
-  MonomialType lm() const { if (!terms.empty()) { return terms.front().m(); } else { return MonomialType(); } }
+  C lc() const { if (!terms.empty()) { return terms.front().c(); } else { return C(); } }
+  M lm() const { if (!terms.empty()) { return terms.front().m(); } else { return M(); } }
 
   class TermIterator : public std::iterator<std::forward_iterator_tag, const T> {
     typedef TermIterator This;
@@ -50,18 +51,18 @@ public:
   TermIterator begin() const { return TermIterator(terms.begin()); }
   TermIterator end() const { return TermIterator(terms.end()); }
 
-  CoefficientType operator[](const MonomialType& m) const {
+  C operator[](const M& m) const {
     auto c = terms.begin();
     while (c != terms.end() && c->m() > m) ++c;
-    if (c == terms.end()) return CoefficientType();
+    if (c == terms.end()) return C();
     if (c->m() == m) return c->c();
-    return CoefficientType();
+    return C();
   }
   bool isZero() const { return terms.empty(); }
-  This& operator+=(const CoefficientType& c) { *this += T(c); return *this; }
-  This operator+(const CoefficientType& c) const { This r = *this; r += c; return r; }
-  This& operator-=(const CoefficientType& c) { C d = c; d *= -1; *this += d; return *this; }
-  This operator-(const CoefficientType& c) const { This r = *this; r -= c; return r; }
+  This& operator+=(const C& c) { *this += T(c); return *this; }
+  This operator+(const C& c) const { This r = *this; r += c; return r; }
+  This& operator-=(const C& c) { C d = c; d *= -1; *this += d; return *this; }
+  This operator-(const C& c) const { This r = *this; r -= c; return r; }
   This& operator+=(const T& t) {
     if (t.isZero()) return *this;
     if (terms.empty() || lm() < t.m()) {
@@ -192,13 +193,13 @@ public:
     return *this;
   }
   This operator*(const T& t) const { This r = *this; r *= t; return r; }
-  This& operator*=(const MonomialType& m) {
+  This& operator*=(const M& m) {
     for (auto it = terms.begin(); it != terms.end(); ++it) {
       *it *= m;
     }
     return *this;
   }
-  This operator*(const MonomialType& m) const { This r = *this; r *= m; return r; }
+  This operator*(const M& m) const { This r = *this; r *= m; return r; }
   This& operator*=(const This& other) {
     This newMe = *this * other;
     terms.clear();

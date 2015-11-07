@@ -83,9 +83,13 @@ struct moGVWRunner {
     DD("todo = ", todo);
 
     MMSet HH;
+    static uint count = 0;
     for (const auto& muf : todo) {
       D("chose " << muf << " to lift");
-      std::cerr << "." << std::flush;
+      if (count > 0 && count % 1000 == 0) {
+        std::cerr << "l" << std::flush;
+        ++count;
+      }
       for (uint i = 0; i < M::VAR_COUNT; ++i) {
         auto xim_m = muf.first;
         xim_m *= M::x(i);
@@ -133,9 +137,9 @@ struct moGVWRunner {
   }
 
   void append(MMSet& HH, const LMSet& GG, MMP vg) {
-    if (HH.size() % 1000 == 999) {
+    if (HH.size() % 1000 == 0) {
       D(HH.size() << " elements in HH");
-      std::cerr << "." << std::flush;
+      std::cerr << "a" << std::flush;
     }
     HH.insert(vg);
     for (const auto& term : vg.f()) {
@@ -256,6 +260,8 @@ struct moGVWRunner {
   MMSet eliminate(const MMSet& HH) {
     PolynomialMatrix m(HH);
 
+    std::cerr << "[" << m.rows.size() << "x" << m.monomials.size() << "]" << std::flush;
+
     I(m);
     static uint step;
 
@@ -267,7 +273,7 @@ struct moGVWRunner {
     auto size = m.monomials.size();
     uint k = 0;
     for (const auto& monomial : m.monomials) {
-      if (k % 1000 == 0) {
+      if (k > 0 && k % 1000 == 0) {
         std::cerr << (100*(double)k/size) << "%" << std::flush;
       }
       ++k;
@@ -349,8 +355,7 @@ struct moGVWRunner {
             auto rt = *r * t;
             C c = term->c();
             c *= -1;
-            p->combine(r->lc(), rt, c);
-            p->renormalize();
+            *p = P::combineAndRenormalize(*p, r->lc(), rt, c);
             D("to " << *p);
             term = p->begin();
             DD("polynomials = ", polynomials);
@@ -367,8 +372,7 @@ struct moGVWRunner {
         polynomials.erase(p);
         continue;
       }
-      if (p->lc() < 0) *p *= C(-1);
-      p->renormalize();
+      if (p->lc() < 0) *p = *p * C(-1);
       ++p;
     }
     DD("polynomials = ", polynomials);
@@ -401,6 +405,7 @@ struct moGVWRunner {
     }
     I("liftdeg = " << liftdeg);
     I("mindeg = " << mindeg);
+    std::cerr << "[" << mindeg << ":" << liftdeg << "]" << std::flush;
 
     while (mindeg <= liftdeg) {
       LMSet todo;
@@ -430,6 +435,7 @@ struct moGVWRunner {
       }
       I("liftdeg = " << liftdeg);
       I("mindeg = " << mindeg);
+      std::cerr << "[" << mindeg << ":" << liftdeg << "]" << std::flush;
     }
 
     std::vector<P> result;
