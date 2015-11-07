@@ -11,7 +11,7 @@ MPFR := mpfr-3.1.3
 
 all: moGVW test
 
-moGVW: main.o Monomial.o lib/libmpirxx.a lib/libmpir.a
+moGVW: main.o Monomial.o Ideal.o lib/libmpirxx.a lib/libmpir.a
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -o $@ $^ $(LDFLAGS)
 
 main.o: main.cpp *.h include/mpir.h include/mpirxx.h
@@ -72,7 +72,7 @@ gtest_main.o: $(GTEST)/src/gtest_main.cc
 
 TEST_OBJECTS := $(shell ls *Test.cpp | sed -e s/cpp$$/o/g)
 
-test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o
+test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o Ideal.o
 	$(CXX) $^ $(CFLAGS) -o test-runner $(LDFLAGS)
 
 %.o: %.cpp

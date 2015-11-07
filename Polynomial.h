@@ -306,7 +306,6 @@ std::istream& operator>>(std::istream& in, Polynomial<T>& p) {
     if (!t.isZero()) p += t;
     next = in.peek();
   }
-  D("read " << p);
   return in;
 }
 

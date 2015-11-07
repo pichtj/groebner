@@ -73,7 +73,7 @@ std::ostream& operator<<(std::ostream& out, MM<P> uf) {
 
 namespace std {
   template<class P>
-  struct hash<MM<P> > { 
+  struct hash<MM<P> > {
     size_t operator()(MM<P> mm) const {
       size_t result = 0;
       hash<typename P::MonomialType> mhash;

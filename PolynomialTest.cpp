@@ -186,4 +186,6 @@ TEST(PolynomialTest, Input) {
 
   EXPECT_EQ(6*pow(a, 2) + 23*b + 17, from_string<P>("6*a^2+23*b+17"));
   EXPECT_EQ(2*b*e-2*b*c+3*pow(c,2)*d-3*pow(c,2)*b, from_string<P>("2*b*e-2*b*c+3*c^2*d-3*c^2*b,"));
+
+  EXPECT_EQ(a+b+c, from_string<P>("a+b+c\n"));
 }

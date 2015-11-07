@@ -110,11 +110,11 @@ TEST(moGVWTest, moGVW) {
   P f2 = a*b - c;
   P f3 = b*c - b;
 
-  set<P> input = { f1, f2, f3 };
+  vector<P> input = { f1, f2, f3 };
 
-  set<P> output = runner.moGVW(input);
+  auto output = runner.moGVW(input);
 
-  EXPECT_EQ(set<P>({c-1, a*b-1}), output);
+  EXPECT_EQ(vector<P>({c-1, a*b-1}), output);
 }
 
 TEST(moGVWTest, cyclic3) {
@@ -128,15 +128,15 @@ TEST(moGVWTest, cyclic3) {
   T b = T(1, M::x(1));
   T c = T(1, M::x(2));
 
-  set<P> input = {
+  vector<P> input = {
     a + b + c,
     a*b + a*c + b*c,
     a*b*c - 1
   };
 
-  set<P> output = runner.moGVW(input);
+  auto output = runner.moGVW(input);
 
-  EXPECT_EQ(set<P>({pow(c,3)-1, pow(b,2)+b*c+pow(c,2), a+b+c}), output);
+  EXPECT_EQ(vector<P>({pow(c,3)-1, pow(b,2)+b*c+pow(c,2), a+b+c}), output);
 }
 
 TEST(moGVWTest, cyclic3_degrevlex) {
@@ -150,15 +150,15 @@ TEST(moGVWTest, cyclic3_degrevlex) {
   T b = T(1, M::x(1));
   T c = T(1, M::x(2));
 
-  set<P> input = {
+  vector<P> input = {
     a + b + c,
     a*b + a*c + b*c,
     a*b*c - 1
   };
 
-  set<P> output = runner.moGVW(input);
+  auto output = runner.moGVW(input);
 
-  EXPECT_EQ(set<P>({a+b+c, pow(b,2)+b*c+pow(c,2), pow(c,3)-1}), output);
+  EXPECT_EQ(vector<P>({a+b+c, pow(b,2)+b*c+pow(c,2), pow(c,3)-1}), output);
 }
 
 TEST(moGVWTest, cyclic4) {
@@ -173,16 +173,16 @@ TEST(moGVWTest, cyclic4) {
   T c = T(1, M::x(2));
   T d = T(1, M::x(3));
 
-  set<P> input = {
+  vector<P> input = {
     a + b + c + d,
     a*b + b*c + a*d + c*d,
     a*b*c + a*b*d + a*c*d + b*c*d,
     a*b*c*d - 1
   };
 
-  set<P> output = runner.moGVW(input);
+  auto output = runner.moGVW(input);
 
-  EXPECT_EQ(set<P>({
+  EXPECT_EQ(vector<P>({
     pow(c,2)*pow(d,6)-pow(c,2)*pow(d,2)-pow(d,4)+1,
     pow(c,3)*pow(d,2)+pow(c,2)*pow(d,3)-c-d,
     b*pow(d,4)-b+pow(d,5)-d,
@@ -204,16 +204,16 @@ TEST(moGVWTest, cyclic4_degrevlex) {
   T c = T(1, M::x(2));
   T d = T(1, M::x(3));
 
-  set<P> input = {
+  vector<P> input = {
     a + b + c + d,
     a*b + b*c + a*d + c*d,
     a*b*c + a*b*d + a*c*d + b*c*d,
     a*b*c*d - 1
   };
 
-  set<P> output = runner.moGVW(input);
+  auto output = runner.moGVW(input);
 
-  EXPECT_EQ(set<P>({
+  EXPECT_EQ(vector<P>({
     a+b+c+d,
     pow(b, 2)+2*b*d+pow(d, 2),
     b*pow(c, 2)+pow(c, 2)*d-b*pow(d, 2)-pow(d, 3),
@@ -237,7 +237,7 @@ TEST(moGVWTest, cyclic5mpz_class) {
   T d = T(1, M::x(3));
   T e = T(1, M::x(4));
 
-  set<P> input = {
+  vector<P> input = {
     a*b*c*d*e -1L,
     a*b*c*d + a*b*c*e + a*b*d*e + a*c*d*e + b*c*d*e,
     a*b*c + a*b*e + a*d*e + b*c*d + c*d*e,
@@ -245,9 +245,9 @@ TEST(moGVWTest, cyclic5mpz_class) {
     a + b + c + d + e
   };
 
-  set<P> output = runner.moGVW(input);
+  auto output = runner.moGVW(input);
 
-  EXPECT_EQ(set<P>({
+  EXPECT_EQ(vector<P>({
     pow(e,15)+mpz_class(122)*pow(e,10)-mpz_class(122)*pow(e,5)-mpz_class(1),
     mpz_class(55)*pow(d,2)*pow(e,5)-mpz_class(55)*pow(d,2)-mpz_class(2)*d*pow(e,11)-mpz_class(231)*d*pow(e,6)+mpz_class(233)*d*e-mpz_class(8)*pow(e,12)-mpz_class(979)*pow(e,7)+mpz_class(987)*pow(e,2),
     mpz_class(55)*pow(d,7)+mpz_class(165)*pow(d,6)*e+mpz_class(55)*pow(d,5)*pow(e,2)-mpz_class(55)*pow(d,2)-mpz_class(398)*d*pow(e,11)-mpz_class(48554)*d*pow(e,6)+mpz_class(48787)*d*e-mpz_class(1042)*pow(e,12)-mpz_class(127116)*pow(e,7)+mpz_class(128103)*pow(e,2),
@@ -275,7 +275,7 @@ TEST(moGVWTest, cyclic5fmpzxx) {
   T d = T(fmpzxx(1), M::x(3));
   T e = T(fmpzxx(1), M::x(4));
 
-  set<P> input = {
+  vector<P> input = {
     a*b*c*d*e - fmpzxx(1),
     a*b*c*d + a*b*c*e + a*b*d*e + a*c*d*e + b*c*d*e,
     a*b*c + a*b*e + a*d*e + b*c*d + c*d*e,
@@ -283,9 +283,9 @@ TEST(moGVWTest, cyclic5fmpzxx) {
     a + b + c + d + e
   };
 
-  set<P> output = runner.moGVW(input);
+  auto output = runner.moGVW(input);
 
-  EXPECT_EQ(set<P>({
+  EXPECT_EQ(vector<P>({
     pow(e,15)+fmpzxx(122)*pow(e,10)-fmpzxx(122)*pow(e,5)-fmpzxx(1),
     fmpzxx(55)*pow(d,2)*pow(e,5)-fmpzxx(55)*pow(d,2)-fmpzxx(2)*d*pow(e,11)-fmpzxx(231)*d*pow(e,6)+fmpzxx(233)*d*e-fmpzxx(8)*pow(e,12)-fmpzxx(979)*pow(e,7)+fmpzxx(987)*pow(e,2),
     fmpzxx(55)*pow(d,7)+fmpzxx(165)*pow(d,6)*e+fmpzxx(55)*pow(d,5)*pow(e,2)-fmpzxx(55)*pow(d,2)-fmpzxx(398)*d*pow(e,11)-fmpzxx(48554)*d*pow(e,6)+fmpzxx(48787)*d*e-fmpzxx(1042)*pow(e,12)-fmpzxx(127116)*pow(e,7)+fmpzxx(128103)*pow(e,2),
@@ -313,7 +313,7 @@ TEST(moGVWTest, cyclic5fmpzxx_cached) {
   T d = T(fmpzxx(1), M::x(3));
   T e = T(fmpzxx(1), M::x(4));
 
-  set<P> input = {
+  vector<P> input = {
     a*b*c*d*e - fmpzxx(1),
     a*b*c*d + a*b*c*e + a*b*d*e + a*c*d*e + b*c*d*e,
     a*b*c + a*b*e + a*d*e + b*c*d + c*d*e,
@@ -321,9 +321,9 @@ TEST(moGVWTest, cyclic5fmpzxx_cached) {
     a + b + c + d + e
   };
 
-  set<P> output = runner.moGVW(input);
+  auto output = runner.moGVW(input);
 
-  EXPECT_EQ(set<P>({
+  EXPECT_EQ(vector<P>({
     pow(e,15)+fmpzxx(122)*pow(e,10)-fmpzxx(122)*pow(e,5)-fmpzxx(1),
     fmpzxx(55)*pow(d,2)*pow(e,5)-fmpzxx(55)*pow(d,2)-fmpzxx(2)*d*pow(e,11)-fmpzxx(231)*d*pow(e,6)+fmpzxx(233)*d*e-fmpzxx(8)*pow(e,12)-fmpzxx(979)*pow(e,7)+fmpzxx(987)*pow(e,2),
     fmpzxx(55)*pow(d,7)+fmpzxx(165)*pow(d,6)*e+fmpzxx(55)*pow(d,5)*pow(e,2)-fmpzxx(55)*pow(d,2)-fmpzxx(398)*d*pow(e,11)-fmpzxx(48554)*d*pow(e,6)+fmpzxx(48787)*d*e-fmpzxx(1042)*pow(e,12)-fmpzxx(127116)*pow(e,7)+fmpzxx(128103)*pow(e,2),
@@ -351,7 +351,7 @@ TEST(moGVWTest, cyclic5fmpzxx_degrevlex_minimal) {
   T d = T(fmpzxx(1), M::x(3));
   T e = T(fmpzxx(1), M::x(4));
 
-  set<P> input = {
+  vector<P> input = {
     a+b+c+d+e,
     pow(b, 2)+b*d-c*d+fmpzxx(2)*b*e+c*e+pow(e, 2),
     b*pow(c, 2)-b*c*d+pow(c, 2)*d-pow(c, 2)*e+b*d*e+c*d*e+pow(d, 2)*e-b*pow(e, 2)-fmpzxx(2)*c*pow(e, 2)+d*pow(e, 2)-pow(e, 3),
@@ -376,9 +376,9 @@ TEST(moGVWTest, cyclic5fmpzxx_degrevlex_minimal) {
     fmpzxx(177881)*pow(d, 2)*pow(e, 6)+fmpzxx(1380212)*pow(c, 3)+fmpzxx(6360880)*b*c*d+fmpzxx(2490334)*pow(c, 2)*d-fmpzxx(6495925)*b*pow(d, 2)-fmpzxx(3514784)*c*pow(d, 2)-fmpzxx(3514784)*pow(d, 3)-fmpzxx(1956691)*b*c*e+fmpzxx(4674279)*pow(c, 2)*e-fmpzxx(1159495)*b*d*e+fmpzxx(263553)*c*d*e-fmpzxx(9477066)*pow(d, 2)*e+fmpzxx(3251231)*b*pow(e, 2)+fmpzxx(9299185)*c*pow(e, 2)-fmpzxx(7741092)*d*pow(e, 2)+fmpzxx(5962282)*pow(e, 3)
   };
 
-  set<P> output = runner.moGVW(input);
+  auto output = runner.moGVW(input);
 
-  EXPECT_EQ(set<P>({
+  EXPECT_EQ(vector<P>({
     a+b+c+d+e,
     pow(b, 2)+b*d-c*d+fmpzxx(2)*b*e+c*e+pow(e, 2),
     pow(c, 3)+b*c*d-fmpzxx(2)*b*pow(d, 2)-c*pow(d, 2)-pow(d, 3)+fmpzxx(3)*pow(c, 2)*e-fmpzxx(2)*b*d*e-fmpzxx(2)*c*d*e-fmpzxx(3)*pow(d, 2)*e+fmpzxx(3)*b*pow(e, 2)+fmpzxx(3)*c*pow(e, 2)-fmpzxx(2)*d*pow(e, 2)+fmpzxx(2)*pow(e, 3),
@@ -415,7 +415,7 @@ TEST(moGVWTest, DISABLED_cyclic5fmpzxx_degrevlex) {
   T d = T(fmpzxx(1), M::x(3));
   T e = T(fmpzxx(1), M::x(4));
 
-  set<P> input = {
+  vector<P> input = {
     a*b*c*d*e - fmpzxx(1),
     a*b*c*d + a*b*c*e + a*b*d*e + a*c*d*e + b*c*d*e,
     a*b*c + a*b*e + a*d*e + b*c*d + c*d*e,
@@ -423,9 +423,9 @@ TEST(moGVWTest, DISABLED_cyclic5fmpzxx_degrevlex) {
     a + b + c + d + e
   };
 
-  set<P> output = runner.moGVW(input);
+  auto output = runner.moGVW(input);
 
-  EXPECT_EQ(set<P>({
+  EXPECT_EQ(vector<P>({
     a+b+c+d+e,
     pow(b, 2)+b*d-c*d+fmpzxx(2)*b*e+c*e+pow(e, 2),
     pow(c, 3)+b*c*d-fmpzxx(2)*b*pow(d, 2)-c*pow(d, 2)-pow(d, 3)+fmpzxx(3)*pow(c, 2)*e-fmpzxx(2)*b*d*e-fmpzxx(2)*c*d*e-fmpzxx(3)*pow(d, 2)*e+fmpzxx(3)*b*pow(e, 2)+fmpzxx(3)*c*pow(e, 2)-fmpzxx(2)*d*pow(e, 2)+fmpzxx(2)*pow(e, 3),
@@ -449,7 +449,7 @@ TEST(moGVWTest, DISABLED_cyclic5fmpzxx_degrevlex) {
   }), output);
 }
 
-TEST(moGVWTest, DISABLED_cyclic6mpz_class) {
+TEST(moGVWTest, cyclic6mpz_class) {
   use_abc_var_names in_this_scope;
   typedef Polynomial<Term<mpz_class, Monomial<char, 6> > > P;
   typedef typename P::TermType T;
@@ -463,13 +463,13 @@ TEST(moGVWTest, DISABLED_cyclic6mpz_class) {
   T e = T(1, M::x(4));
   T f = T(1, M::x(5));
 
-  set<P> input = {
+  vector<P> input = {
     a*b*c*d*e*f-1, a*b*c*d*e+a*b*c*d*f+a*b*c*e*f+a*b*d*e*f+a*c*d*e*f+b*c*d*e*f, a*b*c*d+b*c*d*e+c*d*e*f+d*e*f*a+e*f*a*b+f*a*b*c, a*b*c+b*c*d+c*d*e+d*e*f+e*f*a+f*a*b, a*b+b*c+c*d+d*e+e*f+f*a, a+b+c+d+e+f
   };
 
-  set<P> output = runner.moGVW(input);
+  auto output = runner.moGVW(input);
 
-  EXPECT_EQ(set<P>({
+  EXPECT_EQ(vector<P>({
     pow(f, 48)-mpz_class("2554")*pow(f, 42)-mpz_class("399710")*pow(f, 36)-mpz_class("499722")*pow(f, 30)+mpz_class("499722")*pow(f, 18)+mpz_class("399710")*pow(f, 12)+mpz_class("2554")*pow(f, 6)-1,
     mpz_class("1387545279120")*pow(e, 2)*pow(f, 12)-mpz_class("1387545279120")*pow(e, 2)+mpz_class("4321823003")*e*pow(f, 43)-mpz_class("11037922310209")*e*pow(f, 37)-mpz_class("1727510711947989")*e*pow(f, 31)-mpz_class("2165150991154425")*e*pow(f, 25)-mpz_class("5114342560755")*e*pow(f, 19)+mpz_class("2162682824948601")*e*pow(f, 13)+mpz_class("1732620732685741")*e*pow(f, 7)+mpz_class("13506088516033")*e*f+mpz_class("24177661775")*pow(f, 44)-mpz_class("61749727185325")*pow(f, 38)-mpz_class("9664106795754225")*pow(f, 32)-mpz_class("12090487758628245")*pow(f, 26)-mpz_class("8787672733575")*pow(f, 20)+mpz_class("12083693383005045")*pow(f, 14)+mpz_class("9672870290826025")*pow(f, 8)+mpz_class("68544102808525")*pow(f, 2),
     mpz_class("25438330117200")*pow(e, 3)*pow(f, 6)+mpz_class("25438330117200")*pow(e, 3)+mpz_class("76314990351600")*pow(e, 2)*pow(f, 7)+mpz_class("76314990351600")*pow(e, 2)*f-mpz_class("1594966552735")*e*pow(f, 44)+mpz_class("4073543370415745")*e*pow(f, 38)+mpz_class("637527159231148925")*e*pow(f, 32)+mpz_class("797521176113606525")*e*pow(f, 26)+mpz_class("530440941097175")*e*pow(f, 20)-mpz_class("797160527306433145")*e*pow(f, 14)-mpz_class("638132320196044965")*e*pow(f, 8)-mpz_class("4510507167940725")*e*pow(f, 2)-mpz_class("6036376800443")*pow(f, 45)+mpz_class("15416903421476909")*pow(f, 39)+mpz_class("2412807646192304449")*pow(f, 33)+mpz_class("3017679923028013705")*pow(f, 27)+mpz_class("1422320037411955")*pow(f, 21)-mpz_class("3016560402417843941")*pow(f, 15)-mpz_class("2414249368183033161")*pow(f, 9)-mpz_class("16561862361763873")*pow(f, 3),

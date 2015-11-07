@@ -72,16 +72,18 @@ TEST(TermTest, Input) {
   auto b = M::x(1);
 
   EXPECT_EQ(T(1, a), from_string<T>("a"));
-  EXPECT_EQ(T(1, b), from_string<T>("b"));
-  EXPECT_EQ(T(1, pow(M::x(0), 3)), from_string<T>("a^3"));
-  EXPECT_EQ(T(1, pow(M::x(1), 4)), from_string<T>("b^4"));
-  EXPECT_EQ(T(1, pow(M::x(0), 1) * pow(M::x(1), 4)), from_string<T>("a*b^4"));
-  EXPECT_EQ(T(1, pow(M::x(0), 3) * pow(M::x(1), 4)), from_string<T>("a^3*b^4"));
+  EXPECT_EQ(T(-1, a), from_string<T>("-a"));
+
+  EXPECT_EQ(T(1, pow(a, 3)), from_string<T>("a^3"));
+  EXPECT_EQ(T(1, pow(b, 4)), from_string<T>("b^4"));
+  EXPECT_EQ(T(1, pow(a, 1) * pow(M::x(1), 4)), from_string<T>("a*b^4"));
+  EXPECT_EQ(T(1, pow(a, 3) * pow(M::x(1), 4)), from_string<T>("a^3*b^4"));
 
   EXPECT_EQ(T(17, a), from_string<T>("+17*a"));
   EXPECT_EQ(T(-17, b), from_string<T>("-17*b"));
-  EXPECT_EQ(T(17, pow(M::x(0), 3)), from_string<T>("17*a^3"));
-  EXPECT_EQ(T(17, pow(M::x(1), 4)), from_string<T>("17*b^4"));
-  EXPECT_EQ(T(17, pow(M::x(0), 1) * pow(M::x(1), 4)), from_string<T>("17*a*b^4"));
-  EXPECT_EQ(T(17, pow(M::x(0), 3) * pow(M::x(1), 42)), from_string<T>("17*a^3*b^42"));
+  EXPECT_EQ(T(17, pow(a, 3)), from_string<T>("17*a^3"));
+  EXPECT_EQ(T(17, pow(b, 4)), from_string<T>("17*b^4"));
+  EXPECT_EQ(T(17, pow(a, 1) * pow(b, 4)), from_string<T>("17*a*b^4"));
+  EXPECT_EQ(T(17, pow(a, 3) * pow(b, 42)), from_string<T>("17*a^3*b^42"));
+
 }

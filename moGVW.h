@@ -330,20 +330,19 @@ struct moGVWRunner {
     D("GG has " << GG.size() << " elements in " << GG.bucket_count() << " buckets");
   }
 
-  std::set<P> interreduce(const std::set<P>& input) {
-    DD("input = ", input);
-    std::vector<P> intermediate(input.begin(), input.end());
+  void interreduce(std::vector<P>& polynomials) {
+    DD("polynomials = ", polynomials);
     bool stable;
     do {
       stable = true;
-      for (auto p = intermediate.begin(); p != intermediate.end(); ++p) {
+      for (auto p = polynomials.begin(); p != polynomials.end(); ++p) {
         auto term = p->begin();
         while (term != p->end()) {
-          auto r = intermediate.begin();
-          while (r != intermediate.end() && (r->isZero() || r == p || !r->lm().divides(term->m()))) {
+          auto r = polynomials.begin();
+          while (r != polynomials.end() && (r->isZero() || r == p || !r->lm().divides(term->m()))) {
             ++r;
           }
-          if (r != intermediate.end()) {
+          if (r != polynomials.end()) {
             D("reducing " << *p << " with " << *r);
             stable = false;
             auto t = term->m() / r->lm();
@@ -354,7 +353,7 @@ struct moGVWRunner {
             p->renormalize();
             D("to " << *p);
             term = p->begin();
-            DD("intermediate = ", intermediate);
+            DD("polynomials = ", polynomials);
           } else {
             ++term;
           }
@@ -362,28 +361,30 @@ struct moGVWRunner {
       }
     } while (!stable);
 
-    for (auto& p : intermediate) {
-      if (p.isZero()) continue;
-      if (p.lc() < 0) p *= C(-1);
-      p.renormalize();
+    auto p = polynomials.begin();
+    while (p != polynomials.end()) {
+      if (p->isZero()) {
+        polynomials.erase(p);
+        continue;
+      }
+      if (p->lc() < 0) *p *= C(-1);
+      p->renormalize();
+      ++p;
     }
-    std::set<P> result(intermediate.begin(), intermediate.end());
-    result.erase(P());
-    DD("returning reduced gb = ", result);
-    return result;
+    DD("polynomials = ", polynomials);
   }
 
   bool isPrimitive(const std::pair<M, MMP >& lm) const {
     return lm.first == lm.second.f().lm();
   }
 
-  std::set<P> moGVW(const std::set<P>& input) {
+  std::vector<P> moGVW(std::vector<P>& input) {
+    interreduce(input);
+
     LMSet GG;
     wasLifted.clear();
-    typename std::set<P>::size_type i = 0;
-    for (const auto& p : input) {
-      GG[p.lm()] = MMP(MonRl<P>::e(i), p);
-      ++i;
+    for (typename std::vector<P>::size_type i = 0; i < input.size(); ++i) {
+      GG[input[i].lm()] = MMP(MonRl<P>::e(i), input[i]);
     }
 
     DD("prefilled GG = ", GG);
@@ -431,14 +432,16 @@ struct moGVWRunner {
       I("mindeg = " << mindeg);
     }
 
-    std::set<P> result;
+    std::vector<P> result;
     for (const auto& p : GG) {
       if (isPrimitive(p)) {
-        result.insert(p.second.f());
+        result.push_back(p.second.f());
       }
     }
+    std::sort(result.begin(), result.end());
     I("calling interreduce");
-    result = interreduce(result);
+    interreduce(result);
+    std::sort(result.begin(), result.end());
     II("returning gb = ", result);
     return result;
   }
@@ -449,19 +452,6 @@ private:
 template<class A, class B>
 std::ostream& operator<<(std::ostream& out, const std::pair<A, B>& ab) {
   return out << "(" << ab.first << ", " << ab.second << ")";
-}
-
-template<class C>
-void print(const std::string& prefix, const C& c) {
-  std::cout << "{";
-  bool itemPrinted = false;
-  for (const auto& item : c) {
-    if (itemPrinted) std::cout << ",";
-    std::cout << std::endl << prefix << "  " << item;
-    itemPrinted = true;
-  }
-  if (itemPrinted) std::cout << std::endl << prefix;
-  std::cout << "}" << std::endl;
 }
 
 #endif // MOGVW_H
