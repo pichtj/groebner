@@ -50,6 +50,7 @@ public:
 
   TermIterator begin() const { return TermIterator(terms.begin()); }
   TermIterator end() const { return TermIterator(terms.end()); }
+  size_t size() const { uint r = 0; auto it = begin(); while (it++ != end()) r++; return r; }
 
   C operator[](const M& m) const {
     auto c = terms.begin();

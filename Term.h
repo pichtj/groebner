@@ -15,7 +15,7 @@ public:
 
   Term() : coeff(), exp() {}
   Term(const C& c) : coeff(c), exp() {}
-  Term(const C& c, const M& e) : coeff(c), exp(e) {}
+  Term(const C& c, const M& m) : coeff(c), exp(m) {}
 
   bool operator==(const This& b) const {
     return m() == b.m() && c() == b.c();
