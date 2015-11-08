@@ -1,8 +1,8 @@
 BUILDDIR := $(shell pwd)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
 CXXFLAGS := -std=c++11 -m64 -O3 -march=native -mtune=native -Wall
-LDFLAGS := -L$(BUILDDIR)/lib -L$(FGB_LIBDIR) -lflint -lmpir -lmpfr -lmpirxx -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm -lpng -fopenmp -pthread
-CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -DINFO
+LDFLAGS := -L$(BUILDDIR)/lib -L$(FGB_LIBDIR) -lflint -lmpir -lmpfr -lmpirxx -lgmp -lpng -fopenmp -pthread
+CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -DDEBUG
 CC := gcc
 CXX := g++
 MPIR := mpir-2.7.0
@@ -19,48 +19,48 @@ moGVW.o: moGVW.cpp *.h include/mpir.h include/mpirxx.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 clean:
-	rm -rf moGVW *.o test-runner
+	rm -rf moGVW *.o test-runner FGb gmon.out
 
 distclean: clean
-	rm -rf include lib share $(MPIR)* $(MPFR)* $(FLINT)* $(GTEST)*
+	rm -rf include lib share $(MPIR) $(MPFR) $(FLINT) $(GTEST) call_FGb
 
-$(MPIR).tar.bz2:
-	wget http://mpir.org/$(MPIR).tar.bz2
+.downloads/$(MPIR).tar.bz2:
+	mkdir -p .downloads && cd .downloads && wget --continue http://mpir.org/$(MPIR).tar.bz2
 
-$(MPIR): $(MPIR).tar.bz2
+$(MPIR): .downloads/$(MPIR).tar.bz2
 	tar jxvf $<
 
 lib/libmpir.a include/mpir.h include/mpirxx.h lib/libgmp.a include/gmp.h: $(MPIR)
 	cd $< && CC="$(CC)" ./configure --enable-gmpcompat --enable-cxx --disable-shared --enable-static --prefix=$(BUILDDIR) && make && make install
 
-$(MPFR).tar.bz2:
-	wget http://www.mpfr.org/mpfr-current/$(MPFR).tar.bz2
+.downloads/$(MPFR).tar.bz2:
+	mkdir -p .downloads && cd .downloads && wget --continue http://www.mpfr.org/mpfr-current/$(MPFR).tar.bz2
 
-$(MPFR): $(MPFR).tar.bz2
+$(MPFR): .downloads/$(MPFR).tar.bz2
 	tar jxvf $<
 
 lib/libmpfr.a include/mpfr.h: $(MPFR) lib/libgmp.a
 	cd $< && ./configure --disable-shared --with-gmp=$(BUILDDIR) --prefix=$(BUILDDIR) && make && make install
 
-$(FLINT).tar.gz:
-	wget http://www.flintlib.org/$(FLINT).tar.gz
+.downloads/$(FLINT).tar.gz:
+	mkdir -p .downloads && cd .downloads && wget --continue http://www.flintlib.org/$(FLINT).tar.gz
 
-$(FLINT): $(FLINT).tar.gz
+$(FLINT): .downloads/$(FLINT).tar.gz
 	tar zxvf $<
 
-lib/libflint.a include/flint/flint.h: $(FLINT) lib/libmpfr.a
+lib/libflint.a include/flint/flint.h include/flint/fmpz.h: $(FLINT) lib/libmpfr.a
 	cd $< && ./configure --with-mpir=$(BUILDDIR) --with-gmp=$(BUILDDIR) --disable-shared --enable-cxx --prefix=$(BUILDDIR) && make && make install
 
-call_FGb6.maclinux.x64.tar.gz:
-	wget http://www-polsys.lip6.fr/~jcf/FGb/C/@downloads/call_FGb6.maclinux.x64.tar.gz
+.downloads/call_FGb6.maclinux.x64.tar.gz:
+	mkdir -p .downloads && cd .downloads && wget --continue http://www-polsys.lip6.fr/~jcf/FGb/C/@downloads/call_FGb6.maclinux.x64.tar.gz
 
-call_FGb: $(FGB).tar.gz
+call_FGb: .downloads/call_FGb6.maclinux.x64.tar.gz
 	tar zxvf $<
 
-$(GTEST).zip:
-	wget https://googletest.googlecode.com/files/$(GTEST).zip
+.downloads/$(GTEST).zip:
+	mkdir -p .downloads && cd .downloads && wget --continue https://googletest.googlecode.com/files/$(GTEST).zip
 
-$(GTEST): $(GTEST).zip
+$(GTEST): .downloads/$(GTEST).zip
 	test -e $@ || unzip $<
 
 libs: lib/libmpir.a lib/libflint.a
@@ -85,8 +85,8 @@ test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o Ideal.o
 %.o: %.cpp %.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-FGb.o: FGb.cpp FGb.h Monomial.h Polynomial.h
+FGb.o: FGb.cpp FGb.h Monomial.h Polynomial.h call_FGb
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $< -Wno-write-strings -Wno-unused-but-set-variable -Wno-unused-function
 
 FGb: FGb.o Monomial.o Ideal.o
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) -Wl,-allow-multiple-definition
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) -Wl,-allow-multiple-definition -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm

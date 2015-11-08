@@ -10,7 +10,7 @@
 int main(int argc, char* argv[]) {
   get_var_name = var_name;
 
-  typedef Polynomial<Term<int, Monomial<char, 59, lex> > > P;
+  typedef Polynomial<Term<int, Monomial<char, 59, degrevlex> > > P;
 
   std::vector<P> input;
   if (argc > 0) {
