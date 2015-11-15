@@ -25,9 +25,9 @@ TEST(moGVWTest, LCMCriterion) {
   P f2 = a*b - c;
   P f3 = b*c - b;
 
-  MonRl<> e1 = MonRl<>::e(0);
-  MonRl<> e2 = MonRl<>::e(1);
-  MonRl<> e3 = MonRl<>::e(2);
+  Signature<> e1 = Signature<>::e(0);
+  Signature<> e2 = Signature<>::e(1);
+  Signature<> e3 = Signature<>::e(2);
 
   auto r1 = MM<>(e1, f1);
   auto r2 = MM<>(e2, f2);
@@ -65,9 +65,9 @@ TEST(moGVWTest, lift) {
   P f2 = a*b - c;
   P f3 = b*c - b;
 
-  MonRl<> e1 = MonRl<>::e(0);
-  MonRl<> e2 = MonRl<>::e(1);
-  MonRl<> e3 = MonRl<>::e(2);
+  Signature<> e1 = Signature<>::e(0);
+  Signature<> e2 = Signature<>::e(1);
+  Signature<> e3 = Signature<>::e(2);
 
   auto r1 = MM<>(e1, f1);
   auto r2 = MM<>(e2, f2);

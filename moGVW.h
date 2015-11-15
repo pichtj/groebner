@@ -25,7 +25,7 @@ struct moGVWRunner {
   typedef typename P::TermType T;
   typedef typename P::CoefficientType C;
   typedef MM<P> MMP;
-  typedef MonRl<P> MonRlP;
+  typedef Signature<P> S;
   typedef std::unordered_map<M, MMP> LMSet;
   typedef std::unordered_set<MMP> MMSet;
   typedef std::set<M> MSet;
@@ -173,7 +173,7 @@ struct moGVWRunner {
     }
     bool operator>(row other) const { return other < *this; }
 
-    MonRlP u() const { return uf.u(); }
+    S u() const { return uf.u(); }
     const P& f() const { return uf.f(); }
 
     MMP uf;
@@ -388,7 +388,7 @@ struct moGVWRunner {
     LMSet GG;
     wasLifted.clear();
     for (typename std::vector<P>::size_type i = 0; i < input.size(); ++i) {
-      GG[input[i].lm()] = MMP(MonRl<P>::e(i), input[i]);
+      GG[input[i].lm()] = MMP(S::e(i), input[i]);
     }
 
     DD("prefilled GG = ", GG);

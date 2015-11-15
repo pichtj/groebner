@@ -55,7 +55,7 @@ lib/libflint.a include/flint/flint.h include/flint/fmpz.h: $(FLINT) lib/libmpfr.
 	mkdir -p .downloads && cd .downloads && wget --continue http://www-polsys.lip6.fr/~jcf/FGb/C/@downloads/call_FGb6.maclinux.x64.tar.gz
 
 call_FGb: .downloads/call_FGb6.maclinux.x64.tar.gz
-	tar zxvf $<
+	test -e $@ || tar zxvf $<
 
 .downloads/$(GTEST).zip:
 	mkdir -p .downloads && cd .downloads && wget --continue https://googletest.googlecode.com/files/$(GTEST).zip

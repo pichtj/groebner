@@ -5,7 +5,7 @@
 #include <boost/intrusive_ptr.hpp>
 
 #include "style.h"
-#include "MonRl.h"
+#include "Signature.h"
 #include "Polynomial.h"
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
@@ -13,14 +13,14 @@ struct MM {
   typedef typename P::MonomialType M;
   typedef typename P::TermType T;
   typedef typename P::CoefficientType C;
-  typedef MonRl<P> MonRlType;
+  typedef Signature<P> S;
   typedef MM<P> This;
 
   MM() : mmData(boost::intrusive_ptr<MMData>(new MMData())) {}
-  MM(const MonRlType& v, const P& g) : mmData(boost::intrusive_ptr<MMData>(new MMData(v, g))) {}
+  MM(const S& v, const P& g) : mmData(boost::intrusive_ptr<MMData>(new MMData(v, g))) {}
 
   const P& f() const { return mmData.get()->f_; }
-  const MonRlType& u() const { return mmData.get()->u_; }
+  const S& u() const { return mmData.get()->u_; }
 
   bool operator<(const This& other) const {
     return u() < other.u();
@@ -43,8 +43,8 @@ struct MM {
 private:
   struct MMData {
     MMData() : u_(), f_(), refcount(0) {}
-    MMData(const MonRlType& u, const P& f) : u_(u), f_(f), refcount(0) {}
-    MonRlType u_;
+    MMData(const S& u, const P& f) : u_(u), f_(f), refcount(0) {}
+    S u_;
     P f_;
     mutable uint refcount;
   };
