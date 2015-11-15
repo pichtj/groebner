@@ -10,8 +10,8 @@
 
 #include "style.h"
 #include "debug.h"
+#include "GbRunner.h"
 #include "integral.h"
-#include "Polynomial.h"
 #include "MM.h"
 
 #include <boost/gil/image.hpp>
@@ -20,12 +20,12 @@
 using namespace boost::gil;
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
-struct moGVWRunner {
-  typedef typename P::MonomialType M;
-  typedef typename P::TermType T;
-  typedef typename P::CoefficientType C;
+struct moGVWRunner : public GbRunner<P> {
+  typedef typename GbRunner<P>::T T;
+  typedef typename GbRunner<P>::M M;
+  typedef typename GbRunner<P>::C C;
+  typedef typename GbRunner<P>::S S;
   typedef MM<P> MMP;
-  typedef Signature<P> S;
   typedef std::unordered_map<M, MMP> LMSet;
   typedef std::unordered_set<MMP> MMSet;
   typedef std::set<M> MSet;
@@ -334,48 +334,6 @@ struct moGVWRunner {
     }
     DD("returning, GG = ", GG);
     D("GG has " << GG.size() << " elements in " << GG.bucket_count() << " buckets");
-  }
-
-  void interreduce(std::vector<P>& polynomials) {
-    DD("polynomials = ", polynomials);
-    bool stable;
-    do {
-      stable = true;
-      for (auto p = polynomials.begin(); p != polynomials.end(); ++p) {
-        auto term = p->begin();
-        while (term != p->end()) {
-          auto r = polynomials.begin();
-          while (r != polynomials.end() && (r->isZero() || r == p || !r->lm().divides(term->m()))) {
-            ++r;
-          }
-          if (r != polynomials.end()) {
-            D("reducing " << *p << " with " << *r);
-            stable = false;
-            auto t = term->m() / r->lm();
-            auto rt = *r * t;
-            C c = term->c();
-            c *= -1;
-            *p = P::combineAndRenormalize(*p, r->lc(), rt, c);
-            D("to " << *p);
-            term = p->begin();
-            DD("polynomials = ", polynomials);
-          } else {
-            ++term;
-          }
-        }
-      }
-    } while (!stable);
-
-    auto p = polynomials.begin();
-    while (p != polynomials.end()) {
-      if (p->isZero()) {
-        polynomials.erase(p);
-        continue;
-      }
-      if (p->lc() < 0) *p = *p * C(-1);
-      ++p;
-    }
-    DD("polynomials = ", polynomials);
   }
 
   bool isPrimitive(const std::pair<M, MMP >& lm) const {

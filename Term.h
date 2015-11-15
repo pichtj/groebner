@@ -128,13 +128,11 @@ std::istream& operator>>(std::istream& in, Term<C, M>& t) {
   // read monomial
   M monomial;
   in >> monomial;
-  D("read monomial " << monomial);
   if (coefficient == C(0)) {
     t = Term<C, M>();
   } else {
     t = Term<C, M>(coefficient, monomial);
   }
-  D("read term " << t);
   return in;
 }
 

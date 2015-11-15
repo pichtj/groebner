@@ -1,6 +1,6 @@
 BUILDDIR := $(shell pwd)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
-CXXFLAGS := -std=c++11 -m64 -O3 -march=native -mtune=native -Wall
+CXXFLAGS := -std=c++11 -m64 -g -march=native -mtune=native -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -L$(FGB_LIBDIR) -lflint -lmpir -lmpfr -lmpirxx -lgmp -lpng -fopenmp -pthread
 CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -DDEBUG
 CC := gcc
@@ -10,7 +10,7 @@ GTEST := gtest-1.7.0
 FLINT := flint-2.5.2
 MPFR := mpfr-3.1.3
 
-all: moGVW FGb test
+all: moGVW F5 FGb test
 
 moGVW: moGVW.o Monomial.o Ideal.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
@@ -19,7 +19,7 @@ moGVW.o: moGVW.cpp *.h include/mpir.h include/mpirxx.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 clean:
-	rm -rf moGVW *.o test-runner FGb gmon.out
+	rm -rf moGVW *.o test-runner FGb F5 gmon.out
 
 distclean: clean
 	rm -rf include lib share $(MPIR) $(MPFR) $(FLINT) $(GTEST) call_FGb
@@ -90,3 +90,6 @@ FGb.o: FGb.cpp FGb.h Monomial.h Polynomial.h call_FGb
 
 FGb: FGb.o Monomial.o Ideal.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) -Wl,-allow-multiple-definition -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
+
+F5: F5.o Monomial.o Ideal.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)

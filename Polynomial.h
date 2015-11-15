@@ -27,6 +27,7 @@ public:
 
   Polynomial() {}
   Polynomial(const C& c) : terms({T(c)}) {}
+  Polynomial(const C& c, const M& m) : terms({T(c, m)}) {}
   Polynomial(const T& t) : terms({t}) {}
   T lterm() const { return terms.front(); }
   C lc() const { if (!terms.empty()) { return terms.front().c(); } else { return C(); } }
@@ -60,6 +61,7 @@ public:
     return C();
   }
   bool isZero() const { return terms.empty(); }
+  bool isConstant() const { return isZero() || lm().isConstant(); }
   This& operator+=(const C& c) { *this += T(c); return *this; }
   This operator+(const C& c) const { This r = *this; r += c; return r; }
   This& operator-=(const C& c) { C d = c; d *= -1; *this += d; return *this; }
@@ -215,6 +217,7 @@ public:
     return result;
   }
   bool operator==(const This& other) const { return terms == other.terms; }
+  bool operator!=(const This& other) const { return terms != other.terms; }
   bool operator<(const This& other) const { return lm() < other.lm(); }
   template<class T1>
   friend std::ostream& operator<<(std::ostream& out, const Polynomial<T1>& p);
@@ -258,6 +261,9 @@ Polynomial<Term<C, M> > operator-(const Term<C, M>& a, const Term<C, M>& b) {
 
 template<class T>
 Polynomial<T> operator*(const typename T::CoefficientType& a, const Polynomial<T>& b) { return b.operator*(a); }
+
+template<class T>
+Polynomial<T> operator*(const typename T::MonomialType & a, const Polynomial<T>& b) { return b.operator*(a); }
 
 template<class T>
 Polynomial<T> operator*(const T& a, const Polynomial<T>& b) { return b.operator*(a); }
