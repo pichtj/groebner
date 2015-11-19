@@ -164,14 +164,23 @@ struct F5Runner : public GbRunner<P> {
     Rules.resize(m);
   }
 
-  bool topReducible(const P& p, uint i) {
-    if (i >= G.size()) return false;
-    DD("p = " << p << ", G[" << i << "] = ", G[i]);
-    DD("L = ", L);
-    return normalForm(p, i) != p;
+  bool topReducible(const P& p, uint k) {
+    if (p.isZero()) return false;
+    return topReducible(p.lm(), k);
   }
-  bool topReducible(const M& m, uint i) {
-    return topReducible(P(1, m), i);
+
+  bool topReducible(const M& m, uint k) {
+    if (k >= G.size()) return false;
+
+    for (uint i = 0; i < G[k].size(); ++i) {
+      const auto& q = poly(G[k][i]);
+      if (q.lm().divides(m)) {
+        D(m << " is top reducible");
+        return true;
+      }
+    }
+    D(m << " is not top reducible");
+    return false;
   }
 
   boost::optional<uint> findReductor(uint k, const std::vector<uint>& GG) {
