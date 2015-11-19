@@ -10,8 +10,8 @@
 
 #include "style.h"
 #include "debug.h"
+#include "GbRunner.h"
 #include "integral.h"
-#include "Polynomial.h"
 #include "MM.h"
 
 #include <boost/gil/image.hpp>
@@ -20,12 +20,12 @@
 using namespace boost::gil;
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
-struct moGVWRunner {
-  typedef typename P::MonomialType M;
-  typedef typename P::TermType T;
-  typedef typename P::CoefficientType C;
+struct moGVWRunner : public GbRunner<P> {
+  typedef typename GbRunner<P>::T T;
+  typedef typename GbRunner<P>::M M;
+  typedef typename GbRunner<P>::C C;
+  typedef typename GbRunner<P>::S S;
   typedef MM<P> MMP;
-  typedef MonRl<P> MonRlP;
   typedef std::unordered_map<M, MMP> LMSet;
   typedef std::unordered_set<MMP> MMSet;
   typedef std::set<M> MSet;
@@ -83,12 +83,16 @@ struct moGVWRunner {
     DD("todo = ", todo);
 
     MMSet HH;
+    static uint count = 0;
     for (const auto& muf : todo) {
       D("chose " << muf << " to lift");
-      std::cerr << "." << std::flush;
+      if (count > 0 && count % 1000 == 0) {
+        std::cerr << "l" << std::flush;
+        ++count;
+      }
       for (uint i = 0; i < M::VAR_COUNT; ++i) {
         auto xim_m = muf.first;
-        xim_m[i]++;
+        xim_m *= M::x(i);
         auto uf = muf.second;
         auto nvg = GG.find(xim_m);
         if (nvg != GG.end()) {
@@ -133,8 +137,9 @@ struct moGVWRunner {
   }
 
   void append(MMSet& HH, const LMSet& GG, MMP vg) {
-    if (HH.size() % 1000 == 999) {
-      I(HH.size() << " elements in HH");
+    if (HH.size() % 1000 == 0) {
+      D(HH.size() << " elements in HH");
+      std::cerr << "a" << std::flush;
     }
     HH.insert(vg);
     for (const auto& term : vg.f()) {
@@ -168,7 +173,7 @@ struct moGVWRunner {
     }
     bool operator>(row other) const { return other < *this; }
 
-    MonRlP u() const { return uf.u(); }
+    S u() const { return uf.u(); }
     const P& f() const { return uf.f(); }
 
     MMP uf;
@@ -255,6 +260,8 @@ struct moGVWRunner {
   MMSet eliminate(const MMSet& HH) {
     PolynomialMatrix m(HH);
 
+    std::cerr << "[" << m.rows.size() << "x" << m.monomials.size() << "]" << std::flush;
+
     I(m);
     static uint step;
 
@@ -266,7 +273,7 @@ struct moGVWRunner {
     auto size = m.monomials.size();
     uint k = 0;
     for (const auto& monomial : m.monomials) {
-      if (k % 1000 == 0) {
+      if (k > 0 && k % 1000 == 0) {
         std::cerr << (100*(double)k/size) << "%" << std::flush;
       }
       ++k;
@@ -329,60 +336,17 @@ struct moGVWRunner {
     D("GG has " << GG.size() << " elements in " << GG.bucket_count() << " buckets");
   }
 
-  std::set<P> interreduce(const std::set<P>& input) {
-    DD("input = ", input);
-    std::vector<P> intermediate(input.begin(), input.end());
-    bool stable;
-    do {
-      stable = true;
-      for (auto p = intermediate.begin(); p != intermediate.end(); ++p) {
-        auto term = p->begin();
-        while (term != p->end()) {
-          auto r = intermediate.begin();
-          while (r != intermediate.end() && (r->isZero() || r == p || !r->lm().divides(term->m()))) {
-            ++r;
-          }
-          if (r != intermediate.end()) {
-            D("reducing " << *p << " with " << *r);
-            stable = false;
-            auto t = term->m() / r->lm();
-            auto rt = *r * t;
-            C c = term->c();
-            c *= -1;
-            p->combine(r->lc(), rt, c);
-            p->renormalize();
-            D("to " << *p);
-            term = p->begin();
-            DD("intermediate = ", intermediate);
-          } else {
-            ++term;
-          }
-        }
-      }
-    } while (!stable);
-
-    for (auto& p : intermediate) {
-      if (p.isZero()) continue;
-      if (p.lc() < 0) p *= C(-1);
-      p.renormalize();
-    }
-    std::set<P> result(intermediate.begin(), intermediate.end());
-    result.erase(P());
-    DD("returning reduced gb = ", result);
-    return result;
-  }
-
   bool isPrimitive(const std::pair<M, MMP >& lm) const {
     return lm.first == lm.second.f().lm();
   }
 
-  std::set<P> moGVW(const std::set<P>& input) {
+  std::vector<P> moGVW(std::vector<P>& input) {
+    interreduce(input);
+
     LMSet GG;
     wasLifted.clear();
-    typename std::set<P>::size_type i = 0;
-    for (const auto& p : input) {
-      GG[p.lm()] = MMP(MonRl<P>::e(i), p);
-      ++i;
+    for (typename std::vector<P>::size_type i = 0; i < input.size(); ++i) {
+      GG[input[i].lm()] = MMP(S::e(i), input[i]);
     }
 
     DD("prefilled GG = ", GG);
@@ -399,6 +363,7 @@ struct moGVWRunner {
     }
     I("liftdeg = " << liftdeg);
     I("mindeg = " << mindeg);
+    std::cerr << "[" << mindeg << ":" << liftdeg << "]" << std::flush;
 
     while (mindeg <= liftdeg) {
       LMSet todo;
@@ -428,16 +393,19 @@ struct moGVWRunner {
       }
       I("liftdeg = " << liftdeg);
       I("mindeg = " << mindeg);
+      std::cerr << "[" << mindeg << ":" << liftdeg << "]" << std::flush;
     }
 
-    std::set<P> result;
+    std::vector<P> result;
     for (const auto& p : GG) {
       if (isPrimitive(p)) {
-        result.insert(p.second.f());
+        result.push_back(p.second.f());
       }
     }
+    std::sort(result.begin(), result.end());
     I("calling interreduce");
-    result = interreduce(result);
+    interreduce(result);
+    std::sort(result.begin(), result.end());
     II("returning gb = ", result);
     return result;
   }
@@ -448,19 +416,6 @@ private:
 template<class A, class B>
 std::ostream& operator<<(std::ostream& out, const std::pair<A, B>& ab) {
   return out << "(" << ab.first << ", " << ab.second << ")";
-}
-
-template<class C>
-void print(const std::string& prefix, const C& c) {
-  std::cout << "{";
-  bool itemPrinted = false;
-  for (const auto& item : c) {
-    if (itemPrinted) std::cout << ",";
-    std::cout << std::endl << prefix << "  " << item;
-    itemPrinted = true;
-  }
-  if (itemPrinted) std::cout << std::endl << prefix;
-  std::cout << "}" << std::endl;
 }
 
 #endif // MOGVW_H

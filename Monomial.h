@@ -228,7 +228,6 @@ std::istream& operator>>(std::istream& in, Monomial<E, VC, O>& m) {
     }
     in.peek();
   }
-  D("read " << m);
   return in;
 }
 

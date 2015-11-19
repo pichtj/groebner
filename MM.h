@@ -2,11 +2,10 @@
 #define MM_H
 
 #include <memory>
-#include <future>
 #include <boost/intrusive_ptr.hpp>
 
 #include "style.h"
-#include "MonRl.h"
+#include "Signature.h"
 #include "Polynomial.h"
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
@@ -14,14 +13,14 @@ struct MM {
   typedef typename P::MonomialType M;
   typedef typename P::TermType T;
   typedef typename P::CoefficientType C;
-  typedef MonRl<P> MonRlType;
+  typedef Signature<P> S;
   typedef MM<P> This;
 
-  MM() : mmData(std::async(std::launch::deferred, [] { return boost::intrusive_ptr<MMData>(new MMData()); })) { mmData.get(); }
-  MM(const MonRlType& v, const P& g) : mmData(std::async(std::launch::deferred, [&] { return boost::intrusive_ptr<MMData>(new MMData(v, g)); })) { mmData.get(); }
+  MM() : mmData(boost::intrusive_ptr<MMData>(new MMData())) {}
+  MM(const S& v, const P& g) : mmData(boost::intrusive_ptr<MMData>(new MMData(v, g))) {}
 
   const P& f() const { return mmData.get()->f_; }
-  const MonRlType& u() const { return mmData.get()->u_; }
+  const S& u() const { return mmData.get()->u_; }
 
   bool operator<(const This& other) const {
     return u() < other.u();
@@ -38,27 +37,24 @@ struct MM {
 
   void combineAndRenormalize(const C& afactor, This b, const C& bfactor) {
     auto a = mmData.get();
-    mmData = std::shared_future<boost::intrusive_ptr<MMData> >(std::async(std::launch::async, [=] {
-      return boost::intrusive_ptr<MMData>(new MMData(std::max(a->u_, b.u()), P::combineAndRenormalize(a->f_, afactor, b.f(), bfactor)));
-    }));
+    mmData = boost::intrusive_ptr<MMData>(new MMData(std::max(a->u_, b.u()), P::combineAndRenormalize(a->f_, afactor, b.f(), bfactor)));
   }
 
 private:
   struct MMData {
     MMData() : u_(), f_(), refcount(0) {}
-    MMData(const MonRlType& u, const P& f) : u_(u), f_(f), refcount(0) {}
-    MonRlType u_;
+    MMData(const S& u, const P& f) : u_(u), f_(f), refcount(0) {}
+    S u_;
     P f_;
     mutable uint refcount;
   };
   friend void intrusive_ptr_add_ref(const MM::MMData* p) {
     ++p->refcount;
   }
-
   friend void intrusive_ptr_release(const MM::MMData* p) {
     if (--p->refcount == 0) delete p;
   }
-  std::shared_future<boost::intrusive_ptr<MMData> > mmData;
+  boost::intrusive_ptr<MMData> mmData;
 };
 
 
@@ -74,7 +70,7 @@ std::ostream& operator<<(std::ostream& out, MM<P> uf) {
 
 namespace std {
   template<class P>
-  struct hash<MM<P> > { 
+  struct hash<MM<P> > {
     size_t operator()(MM<P> mm) const {
       size_t result = 0;
       hash<typename P::MonomialType> mhash;

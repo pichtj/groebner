@@ -1,0 +1,2 @@
+a,b,c,d,e,f,g
+a*b*c*d*e*f*g-1,a*b*c*d*e*f+a*b*c*d*e*g+a*b*c*d*f*g+a*b*c*e*f*g+a*b*d*e*f*g+a*c*d*e*f*g+b*c*d*e*f*g,a*b*c*d*e+a*b*c*d*g+a*b*c*f*g+a*b*e*f*g+a*d*e*f*g+b*c*d*e*f+c*d*e*f*g,a*b*c*d+a*b*c*g+a*b*f*g+a*e*f*g+b*c*d*e+c*d*e*f+d*e*f*g,a*b*c+a*b*g+a*f*g+b*c*d+c*d*e+d*e*f+e*f*g,a*b+a*g+b*c+c*d+d*e+e*f+f*g,a+b+c+d+e+f+g

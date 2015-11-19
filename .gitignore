@@ -1,4 +1,5 @@
 moGVW
+FGb
 *.o
 .*.swp
 include
@@ -15,3 +16,5 @@ gtest-1.7.0
 gtest-1.7.0.zip
 test-runner
 gmon.out
+call_FGb
+call_FGb6.maclinux.x64.tar.gz

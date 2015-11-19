@@ -15,7 +15,7 @@ public:
 
   Term() : coeff(), exp() {}
   Term(const C& c) : coeff(c), exp() {}
-  Term(const C& c, const M& e) : coeff(c), exp(e) {}
+  Term(const C& c, const M& m) : coeff(c), exp(m) {}
 
   bool operator==(const This& b) const {
     return m() == b.m() && c() == b.c();
@@ -100,18 +100,32 @@ std::ostream& operator<<(std::ostream& out, const Term<C, M>& t) {
 template<class C, class M>
 std::istream& operator>>(std::istream& in, Term<C, M>& t) {
   auto next = in.peek();
+
+  // read sign
+  bool is_positive = next != '-';
+  bool has_sign = next == '+' || next == '-';
+  if (has_sign) {
+    in.get();
+    next = in.peek();
+  }
+
+  // read absolute coefficient
   C coefficient = C(1);
-  if (next == '+' || next == '-' || std::isdigit(next)) {
+  bool has_digit = std::isdigit(next);
+  if (has_digit) {
     in >> coefficient;
     next = in.peek();
-    if (next != '*') {
-      t = Term<C, M>(coefficient);
-      return in;
-    } else {
-      in.get();
-      next = in.peek();
-    }
   }
+
+  // apply sign
+  if (!is_positive) coefficient *= C(-1);
+
+  // drop '*'
+  if (next == '*') {
+    in.get();
+  }
+
+  // read monomial
   M monomial;
   in >> monomial;
   if (coefficient == C(0)) {
@@ -119,7 +133,6 @@ std::istream& operator>>(std::istream& in, Term<C, M>& t) {
   } else {
     t = Term<C, M>(coefficient, monomial);
   }
-  D("read term " << t);
   return in;
 }
 
