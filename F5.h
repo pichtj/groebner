@@ -39,7 +39,8 @@ struct F5Runner : public GbRunner<P> {
   };
 
   P normalForm(P p, uint k) {
-    D("NormalForm(" << p << ")");
+    DD("p = " << p << ", G[" << k << "] = ", G[k]);
+    DD("L = ", L);
     M level = p.lm();
 
     auto t = p.begin();
@@ -70,17 +71,19 @@ struct F5Runner : public GbRunner<P> {
   }
 
   void AddRule(uint j) {
-    D("j = " << j);
     auto i = index(j);
+    D("r_j = " << L[j] << " with index " << i << " and signature " << signature(j));
     Rules[i].insert(Rules[i].begin(), std::make_pair(signature(j).m, j));
+    DD("Rules[" << i << "] = ", Rules[i]);
   }
 
   uint rewrite(const M& u, uint k) {
-    D("u = " << u << ", k = " << k << ", r_k = " << L[k]);
+    D("u = " << u << ", r_k = " << L[k]);
     auto v = signature(k).m;
     auto l = index(k);
     auto Rules_l = Rules[l];
     auto uv = u * v;
+    DD("v = " << v << ", l = " << l << ", uv = " << uv << ", Rules_l = ", Rules_l);
     for (uint j = 0; j < Rules_l.size(); ++j) {
       auto t = Rules_l[j].first;
       auto jj = Rules_l[j].second;
@@ -92,7 +95,7 @@ struct F5Runner : public GbRunner<P> {
   }
 
   bool rewritable(const M& u, uint k) {
-    D("u = " << u << ", k = " << k << ", r_k = " << L[k]);
+    D("u = " << u << ", r_k = " << L[k]);
     auto kk = rewrite(u, k);
     if (kk != k) {
       D("returning true");
@@ -102,8 +105,8 @@ struct F5Runner : public GbRunner<P> {
     return false;
   }
 
-  boost::optional<CriticalPair> CritPair(uint k, uint l, uint i, uint j) {
-    D("k = " << k << ", l = " << l << ", i = " << i << ", j = " << j);
+  boost::optional<CriticalPair> CritPair(uint k, uint l, uint i) {
+    DD("r_k = " << L[k] << ", r_l = " << L[l] << ", i = " << i << ", G[" << i << "] = ", G[i]);
     auto p1 = poly(k);
     auto p2 = poly(l);
     auto t = lcm(p1.lm(), p2.lm());
@@ -118,17 +121,21 @@ struct F5Runner : public GbRunner<P> {
 
     if (u1*Sr1 < u2*Sr2) {
       D(u1*Sr1 << " < " << u2*Sr2);
-      return CritPair(l, k, i, j);
+      return CritPair(l, k, i);
     }
     auto t1 = Sr1.m;
     auto k1 = Sr1.index;
     P u1t1 = P(1, u1*t1);
+    D("u1*t1 = " << u1t1);
     if (topReducible(u1t1, k1 + 1)) return boost::optional<CriticalPair>();
     auto t2 = Sr2.m;
     auto k2 = Sr2.index;
     P u2t2 = P(1, u2*t2);
+    D("u2*t2 = " << u2t2);
     if (topReducible(u2t2, k2 + 1)) return boost::optional<CriticalPair>();
-    return boost::make_optional(CriticalPair(t, u1, k, u2, l));
+    auto cp = CriticalPair(t, u1, k, u2, l);
+    D("returning " << cp);
+    return boost::make_optional(cp);
   }
 
   std::vector<uint> SPols(const std::vector<CriticalPair>& B) {
@@ -139,6 +146,7 @@ struct F5Runner : public GbRunner<P> {
       auto k = p.r1;
       auto v = p.u2;
       auto l = p.r2;
+      D("u = " << u << ", r_k = " << L[k] << ", v = " << v << ", r_l = " << L[l]);
       if (!rewritable(u, k) && !rewritable(v, l)) {
         L.push_back(std::make_pair(p.u1*signature(p.r1), p.u1*poly(p.r1) - p.u2*poly(p.r2)));
         AddRule(L.size() - 1);
@@ -157,6 +165,9 @@ struct F5Runner : public GbRunner<P> {
   }
 
   bool topReducible(const P& p, uint i) {
+    if (i >= G.size()) return false;
+    DD("p = " << p << ", G[" << i << "] = ", G[i]);
+    DD("L = ", L);
     return normalForm(p, i) != p;
   }
   bool topReducible(const M& m, uint i) {
@@ -181,6 +192,8 @@ struct F5Runner : public GbRunner<P> {
   }
 
   std::pair<boost::optional<uint>, std::vector<uint> > TopReduction(uint k, const std::vector<uint>& GG) {
+    DD("r_k = " << L[k] << ", GG = ", GG);
+    DD("L = ", L);
     if (poly(k).isZero()) {
       W("the system is not a regular sequence");
       return std::make_pair(boost::optional<uint>(), std::vector<uint>());
@@ -213,7 +226,8 @@ struct F5Runner : public GbRunner<P> {
       auto min_element = std::min_element(todo.begin(), todo.end(), [this] (uint a, uint b) { return signature(a) < signature(b); });
       auto k = *min_element;
       todo.erase(min_element);
-      auto h = normalForm(k, i);
+      auto h = normalForm(poly(k), i);
+      D("poly(k) = " << poly(k) << " reduces to h = " << h);
       L[k] = std::make_pair(signature(k), h);
       std::vector<uint> G_i_and_done(G[i]);
       G_i_and_done.insert(G_i_and_done.end(), done.begin(), done.end());
@@ -233,20 +247,23 @@ struct F5Runner : public GbRunner<P> {
     G[i].push_back(i);
     std::vector<CriticalPair> Ps;
     for (auto j : G[i + 1]) {
-      auto cp = CritPair(i, j, i, i + 1);
+      auto cp = CritPair(i, j, i + 1);
       if (cp) Ps.push_back(*cp);
     }
+    DD("critical pairs = ", Ps);
     while (!Ps.empty()) {
       std::sort(Ps.begin(), Ps.end());
       uint d = Ps.front().t.degree();
+      D("d = " << d);
       auto d_end = find_if(Ps.begin(), Ps.end(), [d](const CriticalPair& cp) { return cp.t.degree() != d; });
       std::vector<CriticalPair> Pd(Ps.begin(), d_end);
       Ps.erase(Ps.begin(), d_end);
+      DD("critical pairs of degree " << d << " = ", Pd);
       auto S_d = SPols(Pd);
       auto R_d = Reduction(S_d, i);
       for (auto k : R_d) {
         for (auto l : G[i]) {
-          auto cp = CritPair(k, l, i, i + 1);
+          auto cp = CritPair(k, l, i + 1);
           if (cp) Ps.push_back(*cp);
         }
         G[i].push_back(k);
@@ -260,7 +277,8 @@ struct F5Runner : public GbRunner<P> {
     DD("f = ", f);
     auto m = f.size();
     ResetSimplificationRules(m);
-    L = std::vector<R>(m);
+    L = std::vector<R>();
+    for (uint i = 0; i < m; ++i) L.push_back(std::make_pair(S(), 0));
     L.back() = std::make_pair(S::e(m - 1), f.back());
     DD("L = ", L);
     G = std::vector<std::vector<uint> >(m);
@@ -268,6 +286,7 @@ struct F5Runner : public GbRunner<P> {
     auto i = m - 1;
     do {
       --i;
+      D("Starting iteration " << i);
       AlgorithmF5(i);
       for (auto r : G[i]) {
         if (poly(r).isConstant()) {
@@ -275,10 +294,15 @@ struct F5Runner : public GbRunner<P> {
         }
       }
     } while (i != 0);
+    D("Finished all iterations");
     std::vector<P> result;
     for (auto r : G[0]) {
       result.push_back(poly(r));
     }
+    D("Calling interreduce");
+    this->interreduce(result);
+    D("Sorting result");
+    std::sort(result.begin(), result.end());
     return result;
   }
 

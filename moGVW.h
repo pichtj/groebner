@@ -341,7 +341,7 @@ struct moGVWRunner : public GbRunner<P> {
   }
 
   std::vector<P> moGVW(std::vector<P>& input) {
-    interreduce(input);
+    this->interreduce(input);
 
     LMSet GG;
     wasLifted.clear();
@@ -404,7 +404,7 @@ struct moGVWRunner : public GbRunner<P> {
     }
     std::sort(result.begin(), result.end());
     I("calling interreduce");
-    interreduce(result);
+    this->interreduce(result);
     std::sort(result.begin(), result.end());
     II("returning gb = ", result);
     return result;
