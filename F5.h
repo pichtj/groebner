@@ -281,6 +281,11 @@ struct F5Runner : public GbRunner<P> {
   }
 
   std::vector<P> f5(const std::vector<P>& input) {
+    for (auto p : input) {
+      if (!p.isHomogeneous()) {
+        W(p << " is not homogeneous");
+      }
+    }
     f = input;
     std::sort(f.begin(), f.end());
     DD("f = ", f);

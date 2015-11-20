@@ -53,7 +53,7 @@ public:
   C c() const { return coeff; }
   C& c() { return coeff; }
   M m() const { return exp; }
-  uint degree() { return exp.degree(); }
+  uint degree() const { return exp.degree(); }
   bool isZero() const { return coeff == 0; }
   bool isOne() const { return coeff == 1 && exp.isConstant(); }
   bool isConstant() const { return coeff == 0 || exp.isConstant(); }
