@@ -8,11 +8,11 @@
 #include "GbRunner.h"
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
-struct F5Runner : public GbRunner<P> {
-  typedef typename GbRunner<P>::T T;
-  typedef typename GbRunner<P>::M M;
-  typedef typename GbRunner<P>::C C;
-  typedef typename GbRunner<P>::S S;
+struct F5Runner : public GbRunner {
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
+  typedef typename P::CoefficientType C;
+  typedef Signature<P> S;
   typedef std::pair<S, P> R;
 
   static S signature(const R& r) { return r.first; }
@@ -341,7 +341,7 @@ struct F5Runner : public GbRunner<P> {
       result.push_back(poly(r));
     }
     I("Calling interreduce");
-    this->interreduce(result);
+    interreduce(result);
     I("Sorting result");
     std::sort(result.begin(), result.end());
     return result;

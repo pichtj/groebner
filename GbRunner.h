@@ -4,14 +4,11 @@
 #include "Polynomial.h"
 #include "Signature.h"
 
-template<class P = Polynomial<Term<int, Monomial<char> > > >
 struct GbRunner {
-  typedef typename P::MonomialType M;
-  typedef typename P::TermType T;
-  typedef typename P::CoefficientType C;
-  typedef Signature<P> S;
+  template<class P>
+  static void interreduce(std::vector<P>& polynomials) {
+    typedef typename P::CoefficientType C;
 
-  void interreduce(std::vector<P>& polynomials) {
     DD("polynomials = ", polynomials);
     bool stable;
     do {
