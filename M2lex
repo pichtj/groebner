@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ "$1" != "" ] ; then
+  cat $1 | $0
+  exit 0
+fi
+
+read VARS
+read POLYS
+(M2 -q --no-tty --no-readline --no-prompts --stop --silent --no-debug | tail -n +3 | head -n -1)<< EOF
+R = QQ[$VARS,MonomialOrder=>Lex];
+print concatenate between("\n", apply(flatten entries gens gb ideal($POLYS), toString))
+EOF
