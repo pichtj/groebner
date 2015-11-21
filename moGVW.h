@@ -14,10 +14,12 @@
 #include "integral.h"
 #include "MM.h"
 
+#ifdef PNG_OUTPUT
 #include <boost/gil/image.hpp>
 #include <boost/gil/typedefs.hpp>
 #include <boost/gil/extension/io/png_io.hpp>
 using namespace boost::gil;
+#endif // PNG_OUTPUT
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
 struct moGVWRunner : public GbRunner<P> {
@@ -214,6 +216,7 @@ struct moGVWRunner : public GbRunner<P> {
       return out;
     }
 
+#ifdef PNG_OUTPUT
     typedef point2<ptrdiff_t>   point_t;
 
     typedef PolynomialMatrix    const_t;
@@ -237,9 +240,10 @@ struct moGVWRunner : public GbRunner<P> {
       }
       return result;
     }
+#endif // PNG_OUTPUT
 
     void save(const std::string& filename) {
-      return;
+#ifdef PNG_OUTPUT
       if (rows.size() == 0 || monomials.size() == 0) return;
 
       typedef virtual_2d_locator<PolynomialMatrix, false> locator_t;
@@ -251,6 +255,7 @@ struct moGVWRunner : public GbRunner<P> {
       my_virt_view_t view(dims, locator_t(point_t(0, 0), point_t(1, 1), *this));
       png_write_view(filename.c_str(), view);
       I("saving " + filename + "... done");
+#endif // PNG_OUTPUT
     }
 
     std::vector<row> rows;

@@ -1,10 +1,10 @@
 BUILDDIR := $(shell pwd)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
-CXXFLAGS := -std=c++11 -m64 -O3 -march=native -mtune=native -Wall
+CXXFLAGS := -std=c++11 -m64 -O3 -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -L$(FGB_LIBDIR) -lflint -lmpir -lmpfr -lmpirxx -lgmp -lpng -fopenmp -pthread
 CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C
-CC := gcc
-CXX := g++
+CC := $(shell which gcc-mp-4.9 || echo gcc)
+CXX := $(shell which g++-mp-4.9 || echo g++)
 MPIR := mpir-2.7.0
 GTEST := gtest-1.7.0
 FLINT := flint-2.5.2
@@ -40,7 +40,7 @@ $(MPFR): .downloads/$(MPFR).tar.bz2
 	tar jxvf $<
 
 lib/libmpfr.a include/mpfr.h: $(MPFR) lib/libgmp.a
-	cd $< && ./configure --disable-shared --with-gmp=$(BUILDDIR) --prefix=$(BUILDDIR) && make && make install
+	cd $< && CC="$(CC)" ./configure --disable-shared --with-gmp=$(BUILDDIR) --prefix=$(BUILDDIR) && make && make install
 
 .downloads/$(FLINT).tar.gz:
 	mkdir -p .downloads && cd .downloads && wget --continue http://www.flintlib.org/$(FLINT).tar.gz
@@ -49,7 +49,7 @@ $(FLINT): .downloads/$(FLINT).tar.gz
 	tar zxvf $<
 
 lib/libflint.a include/flint/flint.h include/flint/fmpz.h: $(FLINT) lib/libmpfr.a
-	cd $< && ./configure --with-mpir=$(BUILDDIR) --with-gmp=$(BUILDDIR) --disable-shared --enable-cxx --prefix=$(BUILDDIR) && make && make install
+	cd $< && CC="$(CC)" ./configure --with-mpir=$(BUILDDIR) --with-gmp=$(BUILDDIR) --disable-shared --enable-cxx --prefix=$(BUILDDIR) && make && make install
 
 .downloads/call_FGb6.maclinux.x64.tar.gz:
 	mkdir -p .downloads && cd .downloads && wget --continue http://www-polsys.lip6.fr/~jcf/FGb/C/@downloads/call_FGb6.maclinux.x64.tar.gz
