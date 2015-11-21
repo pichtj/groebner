@@ -352,3 +352,4 @@ namespace std {
 }
 
 #endif // POLYNOMIAL_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

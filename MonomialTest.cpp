@@ -136,3 +136,4 @@ TEST(MonomialTest, Input) {
   EXPECT_EQ(pow(M::x(0), 1) * pow(M::x(1), 4), from_string<M>("a*b^4"));
   EXPECT_EQ(pow(M::x(0), 3) * pow(M::x(1), 4), from_string<M>("a^3*b^4"));
 }
+// vim:ruler:cindent:shiftwidth=2:expandtab:

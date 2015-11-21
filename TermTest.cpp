@@ -87,3 +87,4 @@ TEST(TermTest, Input) {
   EXPECT_EQ(T(17, pow(a, 3) * pow(b, 42)), from_string<T>("17*a^3*b^42"));
 
 }
+// vim:ruler:cindent:shiftwidth=2:expandtab:

@@ -37,3 +37,4 @@ void print(const std::string& prefix, const C& container) {
 }
 
 #endif // DEBUG_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

@@ -81,3 +81,4 @@ namespace std {
 }
 
 #endif // MM_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

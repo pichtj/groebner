@@ -79,3 +79,4 @@ std::ostream& operator<<(std::ostream& out, const Signature<P>& u) {
 }
 
 #endif // SIGNATURE_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

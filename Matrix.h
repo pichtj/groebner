@@ -20,3 +20,4 @@ struct Dense : public CoefficientMatrix<ROWS, COLS, P> {
 };
 
 #endif // MATRIX_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

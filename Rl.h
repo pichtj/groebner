@@ -66,3 +66,4 @@ std::ostream& operator<<(std::ostream& out, const Rl<P>& u) {
 }
 
 #endif // RL_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

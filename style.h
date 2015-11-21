@@ -23,3 +23,4 @@ T from_string(const std::string& s) {
 }
 
 #endif // STYLE_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

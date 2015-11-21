@@ -32,3 +32,4 @@ struct degrevlex {
 };
 
 #endif // ORDER_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

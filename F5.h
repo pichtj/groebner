@@ -359,3 +359,4 @@ std::ostream& operator<<(std::ostream& out, const std::pair<A, B>& pair) {
 }
 
 #endif // F5_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

@@ -104,3 +104,4 @@ struct FGbRunner {
 };
 
 #endif // FGB_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

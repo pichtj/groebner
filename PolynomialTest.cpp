@@ -216,3 +216,4 @@ TEST(PolynomialTest, Size) {
   EXPECT_EQ(3, bcd.size());
   EXPECT_EQ(3, bd1.size());
 }
+// vim:ruler:cindent:shiftwidth=2:expandtab:

@@ -85,3 +85,4 @@ namespace std {
 }
 
 #endif // IMMUTABLE_POLYNOMIAL_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

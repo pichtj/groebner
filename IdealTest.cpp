@@ -23,3 +23,4 @@ TEST(IdealTest, Input) {
 
   EXPECT_EQ(vector<P>({a,b*c,a+b+c}), ideal);
 }
+// vim:ruler:cindent:shiftwidth=2:expandtab:

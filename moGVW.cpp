@@ -10,7 +10,7 @@
 int main(int argc, char* argv[]) {
   get_var_name = var_name;
 
-  typedef Polynomial<Term<int, Monomial<char, 6, degrevlex> > > P;
+  typedef Polynomial<Term<int, Monomial<char, 11, degrevlex> > > P;
 
   std::vector<P> input;
   if (argc > 0) {
@@ -26,3 +26,4 @@ int main(int argc, char* argv[]) {
   }
   return 0;
 }
+// vim:ruler:cindent:shiftwidth=2:expandtab:

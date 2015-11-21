@@ -53,3 +53,4 @@ struct GbRunner {
 };
 
 #endif // GBRUNNER_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

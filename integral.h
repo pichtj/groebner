@@ -96,3 +96,4 @@ inline std::istream& operator>>(std::istream& in, flint::fmpzxx& i) {
 }
 
 #endif // INTEGRAL_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

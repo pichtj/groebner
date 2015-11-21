@@ -35,3 +35,4 @@ std::vector<P> read_input(std::istream& in) {
 }
 
 #endif // IDEAL_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

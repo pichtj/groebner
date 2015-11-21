@@ -434,3 +434,4 @@ TEST(moGVWTest, DISABLED_cyclic6mpz_class) {
     a+b+c+d+e+f
   }), output);
 }
+// vim:ruler:cindent:shiftwidth=2:expandtab:

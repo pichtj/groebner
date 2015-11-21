@@ -27,3 +27,4 @@ TEST(integralTest, log2_mpz) {
   EXPECT_EQ(4, log2(mpz_class(9)));
   EXPECT_EQ(5, log2(mpz_class(17)));
 }
+// vim:ruler:cindent:shiftwidth=2:expandtab:

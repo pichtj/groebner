@@ -137,3 +137,4 @@ std::istream& operator>>(std::istream& in, Term<C, M>& t) {
 }
 
 #endif // TERM_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:

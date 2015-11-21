@@ -81,7 +81,7 @@ struct moGVWRunner : public GbRunner {
     return false;
   }
 
-  MMSet lift(const LMSet& todo, LMSet& GG) {
+  MMSet lift(const LMSet& todo, LMSet& GG, uint max_var) {
     DD("todo = ", todo);
 
     MMSet HH;
@@ -92,7 +92,7 @@ struct moGVWRunner : public GbRunner {
         std::cerr << "l" << std::flush;
         ++count;
       }
-      for (uint i = 0; i < M::VAR_COUNT; ++i) {
+      for (uint i = 0; i <= max_var; ++i) {
         auto xim_m = muf.first;
         xim_m *= M::x(i);
         auto uf = muf.second;
@@ -306,7 +306,6 @@ struct moGVWRunner : public GbRunner {
       }
       i->done = true;
       D("m = " << m);
-//      std::stable_sort(m.rows.begin(), m.rows.end(), std::greater<row>());
     }
 
     MMSet PP;
@@ -348,6 +347,17 @@ struct moGVWRunner : public GbRunner {
   std::vector<P> moGVW(std::vector<P>& input) {
     interreduce(input);
 
+    M m;
+    uint max_var = 0;
+    for (const auto& p : input) {
+      for (const auto& t : p) {
+        m |= t.m();
+      }
+    }
+    for (uint i = 0; i < M::VAR_COUNT; ++i) {
+      if (m[i] > 0) max_var = i;
+    }
+
     LMSet GG;
     wasLifted.clear();
     for (typename std::vector<P>::size_type i = 0; i < input.size(); ++i) {
@@ -378,7 +388,7 @@ struct moGVWRunner : public GbRunner {
         }
       }
       I("calling lift");
-      MMSet HH = lift(todo, GG);
+      MMSet HH = lift(todo, GG, max_var);
       I("calling append");
       append(HH, GG);
       I("calling eliminate");
@@ -424,3 +434,4 @@ std::ostream& operator<<(std::ostream& out, const std::pair<A, B>& ab) {
 }
 
 #endif // MOGVW_H
+// vim:ruler:cindent:shiftwidth=2:expandtab:
