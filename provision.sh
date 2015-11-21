@@ -37,3 +37,7 @@ set shiftwidth=2
 set expandtab
 EOF
 chown vagrant:vagrant /home/vagrant/.vimrc
+
+cd /home/vagrant
+test -e moGVW || git clone /vagrant moGVW
+chown vagrant:vagrant moGVW
