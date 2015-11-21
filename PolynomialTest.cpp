@@ -189,3 +189,30 @@ TEST(PolynomialTest, Input) {
 
   EXPECT_EQ(a+b+c, from_string<P>("a+b+c\n"));
 }
+
+TEST(PolynomialTest, Size) {
+  typedef Polynomial<> P;
+  use_abc_var_names in_this_scope;
+
+  Term<> a(1, Monomial<>::x(0));
+  Term<> b(1, Monomial<>::x(1));
+  Term<> c(1, Monomial<>::x(2));
+  Term<> d(1, Monomial<>::x(3));
+  Term<> e(1, Monomial<>::x(4));
+
+  auto zero = P();
+  auto constant = P(4);
+  auto deg1 = P(4*e);
+  auto dp4e = d + 4*e;
+  auto aapbcp4e = a*a + b*c + 4*e;
+  auto bcd = b + c + d;
+  auto bd1 = b + 1 + d;
+
+  EXPECT_EQ(0, zero.size());
+  EXPECT_EQ(1, constant.size());
+  EXPECT_EQ(1, deg1.size());
+  EXPECT_EQ(2, dp4e.size());
+  EXPECT_EQ(3, aapbcp4e.size());
+  EXPECT_EQ(3, bcd.size());
+  EXPECT_EQ(3, bd1.size());
+}

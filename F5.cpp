@@ -1,13 +1,15 @@
 #include <iostream>
 #include <fstream>
 
+#include <flint/fmpzxx.h>
+
 #include "F5.h"
 #include "Ideal.h"
 
 int main(int argc, char* argv[]) {
   get_var_name = var_name;
 
-  typedef Polynomial<Term<int, Monomial<char, 64, degrevlex> > > P;
+  typedef Polynomial<Term<flint::fmpzxx, Monomial<char, 64, degrevlex> > > P;
 
   std::vector<P> input;
   if (argc > 1) {

@@ -51,9 +51,15 @@ struct F5Runner : public GbRunner<P> {
         if (q.lm().divides(t->m())) {
           D("reducing " << p << " with " << q);
           auto level = t->m();
+          D("level = " << level);
           auto tq = t->m() / q.lm();
+          D("tq = " << tq);
           auto r = q * tq;
-          p = P::combineAndRenormalize(p, q.lc(), r, -t->c());
+          D("r = " << r);
+          auto m_tc = t->c();
+          m_tc *= C(-1);
+          p = P::combineAndRenormalize(p, q.lc(), r, m_tc);
+          D("reduced to = " << p);
           t = p.begin();
           while (t != p.end() && t->m() > level) ++t;
           break;
@@ -125,12 +131,12 @@ struct F5Runner : public GbRunner<P> {
     }
     auto t1 = Sr1.m;
     auto k1 = Sr1.index;
-    P u1t1 = P(1, u1*t1);
+    P u1t1 = P(C(1), u1*t1);
     D("u1*t1 = " << u1t1);
     if (topReducible(u1t1, k1 + 1)) return boost::optional<CriticalPair>();
     auto t2 = Sr2.m;
     auto k2 = Sr2.index;
-    P u2t2 = P(1, u2*t2);
+    P u2t2 = P(C(1), u2*t2);
     D("u2*t2 = " << u2t2);
     if (topReducible(u2t2, k2 + 1)) return boost::optional<CriticalPair>();
     auto cp = CriticalPair(t, u1, k, u2, l);
@@ -204,7 +210,8 @@ struct F5Runner : public GbRunner<P> {
     DD("r_k = " << L[k] << ", GG = ", GG);
     DD("L = ", L);
     if (poly(k).isZero()) {
-      W("the system is not a regular sequence");
+      D("the system is not a regular sequence");
+      std::cerr << "!" << std::flush;
       return std::make_pair(boost::optional<uint>(), std::vector<uint>());
     }
     auto J = findReductor(k, GG);
@@ -215,7 +222,9 @@ struct F5Runner : public GbRunner<P> {
     auto j = *J;
     auto u = poly(k).lm() / poly(j).lm();
     auto q = poly(j) * u;
-    p = P::combineAndRenormalize(p, q.lc(), q, -p.lc());
+    auto m_plc = p.lc();
+    m_plc *= C(-1);
+    p = P::combineAndRenormalize(p, q.lc(), q, m_plc);
     if (u*signature(j) < signature(k)) {
       L[k] = std::make_pair(signature(k), p);
       DD("L = ", L);
@@ -232,6 +241,7 @@ struct F5Runner : public GbRunner<P> {
     DD("i = " << i << ", todo = ", todo);
     std::vector<uint> done;
     while (!todo.empty()) {
+      std::cerr << "." << std::flush;
       auto min_element = std::min_element(todo.begin(), todo.end(), [this] (uint a, uint b) { return signature(a) < signature(b); });
       auto k = *min_element;
       todo.erase(min_element);
@@ -268,6 +278,7 @@ struct F5Runner : public GbRunner<P> {
       std::vector<CriticalPair> Pd(Ps.begin(), d_end);
       Ps.erase(Ps.begin(), d_end);
       DD("critical pairs of degree " << d << " = ", Pd);
+      std::cerr << "[" << d << ":" << Pd.size() << "]" << std::flush;
       auto S_d = SPols(Pd);
       auto R_d = Reduction(S_d, i);
       for (auto k : R_d) {
@@ -280,19 +291,34 @@ struct F5Runner : public GbRunner<P> {
     }
   }
 
-  std::vector<P> f5(const std::vector<P>& input) {
-    for (auto p : input) {
+  void homogenize(std::vector<P>& f) {
+    bool x0_used = false;
+    auto x0 = M::x(M::VAR_COUNT - 1);
+    for (auto& p : f) {
+      for (const auto& term : p) {
+        if (x0.divides(term.m())) {
+          x0_used = true;
+        }
+      }
       if (!p.isHomogeneous()) {
-        W(p << " is not homogeneous");
+        if (x0_used) {
+          throw std::invalid_argument("input not homogeneous and last variable cannot be used to homogenize");
+        }
+        I(p << " is not homogeneous");
+        p = p.homogenize(x0);
       }
     }
+  }
+
+  std::vector<P> f5(const std::vector<P>& input) {
     f = input;
+    homogenize(f);
     std::sort(f.begin(), f.end());
     DD("f = ", f);
     auto m = f.size();
     ResetSimplificationRules(m);
     L = std::vector<R>();
-    for (uint i = 0; i < m; ++i) L.push_back(std::make_pair(S(), 0));
+    for (uint i = 0; i < m; ++i) L.push_back(std::make_pair(S(), P()));
     L.back() = std::make_pair(S::e(m - 1), f.back());
     DD("L = ", L);
     G = std::vector<std::vector<uint> >(m);
@@ -300,22 +326,23 @@ struct F5Runner : public GbRunner<P> {
     auto i = m - 1;
     do {
       --i;
-      D("Starting iteration " << i);
+      I("Starting iteration " << i);
+      std::cerr << "{" << i << "}" << std::flush;
       AlgorithmF5(i);
       for (auto r : G[i]) {
         if (poly(r).isConstant()) {
-          return std::vector<P>({P(1)});
+          return std::vector<P>({P(C(1))});
         }
       }
     } while (i != 0);
-    D("Finished all iterations");
+    I("Finished all iterations");
     std::vector<P> result;
     for (auto r : G[0]) {
       result.push_back(poly(r));
     }
-    D("Calling interreduce");
+    I("Calling interreduce");
     this->interreduce(result);
-    D("Sorting result");
+    I("Sorting result");
     std::sort(result.begin(), result.end());
     return result;
   }
