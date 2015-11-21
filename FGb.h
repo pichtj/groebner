@@ -10,6 +10,8 @@ extern "C" {
 
 #include <vector>
 
+#include <mpirxx.h>
+
 #include "style.h"
 #include "Polynomial.h"
 
@@ -67,7 +69,7 @@ struct FGbRunner {
       std::vector<I32> exponents(M::VAR_COUNT * term_count);
       std::vector<mpz_ptr> coefficients(M::VAR_COUNT * term_count);
       FGB(export_poly_INT_gmp2)(M::VAR_COUNT, term_count, coefficients.data(), exponents.data(), output_basis[i]);
-      for (I32 j = 0; j < term_count; ++j) {
+      for (UI32 j = 0; j < term_count; ++j) {
         M monomial;
         for (uint k = 0; k < M::VAR_COUNT; ++k) {
           monomial[k] = exponents[j * M::VAR_COUNT + k];

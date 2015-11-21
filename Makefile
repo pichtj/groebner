@@ -1,8 +1,8 @@
 BUILDDIR := $(shell pwd)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
 CXXFLAGS := -std=c++11 -m64 -O3 -Wall
-LDFLAGS := -L$(BUILDDIR)/lib -L$(FGB_LIBDIR) -lflint -lmpir -lmpfr -lmpirxx -lgmp -lpng -fopenmp -pthread
-FGB_LDFLAGS := -Wl,-allow-multiple-definition -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
+LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp -fopenmp -pthread
+FGB_LDFLAGS := -L$(FGB_LIBDIR) -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
 CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C
 FGB_CPPFLAGS := -Wno-write-strings -Wno-unused-but-set-variable -Wno-unused-function
 CC := $(shell which gcc-mp-4.9 || echo gcc)
