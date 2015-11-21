@@ -293,8 +293,8 @@ struct F5Runner : public GbRunner<P> {
 
   void homogenize(std::vector<P>& f) {
     bool x0_used = false;
+    auto x0 = M::x(M::VAR_COUNT - 1);
     for (auto& p : f) {
-      auto x0 = M::x(M::VAR_COUNT - 1);
       for (const auto& term : p) {
         if (x0.divides(term.m())) {
           x0_used = true;

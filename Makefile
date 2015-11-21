@@ -1,8 +1,10 @@
 BUILDDIR := $(shell pwd)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
-CXXFLAGS := -std=c++11 -m64 -g -march=native -mtune=native -Wall
+CXXFLAGS := -std=c++11 -m64 -O3 -march=native -mtune=native -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -L$(FGB_LIBDIR) -lflint -lmpir -lmpfr -lmpirxx -lgmp -lpng -fopenmp -pthread
-CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -DDEBUG
+FGB_LDFLAGS := -Wl,-allow-multiple-definition -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
+CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C
+FGB_CPPFLAGS := -Wno-write-strings -Wno-unused-but-set-variable -Wno-unused-function
 CC := gcc
 CXX := g++
 MPIR := mpir-2.7.0
@@ -80,16 +82,19 @@ gtest_main.o: $(GTEST)/src/gtest_main.cc
 TEST_OBJECTS := $(shell ls *Test.cpp | sed -e s/cpp$$/o/g)
 
 test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o Ideal.o
-	$(CXX) $^ -o test-runner $(LDFLAGS)
+	$(CXX) $^ -o test-runner $(LDFLAGS) $(FGB_LDFLAGS)
 
 %.o: %.cpp %.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 FGb.o: FGb.cpp FGb.h Monomial.h Polynomial.h call_FGb
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $< -Wno-write-strings -Wno-unused-but-set-variable -Wno-unused-function
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(FGB_CPPFLAGS) -c -o $@ $<
+
+FGbTest.o: FGbTest.cpp FGb.h Monomial.h Polynomial.h call_FGb
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(FGB_CPPFLAGS) -c -o $@ $< -isystem $(GTEST)/include
 
 FGb: FGb.o Monomial.o Ideal.o
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) -Wl,-allow-multiple-definition -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(FGB_LDFLAGS)
 
 F5: F5.o Monomial.o Ideal.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)

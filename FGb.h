@@ -95,7 +95,9 @@ struct FGbRunner {
     auto input_basis = convertInput(input);
     auto output_basis = run(input_basis);
 
-    return convertOutput(output_basis);
+    auto output = convertOutput(output_basis);
+    std::sort(output.begin(), output.end());
+    return output;
   }
 };
 
