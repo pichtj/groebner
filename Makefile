@@ -19,7 +19,7 @@ moGVW.o: moGVW.cpp *.h include/mpir.h include/mpirxx.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 clean:
-	rm -rf moGVW *.o test-runner FGb F5 gmon.out
+	rm -rf moGVW *.o *.dSYM test-runner FGb F5 gmon.out
 
 distclean: clean
 	rm -rf include lib share $(MPIR) $(MPFR) $(FLINT) $(GTEST) call_FGb

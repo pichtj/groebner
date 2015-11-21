@@ -28,6 +28,9 @@ apt-get -y install vim make gcc g++ macaulay2 git gdb valgrind m4 unzip libboost
 su vagrant << EOF
 git config --global user.email "jonathan.picht@jpicht.de"
 git config --global user.name "Jonathan Picht"
+git config --global push.default simple
+cd
+test -e moGVW || (git clone /vagrant moGVW && cd moGVW && git checkout master)
 EOF
 
 cat > /home/vagrant/.vimrc << EOF
@@ -37,7 +40,3 @@ set shiftwidth=2
 set expandtab
 EOF
 chown vagrant:vagrant /home/vagrant/.vimrc
-
-cd /home/vagrant
-test -e moGVW || git clone /vagrant moGVW
-chown vagrant:vagrant moGVW
