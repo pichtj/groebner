@@ -15,7 +15,7 @@ all: moGVW F5 FGb test
 moGVW: moGVW.o Monomial.o Ideal.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-moGVW.o: moGVW.cpp *.h include/mpir.h include/mpirxx.h
+moGVW.o: moGVW.cpp *.h include/mpir.h include/mpirxx.h include/flint/fmpz.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 clean:
