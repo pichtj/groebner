@@ -1,8 +1,6 @@
 #ifndef FGB_H
 #define FGB_H
 
-#include <vector>
-
 #define LIBMODE 2
 
 #include "gmp.h"
@@ -10,20 +8,23 @@ extern "C" {
 #include "call_fgb.h"
 }
 
+#include <vector>
+
 #include "style.h"
 #include "Polynomial.h"
 
 template<class E = char, uint VC = 5>
 struct FGbRunner {
-  typedef Polynomial<Term<int, Monomial<E, VC, degrevlex> > > P;
+  typedef Polynomial<Term<mpz_class, Monomial<E, VC, degrevlex> > > P;
   typedef Monomial<E, VC, degrevlex> M;
+  typedef typename P::CoefficientType C;
   static const uint max_ideal_size = 1000;
 
   std::vector<Dpol> convertInput(const std::vector<P>& input) {
+    DD("input = ", input);
     Dpol input_basis[input.size()];
     size_t max_mon = 0;
-    for (auto p : input) max_mon = std::max(max_mon, p.size());
-    I("max_mon = " << max_mon);
+    for (const auto& p : input) max_mon = std::max(max_mon, p.size());
     for (typename std::vector<P>::size_type i = 0; i < input.size(); ++i) {
       I32 exp[max_mon][M::VAR_COUNT];
       for (uint j = 0; j < max_mon; ++j) {
@@ -33,12 +34,10 @@ struct FGbRunner {
       }
       input_basis[i] = FGB(creat_poly)(input[i].size());
       uint j = 0;
-      for (auto term : input[i]) {
+      for (const auto& term : input[i]) {
         for (uint k = 0; k < M::VAR_COUNT; ++k) exp[j][k] = term.m()[k];
         FGB(set_expos2)(input_basis[i], j, exp[j], M::VAR_COUNT);
-        mpz_t u;
-        mpz_init_set_si(u, term.c());
-        FGB(set_coeff_gmp)(input_basis[i], j, u);
+        FGB(set_coeff_gmp)(input_basis[i], j, term.c().get_mpz_t());
         ++j;
       }
       FGB(full_sort_poly2)(input_basis[i]);
@@ -64,7 +63,6 @@ struct FGbRunner {
     std::vector<P> output(output_basis.size());
 
     for (std::vector<Dpol>::size_type i = 0; i < output_basis.size(); ++i) {
-      output[i];
       auto term_count = FGB(nb_terms)(output_basis[i]);
       std::vector<I32> exponents(M::VAR_COUNT * term_count);
       std::vector<mpz_ptr> coefficients(M::VAR_COUNT * term_count);
@@ -74,7 +72,8 @@ struct FGbRunner {
         for (uint k = 0; k < M::VAR_COUNT; ++k) {
           monomial[k] = exponents[j * M::VAR_COUNT + k];
         }
-//        output[i] += typename P::TermType(mpz_class(coefficients[j]), monomial);
+        auto coefficient = C(coefficients[j]);
+        output[i] += typename P::TermType(coefficient, monomial);
       }
     }
 

@@ -1,8 +1,8 @@
 BUILDDIR := $(shell pwd)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
-CXXFLAGS := -std=c++11 -m64 -O3 -march=native -mtune=native -Wall
+CXXFLAGS := -std=c++11 -m64 -g -march=native -mtune=native -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -L$(FGB_LIBDIR) -lflint -lmpir -lmpfr -lmpirxx -lgmp -lpng -fopenmp -pthread
-CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C
+CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -DDEBUG
 CC := gcc
 CXX := g++
 MPIR := mpir-2.7.0

@@ -51,7 +51,7 @@ public:
 
   TermIterator begin() const { return TermIterator(terms.begin()); }
   TermIterator end() const { return TermIterator(terms.end()); }
-  size_t size() const { uint r = 0; auto it = begin(); while (it++ != end()) r++; return r; }
+  size_t size() const { uint r = 0; auto it = begin(); while (it != end()) { ++it; ++r; } return r; }
 
   C operator[](const M& m) const {
     auto c = terms.begin();
@@ -69,6 +69,23 @@ public:
       if (term.degree() != degree) return false;
     }
     return true;
+  }
+  This homogenize(const M& x0) {
+    if (isZero()) return *this;
+    uint max_deg = 0;
+    for (const auto& term : *this) {
+      max_deg = std::max(term.degree(), max_deg);
+    }
+    This r;
+    for (const auto& term : *this) {
+      T hterm(term);
+      if (x0.divides(hterm.m())) {
+        throw std::invalid_argument("homogenize: input term already contains x0");
+      }
+      while (hterm.m().degree() < max_deg) hterm *= x0;
+      r += hterm;
+    }
+    return r;
   }
   This& operator+=(const C& c) { *this += T(c); return *this; }
   This operator+(const C& c) const { This r = *this; r += c; return r; }
