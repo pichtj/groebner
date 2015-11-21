@@ -62,6 +62,14 @@ public:
   }
   bool isZero() const { return terms.empty(); }
   bool isConstant() const { return isZero() || lm().isConstant(); }
+  bool isHomogeneous() const {
+    if (isZero()) return true;
+    uint degree = lm().degree();
+    for (const auto& term : *this) {
+      if (term.degree() != degree) return false;
+    }
+    return true;
+  }
   This& operator+=(const C& c) { *this += T(c); return *this; }
   This operator+(const C& c) const { This r = *this; r += c; return r; }
   This& operator-=(const C& c) { C d = c; d *= -1; *this += d; return *this; }
