@@ -232,6 +232,7 @@ struct F5Runner : public GbRunner<P> {
     DD("i = " << i << ", todo = ", todo);
     std::vector<uint> done;
     while (!todo.empty()) {
+      std::cerr << "." << std::flush;
       auto min_element = std::min_element(todo.begin(), todo.end(), [this] (uint a, uint b) { return signature(a) < signature(b); });
       auto k = *min_element;
       todo.erase(min_element);
@@ -268,6 +269,7 @@ struct F5Runner : public GbRunner<P> {
       std::vector<CriticalPair> Pd(Ps.begin(), d_end);
       Ps.erase(Ps.begin(), d_end);
       DD("critical pairs of degree " << d << " = ", Pd);
+      std::cerr << "[" << d << ":" << Pd.size() << "]" << std::flush;
       auto S_d = SPols(Pd);
       auto R_d = Reduction(S_d, i);
       for (auto k : R_d) {
