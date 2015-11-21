@@ -20,11 +20,11 @@
 using namespace boost::gil;
 
 template<class P = Polynomial<Term<int, Monomial<char> > > >
-struct moGVWRunner : public GbRunner<P> {
-  typedef typename GbRunner<P>::T T;
-  typedef typename GbRunner<P>::M M;
-  typedef typename GbRunner<P>::C C;
-  typedef typename GbRunner<P>::S S;
+struct moGVWRunner : public GbRunner {
+  typedef typename P::TermType T;
+  typedef typename P::MonomialType M;
+  typedef typename P::CoefficientType C;
+  typedef Signature<P> S;
   typedef MM<P> MMP;
   typedef std::unordered_map<M, MMP> LMSet;
   typedef std::unordered_set<MMP> MMSet;
@@ -341,7 +341,7 @@ struct moGVWRunner : public GbRunner<P> {
   }
 
   std::vector<P> moGVW(std::vector<P>& input) {
-    this->interreduce(input);
+    interreduce(input);
 
     LMSet GG;
     wasLifted.clear();
@@ -404,7 +404,7 @@ struct moGVWRunner : public GbRunner<P> {
     }
     std::sort(result.begin(), result.end());
     I("calling interreduce");
-    this->interreduce(result);
+    interreduce(result);
     std::sort(result.begin(), result.end());
     II("returning gb = ", result);
     return result;
