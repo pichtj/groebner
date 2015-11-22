@@ -55,6 +55,14 @@ public:
     return *this;
   }
 
+  This operator|(const This& other) const {
+    This result;
+    for (uint i = 0; i < VAR_COUNT; ++i) {
+      result[i] = mon[i] | other.mon[i];
+    }
+    return *this;
+  }
+
   This operator*(const This& other) const {
     This result;
     for (uint i = 0; i < VAR_COUNT; ++i) {

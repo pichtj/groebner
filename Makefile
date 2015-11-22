@@ -1,9 +1,9 @@
 BUILDDIR := $(shell pwd)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
 CXXFLAGS := -std=c++11 -m64 -O3 -Wall
-LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp -fopenmp -pthread
-FGB_LDFLAGS := -L$(FGB_LIBDIR) -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
-CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint
+LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp -fopenmp -pthread -lpng -lz
+FGB_LDFLAGS := -L$(FGB_LIBDIR) -Wl,-allow-multiple-definition -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
+CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -DPNG_OUTPUT
 FGB_CPPFLAGS := -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -Wno-write-strings -Wno-unused-but-set-variable -Wno-unused-function
 CC := $(shell which gcc-mp-4.9 || echo gcc)
 CXX := $(shell which g++-mp-4.9 || echo g++)
@@ -11,13 +11,14 @@ MPIR := mpir-2.7.0
 GTEST := gtest-1.7.0
 FLINT := flint-2.5.2
 MPFR := mpfr-3.1.3
+PNG := libpng-1.6.19
 
 all: moGVW F5 FGb test
 
 moGVW: moGVW.o Monomial.o Ideal.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-moGVW.o: moGVW.cpp *.h include/mpir.h include/mpirxx.h include/flint/fmpz.h
+moGVW.o: moGVW.cpp *.h include/mpir.h include/mpirxx.h include/flint/fmpz.h include/png.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 clean:
@@ -65,7 +66,16 @@ call_FGb: .downloads/call_FGb6.maclinux.x64.tar.gz
 $(GTEST): .downloads/$(GTEST).zip
 	test -e $@ || unzip $<
 
-libs: lib/libmpir.a lib/libflint.a
+.downloads/$(PNG).tar.gz:
+	mkdir -p .downloads && cd .downloads && wget --continue http://prdownloads.sourceforge.net/libpng/libpng-1.6.19.tar.gz
+
+$(PNG): .downloads/$(PNG).tar.gz
+	test -e $@ || tar zxvf $<
+
+lib/libpng.a: $(PNG)
+	cd $(PNG) && CC=$(CC) ./configure --prefix=$(BUILDDIR) --disable-shared && make && make install
+
+libs: lib/libmpir.a lib/libflint.a lib/libpng.a
 
 test: test-runner
 	./test-runner
@@ -98,3 +108,6 @@ FGb: FGb.o Monomial.o Ideal.o
 
 F5: F5.o Monomial.o Ideal.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+%.mp4:
+	ffmpeg -framerate 25 -pattern_type glob -i '$**.png' -vf scale='flags=neighbor:w=trunc((iw+1)/2)*2:h=trunc((ih+1)/2)*2' -c:v libx264 -pix_fmt yuv420p $@

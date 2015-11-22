@@ -23,6 +23,9 @@ public:
   This operator*(const This& other) const { return This(m() * other.m()); }
   This& operator*=(const This& other) { *this = *this * other; return *this; }
 
+  This operator|(const This& other) const { return This(m() | other.m()); }
+  This& operator|=(const This& other) { *this = *this | other; return *this; }
+
   This operator/(const This& other) const { return This(m() / other.m()); }
   This& operator/=(const This& other) { *this = *this / other; return *this; }
 
