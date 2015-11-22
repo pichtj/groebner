@@ -2,7 +2,7 @@ BUILDDIR := $(shell pwd)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
 CXXFLAGS := -std=c++11 -m64 -O3 -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp -fopenmp -pthread -lpng -lz
-FGB_LDFLAGS := -L$(FGB_LIBDIR) -Wl,-allow-multiple-definition -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
+FGB_LDFLAGS := -L$(FGB_LIBDIR) $(shell uname | grep Linux >/dev/null && echo -Wl,-allow-multiple-definition) -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
 CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -DPNG_OUTPUT
 FGB_CPPFLAGS := -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -Wno-write-strings -Wno-unused-but-set-variable -Wno-unused-function
 CC := $(shell which gcc-mp-4.9 || echo gcc)
@@ -72,7 +72,7 @@ $(GTEST): .downloads/$(GTEST).zip
 $(PNG): .downloads/$(PNG).tar.gz
 	test -e $@ || tar zxvf $<
 
-lib/libpng.a: $(PNG)
+lib/libpng.a include/png.h: $(PNG)
 	cd $(PNG) && CC=$(CC) ./configure --prefix=$(BUILDDIR) --disable-shared && make && make install
 
 libs: lib/libmpir.a lib/libflint.a lib/libpng.a

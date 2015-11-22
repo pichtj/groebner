@@ -35,11 +35,3 @@ git config --global push.default simple
 cd
 test -e moGVW || (git clone /vagrant moGVW && cd moGVW && git checkout master)
 EOF
-
-cat > /home/vagrant/.vimrc << EOF
-set ruler
-set cindent
-set shiftwidth=2
-set expandtab
-EOF
-chown vagrant:vagrant /home/vagrant/.vimrc
