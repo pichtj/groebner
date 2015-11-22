@@ -18,8 +18,11 @@ apt-key adv --keyserver hkp://keys.gnupg.net --recv-key CD9C0E09B0C780943A1AD855
 
 # apt-add-repository -y ppa:aims/sagemath
 
+add-apt-repository ppa:mc3man/trusty-media
+
 apt-get update
-apt-get -y install vim make gcc g++ macaulay2 git gdb valgrind m4 unzip libboost1.54-dev
+apt-get dist-upgrade
+apt-get -y install vim make gcc g++ macaulay2 git gdb valgrind m4 unzip libboost1.54-dev ffmpeg
 #apt-get -y install sagemath-upstream-binary
 
 #mkswap -f /dev/sdb

@@ -1,9 +1,9 @@
 BUILDDIR := $(shell pwd)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
 CXXFLAGS := -std=c++11 -m64 -O3 -Wall
-LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp -fopenmp -pthread
+LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp -fopenmp -pthread -lpng
 FGB_LDFLAGS := -L$(FGB_LIBDIR) -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
-CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint
+CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -DPNG_OUTPUT
 FGB_CPPFLAGS := -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -Wno-write-strings -Wno-unused-but-set-variable -Wno-unused-function
 CC := $(shell which gcc-mp-4.9 || echo gcc)
 CXX := $(shell which g++-mp-4.9 || echo g++)
@@ -98,3 +98,6 @@ FGb: FGb.o Monomial.o Ideal.o
 
 F5: F5.o Monomial.o Ideal.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+%.mp4:
+	ffmpeg -framerate 25 -pattern_type glob -i '$**.png' -vf scale='flags=neighbor:w=trunc((iw+1)/2)*2:h=trunc((ih+1)/2)*2' -c:v libx264 -pix_fmt yuv420p $@

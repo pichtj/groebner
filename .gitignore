@@ -2,6 +2,8 @@ moGVW
 FGb
 F5
 *.o
+*.png
+*.mp4
 .*.swp
 include
 lib

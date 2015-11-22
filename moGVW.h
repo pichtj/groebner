@@ -229,9 +229,9 @@ struct moGVWRunner : public GbRunner {
 
     result_type operator()(const point_t& p) const {
       auto monomial = monomials.begin();
-      for (uint i = 0; i < p.y; ++i) ++monomial;
+      for (uint i = 0; i < p.x; ++i) ++monomial;
       value_type result;
-      if (rows[p.x].f()[*monomial] == C(0)) {
+      if (rows[p.y].f()[*monomial] == C(0)) {
         for (int k = 0; k < num_channels<value_type>::value; ++k)
           result[k] = (typename channel_type<value_type>::type)(0);
       } else {
@@ -250,7 +250,7 @@ struct moGVWRunner : public GbRunner {
       typedef image_view<locator_t> my_virt_view_t;
 
       I("saving " + filename + "...");
-      point_t dims(rows.size(), monomials.size());
+      point_t dims(monomials.size(), rows.size());
 
       my_virt_view_t view(dims, locator_t(point_t(0, 0), point_t(1, 1), *this));
       png_write_view(filename.c_str(), view);
@@ -270,7 +270,7 @@ struct moGVWRunner : public GbRunner {
     I(m);
     static uint step;
 
-    m.save("matrix" + to_string(step++) + ".png");
+    m.save("matrix" + to_string(step++, 3) + ".png");
 
     auto begin = m.rows.begin();
     auto end = m.rows.end();
@@ -306,6 +306,7 @@ struct moGVWRunner : public GbRunner {
       }
       i->done = true;
       D("m = " << m);
+      m.save("matrix" + to_string(step, 3) + "-" + to_string(k, 5) + ".png");
     }
 
     MMSet PP;
