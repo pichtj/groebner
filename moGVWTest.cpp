@@ -2,6 +2,10 @@
 #include <mpirxx.h>
 #include <flint/fmpzxx.h>
 
+#ifdef PNG_OUTPUT
+#undef PNG_OUTPUT
+#endif // PNG_OUTPUT
+
 #include "moGVW.h"
 #include "CachedMonomial.h"
 #include "ImmutablePolynomial.h"
@@ -82,7 +86,7 @@ TEST(moGVWTest, lift) {
   LMSet todo;
   todo[(b*c).m()] = r3;
 
-  MMSet HH = runner.lift(todo, GG);
+  MMSet HH = runner.lift(todo, GG, 2);
 
   LMSet GG2;
   GG2[(a*b).m()] = r2;
