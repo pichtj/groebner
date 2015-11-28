@@ -1,6 +1,7 @@
 moGVW
 FGb
 F5
+interreduce
 *.o
 *.png
 *.mp4
@@ -18,3 +19,5 @@ gmon.out
 call_FGb
 libpng-1.6.19
 .downloads
+bin
+tmp

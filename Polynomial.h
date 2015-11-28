@@ -13,8 +13,6 @@
 #include "integral.h"
 #include "debug.h"
 
-#define MAX_PRINT_LENGTH 50
-
 template<class T = Term<int, Monomial<char> > >
 class Polynomial {
   typedef typename T::CoefficientType C;
@@ -293,6 +291,8 @@ Polynomial<T> operator*(const typename T::MonomialType & a, const Polynomial<T>&
 template<class T>
 Polynomial<T> operator*(const T& a, const Polynomial<T>& b) { return b.operator*(a); }
 
+extern uint max_print_length;
+
 template<class T>
 std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {
   typedef typename T::CoefficientType C;
@@ -304,13 +304,13 @@ std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {
     }
     ss << *it;
     termPrinted = true;
-    if (ss.str().length() > MAX_PRINT_LENGTH)
+    if (ss.str().length() > max_print_length)
       break;
   }
   if (!termPrinted) {
     ss << "0";
   }
-  if (ss.str().length() > MAX_PRINT_LENGTH) {
+  if (ss.str().length() > max_print_length) {
     uint termCount = 0;
     C max_abs_coefficient = C(0);
     auto it = p.terms.begin();
@@ -322,7 +322,7 @@ std::ostream& operator<<(std::ostream& out, const Polynomial<T>& p) {
       max_abs_coefficient = std::max(max_abs_coefficient, c);
       ++it;
     }
-    out << ss.str().substr(0,MAX_PRINT_LENGTH) << "...{" << termCount << " terms, |c| <= 2^" << log2(max_abs_coefficient) << "}";
+    out << ss.str().substr(0, max_print_length) << "...{" << termCount << " terms, |c| <= 2^" << log2(max_abs_coefficient) << "}";
   } else {
     out << ss.str();
   }

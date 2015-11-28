@@ -13,9 +13,9 @@ FLINT := flint-2.5.2
 MPFR := mpfr-3.1.3
 PNG := libpng-1.6.19
 
-all: moGVW F5 FGb test
+all: test moGVW F5 FGb interreduce
 
-moGVW: moGVW.o Monomial.o Ideal.o
+moGVW: moGVW.o Monomial.o Ideal.o Polynomial.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 moGVW.o: moGVW.cpp *.h include/mpir.h include/mpirxx.h include/flint/fmpz.h include/png.h
@@ -91,7 +91,7 @@ gtest_main.o: $(GTEST)/src/gtest_main.cc
 
 TEST_OBJECTS := $(shell ls *Test.cpp | sed -e s/cpp$$/o/g)
 
-test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o Ideal.o
+test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o Ideal.o Polynomial.o
 	$(CXX) $^ -o test-runner $(LDFLAGS) $(FGB_LDFLAGS)
 
 %.o: %.cpp %.h
@@ -103,10 +103,13 @@ FGb.o: FGb.cpp FGb.h Monomial.h Polynomial.h call_FGb
 FGbTest.o: FGbTest.cpp FGb.h Monomial.h Polynomial.h call_FGb
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(FGB_CPPFLAGS) -c -o $@ $< -isystem $(GTEST)/include
 
-FGb: FGb.o Monomial.o Ideal.o
+FGb: FGb.o Monomial.o Ideal.o Polynomial.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(FGB_LDFLAGS)
 
-F5: F5.o Monomial.o Ideal.o
+F5: F5.o Monomial.o Ideal.o Polynomial.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+interreduce: interreduce.o Monomial.o Ideal.o Polynomial.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.mp4:
