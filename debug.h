@@ -2,10 +2,18 @@
 #define DEBUG_H
 
 #include <iostream>
+#include <ctime>
 #include "style.h"
 
-#define W(statement) std::cerr << __func__ << "[" << __LINE__ << "]: " << statement << std::endl;
-#define WW(statement, container) std::cerr << __func__ << "[" << __LINE__ << "]: " << statement; print(std::string(__func__) + "[" + to_string(__LINE__) + "]: ", container);
+//#define PRINT_LINE_NUMBERS
+
+#ifdef PRINT_LINE_NUMBERS
+#define W(statement) std::cerr << now << __func__ << "[" << __LINE__ << "]: " << statement << std::endl;
+#define WW(statement, container) std::cerr << now << __func__ << "[" << __LINE__ << "]: " << statement; print(std::string(__func__) + "[" + to_string(__LINE__) + "]: ", container);
+#else
+#define W(statement) std::cerr << now << __func__ << ": " << statement << std::endl;
+#define WW(statement, container) std::cerr << now << __func__ << ": " << statement; print(std::string(__func__) + ": ", container);
+#endif
 
 #if (defined DEBUG || defined INFO)
 #define I(statement) W(statement)
@@ -26,15 +34,21 @@
 template<class C>
 void print(const std::string& prefix, const C& container) {
   std::cerr << "{";
-  bool itemPrinted = false;
+  uint itemsPrinted = 0;
   for (const auto& item : container) {
-    if (itemPrinted) std::cerr << ",";
+    if (itemsPrinted) std::cerr << ",";
     std::cerr << std::endl << prefix << "  " << item;
-    itemPrinted = true;
+    ++itemsPrinted;
+    if (itemsPrinted > 50) {
+      std::cerr << std::endl << prefix << "  " << "...";
+      break;
+    }
   }
-  if (itemPrinted) std::cerr << std::endl << prefix;
+  if (itemsPrinted) std::cerr << std::endl << prefix;
   std::cerr << "}" << std::endl;
 }
+
+std::ostream& now(std::ostream& out);
 
 #endif // DEBUG_H
 // vim:ruler:cindent:shiftwidth=2:expandtab:
