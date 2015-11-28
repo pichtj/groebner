@@ -3,10 +3,14 @@
 
 #include <unordered_set>
 #include <unordered_map>
+#include <map>
 #include <limits>
 #include <vector>
 #include <algorithm>
 #include <memory>
+
+#include "fmpz.h"
+#include "fmpz_mat.h"
 
 #include "style.h"
 #include "debug.h"
@@ -199,7 +203,7 @@ struct moGVWRunner : public GbRunner {
     friend std::ostream& operator<<(std::ostream& out, const typename moGVWRunner<P>::PolynomialMatrix& m) {
       out << "[" << m.rows.size() << "x" << m.monomials.size() << "]";
 #ifdef DEBUG
-      if (m.monomials.size() > 20) return out;
+      if (m.monomials.size() > 30) return out;
       out << std::endl;
       for (const auto& monomial : m.monomials) {
         out << "\t" << monomial;
@@ -251,18 +255,88 @@ struct moGVWRunner : public GbRunner {
       typedef virtual_2d_locator<PolynomialMatrix, false> locator_t;
       typedef image_view<locator_t> my_virt_view_t;
 
-      I("saving " + filename + "...");
+      auto png_filename = filename + ".png";
+      I("saving " + png_filename + "...");
       point_t dims(monomials.size(), rows.size());
 
       my_virt_view_t view(dims, locator_t(point_t(0, 0), point_t(1, 1), *this));
-      png_write_view(filename.c_str(), view);
-      I("saving " + filename + "... done");
+      png_write_view(png_filename.c_str(), view);
 #endif // PNG_OUTPUT
     }
 
     std::vector<row> rows;
     std::set<M, std::greater<M> > monomials;
   };
+
+  MMSet eliminate2(const MMSet& HH) {
+    PolynomialMatrix m(HH);
+
+    std::cerr << "[" << m.rows.size() << "x" << m.monomials.size() << "]" << std::flush;
+
+    std::vector<M> pivot_columns;
+    std::vector<typename std::vector<row>::iterator> pivot_rows;
+    for (const auto& monomial : m.monomials) {
+      for (auto it = m.rows.begin(); it != m.rows.end(); ++it) {
+        if (it->f().lm() == monomial) {
+          pivot_columns.push_back(monomial);
+          pivot_rows.push_back(it);
+          break;
+        }
+      }
+    }
+
+    I(m);
+    static uint step;
+
+    m.save("matrix" + to_string(step++, 3));
+
+    auto end = m.rows.end();
+
+    auto size = pivot_rows.size();
+    for (uint i = 0; i < size; ++i) {
+      if (i > 0 && i % 1000 == 0) {
+        std::cerr << (100*(double)i/size) << "%" << std::flush;
+      }
+      D("reducing column " << pivot_columns[i]);
+
+      const P& f = pivot_rows[i]->f();
+      const C fc = f.lc();
+
+      auto j = pivot_rows[i];
+      for (++j; j != end; ++j) {
+        const P& g = j->f();
+        if (g.lm() != pivot_columns[i]) continue;
+        C gc = g.lc();
+        gc *= -1;
+
+        D("reducing " << g << " with " << f);
+        std::cerr << "." << std::flush;
+        j->uf.combineAndRenormalize(fc, pivot_rows[i]->uf, gc);
+        auto colbegin = pivot_columns.begin();
+        auto colend = pivot_columns.end();
+        auto lmf = j->f().lm();
+        auto it = std::lower_bound(colbegin, colend, lmf, std::greater<M>());
+        if (it == colend) {
+          pivot_rows.push_back(j);
+          pivot_columns.push_back(lmf);
+          continue;
+        }
+        if (it != colend && *it == lmf && pivot_rows[it - colbegin] > j) {
+          pivot_rows[it - colbegin] = j;
+        }
+      }
+      D("m = " << m);
+      m.save("matrix" + to_string(step, 3) + "-" + to_string(i, 5));
+    }
+
+    MMSet PP;
+    for (const auto& row : m.rows) {
+      if (!row.f().isZero())
+        PP.insert(row.uf);
+    }
+    DD("returning PP = ", PP);
+    return PP;
+  }
 
   MMSet eliminate(const MMSet& HH) {
     PolynomialMatrix m(HH);
@@ -272,7 +346,7 @@ struct moGVWRunner : public GbRunner {
     I(m);
     static uint step;
 
-    m.save("matrix" + to_string(step++, 3) + ".png");
+    m.save("matrix" + to_string(step++, 3));
 
     auto begin = m.rows.begin();
     auto end = m.rows.end();
@@ -308,7 +382,7 @@ struct moGVWRunner : public GbRunner {
       }
       i->done = true;
       D("m = " << m);
-      m.save("matrix" + to_string(step, 3) + "-" + to_string(k, 5) + ".png");
+      m.save("matrix" + to_string(step, 3) + "-" + to_string(k, 5));
     }
 
     MMSet PP;

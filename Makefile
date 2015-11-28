@@ -3,7 +3,7 @@ FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/n
 CXXFLAGS := -std=c++11 -m64 -O3 -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp -fopenmp -pthread -lpng -lz
 FGB_LDFLAGS := -L$(FGB_LIBDIR) $(shell uname | grep Linux >/dev/null && echo -Wl,-allow-multiple-definition) -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
-CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -DPNG_OUTPUT
+CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -DINFO
 FGB_CPPFLAGS := -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -Wno-write-strings -Wno-unused-but-set-variable -Wno-unused-function
 CC := $(shell which gcc-mp-4.9 || echo gcc)
 CXX := $(shell which g++-mp-4.9 || echo g++)
@@ -15,7 +15,7 @@ PNG := libpng-1.6.19
 
 all: test moGVW F5 FGb interreduce
 
-moGVW: moGVW.o Monomial.o Ideal.o Polynomial.o
+moGVW: moGVW.o Monomial.o Ideal.o Polynomial.o debug.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 moGVW.o: moGVW.cpp *.h include/mpir.h include/mpirxx.h include/flint/fmpz.h include/png.h
@@ -91,7 +91,7 @@ gtest_main.o: $(GTEST)/src/gtest_main.cc
 
 TEST_OBJECTS := $(shell ls *Test.cpp | sed -e s/cpp$$/o/g)
 
-test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o Ideal.o Polynomial.o
+test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o Ideal.o Polynomial.o debug.o
 	$(CXX) $^ -o test-runner $(LDFLAGS) $(FGB_LDFLAGS)
 
 %.o: %.cpp %.h
@@ -103,13 +103,13 @@ FGb.o: FGb.cpp FGb.h Monomial.h Polynomial.h call_FGb
 FGbTest.o: FGbTest.cpp FGb.h Monomial.h Polynomial.h call_FGb
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(FGB_CPPFLAGS) -c -o $@ $< -isystem $(GTEST)/include
 
-FGb: FGb.o Monomial.o Ideal.o Polynomial.o
+FGb: FGb.o Monomial.o Ideal.o Polynomial.o debug.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(FGB_LDFLAGS)
 
-F5: F5.o Monomial.o Ideal.o Polynomial.o
+F5: F5.o Monomial.o Ideal.o Polynomial.o debug.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-interreduce: interreduce.o Monomial.o Ideal.o Polynomial.o
+interreduce: interreduce.o Monomial.o Ideal.o Polynomial.o debug.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.mp4:
