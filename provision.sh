@@ -22,7 +22,7 @@ add-apt-repository ppa:mc3man/trusty-media
 
 apt-get update
 apt-get dist-upgrade
-apt-get -y install vim make gcc g++ macaulay2 git gdb valgrind m4 unzip libboost1.54-dev ffmpeg
+apt-get -y install vim make gcc g++ macaulay2 git gdb valgrind m4 unzip libboost1.54-dev ffmpeg zlib1g-dev
 #apt-get -y install sagemath-upstream-binary
 
 #mkswap -f /dev/sdb
