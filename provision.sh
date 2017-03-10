@@ -29,9 +29,5 @@ apt-get -y install vim make gcc g++ macaulay2 git gdb valgrind m4 unzip libboost
 #swapon /dev/sdb
 
 su vagrant << EOF
-git config --global user.email "jonathan.picht@jpicht.de"
-git config --global user.name "Jonathan Picht"
-git config --global push.default simple
-cd
 test -e moGVW || (git clone /vagrant moGVW && cd moGVW && git checkout master)
 EOF
