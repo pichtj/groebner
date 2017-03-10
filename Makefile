@@ -5,12 +5,13 @@ LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp -fopenmp -pthr
 FGB_LDFLAGS := -L$(FGB_LIBDIR) $(shell uname | grep Linux >/dev/null && echo -Wl,-allow-multiple-definition) -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
 CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -DINFO
 FGB_CPPFLAGS := -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -Wno-write-strings -Wno-unused-but-set-variable -Wno-unused-function
-CC := $(shell which gcc-mp-4.9 || echo gcc)
-CXX := $(shell which g++-mp-4.9 || echo g++)
+CC := $(shell which gcc-6 || echo gcc)
+CXX := $(shell which g++-6 || echo g++)
 MPIR := mpir-2.7.0
-GTEST := gtest-1.7.0
+GTEST_VERSION := release-1.7.0
+GTEST := googletest-$(GTEST_VERSION)
 FLINT := flint-2.5.2
-MPFR := mpfr-3.1.3
+MPFR := mpfr-3.1.5
 PNG := libpng-1.6.19
 
 all: test moGVW F5 FGb interreduce
@@ -25,7 +26,7 @@ clean:
 	rm -rf moGVW *.o *.dSYM test-runner FGb F5 gmon.out
 
 distclean: clean
-	rm -rf include lib share $(MPIR) $(MPFR) $(FLINT) $(GTEST) call_FGb
+	rm -rf include lib share $(MPIR) $(MPFR) $(FLINT) googletest-$(GTEST_VERSION) call_FGb
 
 .downloads/$(MPIR).tar.bz2:
 	mkdir -p .downloads && cd .downloads && wget --continue http://mpir.org/$(MPIR).tar.bz2
@@ -43,7 +44,7 @@ $(MPFR): .downloads/$(MPFR).tar.bz2
 	tar jxvf $<
 
 lib/libmpfr.a include/mpfr.h: $(MPFR) lib/libgmp.a
-	cd $< && CC="$(CC)" ./configure --disable-shared --with-gmp=$(BUILDDIR) --prefix=$(BUILDDIR) && make && make install
+	cd $< && CC="$(CC)" ./configure --disable-shared --with-gmp=$(BUILDDIR) --prefix=$(BUILDDIR) && make && make check && make install
 
 .downloads/$(FLINT).tar.gz:
 	mkdir -p .downloads && cd .downloads && wget --continue http://www.flintlib.org/$(FLINT).tar.gz
@@ -60,10 +61,10 @@ lib/libflint.a include/flint/flint.h include/flint/fmpz.h: $(FLINT) lib/libmpfr.
 call_FGb: .downloads/call_FGb6.maclinux.x64.tar.gz
 	test -e $@ || tar zxvf $<
 
-.downloads/$(GTEST).zip:
-	mkdir -p .downloads && cd .downloads && wget --continue https://googletest.googlecode.com/files/$(GTEST).zip
+.downloads/$(GTEST_VERSION).zip:
+	mkdir -p .downloads && cd .downloads && wget --continue https://github.com/google/googletest/archive/$(GTEST_VERSION).zip
 
-$(GTEST): .downloads/$(GTEST).zip
+$(GTEST): .downloads/$(GTEST_VERSION).zip
 	test -e $@ || unzip $<
 
 .downloads/$(PNG).tar.gz:
