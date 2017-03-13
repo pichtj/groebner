@@ -1,5 +1,5 @@
 language: cpp
-script: sudo apt-get install libboost1.54-dev && make
+script: sudo apt-get install libboost1.54-dev ffmpeg zlib1g-dev && make
 dist: trusty
 sudo: required
 cache:
