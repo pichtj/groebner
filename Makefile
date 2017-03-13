@@ -19,7 +19,7 @@ all: test moGVW F5 FGb interreduce
 moGVW: moGVW.o Monomial.o Ideal.o Polynomial.o debug.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-moGVW.o: moGVW.cpp *.h include/mpir.h include/mpirxx.h include/flint/fmpz.h include/png.h
+moGVW.o: moGVW.cpp *.h include/mpir.h include/mpirxx.h include/flint/fmpz.h include/png.h lib/libpng.a
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 clean:
@@ -52,7 +52,7 @@ lib/libmpfr.a include/mpfr.h: $(MPFR) lib/libgmp.a
 $(FLINT): .downloads/$(FLINT).tar.gz
 	tar zxvf $<
 
-lib/libflint.a include/flint/flint.h include/flint/fmpz.h: $(FLINT) lib/libmpfr.a
+lib/libflint.a include/flint/flint.h include/flint/fmpz.h include/flint/fmpzxx.h: $(FLINT) lib/libmpfr.a
 	cd $< && CC="$(CC)" ./configure --with-mpir=$(BUILDDIR) --with-gmp=$(BUILDDIR) --disable-shared --enable-cxx --prefix=$(BUILDDIR) && make && make install
 
 .downloads/call_FGb6.maclinux.x64.tar.gz:
@@ -64,7 +64,7 @@ call_FGb: .downloads/call_FGb6.maclinux.x64.tar.gz
 .downloads/$(GTEST_VERSION).zip:
 	mkdir -p .downloads && cd .downloads && wget --continue https://github.com/google/googletest/archive/$(GTEST_VERSION).zip
 
-$(GTEST): .downloads/$(GTEST_VERSION).zip
+$(GTEST) $(GTEST)/include/gtest/gtest.h: .downloads/$(GTEST_VERSION).zip
 	test -e $@ || unzip $<
 
 .downloads/$(PNG).tar.gz:
@@ -81,8 +81,8 @@ libs: lib/libmpir.a lib/libflint.a lib/libpng.a
 test: test-runner
 	./test-runner
 
-%Test.o: %Test.cpp %.h $(GTEST)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $< -isystem $(GTEST)/include
+%Test.o: %Test.cpp %.h include/mpirxx.h include/flint/fmpzxx.h $(GTEST)/include/gtest/gtest.h lib/libpng.a
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -isystem $(GTEST)/include -o $@ $<
 
 gtest-all.o: $(GTEST)/src/gtest-all.cc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -isystem $(GTEST)/include -I$(GTEST) -c $<
@@ -95,13 +95,13 @@ TEST_OBJECTS := $(shell ls *Test.cpp | sed -e s/cpp$$/o/g)
 test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o Ideal.o Polynomial.o debug.o
 	$(CXX) $^ -o test-runner $(LDFLAGS) $(FGB_LDFLAGS)
 
-%.o: %.cpp %.h
+%.o: %.cpp %.h lib/libpng.a
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-FGb.o: FGb.cpp FGb.h Monomial.h Polynomial.h call_FGb
+FGb.o: FGb.cpp FGb.h Monomial.h Polynomial.h call_FGb lib/libpng.a
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(FGB_CPPFLAGS) -c -o $@ $<
 
-FGbTest.o: FGbTest.cpp FGb.h Monomial.h Polynomial.h call_FGb
+FGbTest.o: FGbTest.cpp FGb.h Monomial.h Polynomial.h call_FGb lib/libpng.a
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(FGB_CPPFLAGS) -c -o $@ $< -isystem $(GTEST)/include
 
 FGb: FGb.o Monomial.o Ideal.o Polynomial.o debug.o
