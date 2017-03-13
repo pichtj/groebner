@@ -1,6 +1,7 @@
 language: cpp
-script: make
+script: sudo apt-get install libboost1.54-dev && make
 dist: trusty
+sudo: required
 cache:
   directories:
   - .downloads
