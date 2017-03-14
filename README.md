@@ -1,3 +1,5 @@
+[![Build Status](http://img.shields.io/travis/pichtj/groebner.svg?style=flat-square)](https://travis-ci.org/pichtj/groebner)
+
 # groebner
 
 This repository contains algorithms for groebner basis computation:
