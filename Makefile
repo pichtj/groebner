@@ -32,7 +32,7 @@ distclean: clean
 	mkdir -p .downloads && cd .downloads && wget --continue http://mpir.org/$(MPIR).tar.bz2
 
 $(MPIR): .downloads/$(MPIR).tar.bz2
-	tar jxvf $<
+	tar jxf $<
 
 lib/libmpir.a include/mpir.h include/mpirxx.h lib/libgmp.a include/gmp.h: $(MPIR)
 	cd $< && CC="$(CC)" ./configure --enable-gmpcompat --enable-cxx --disable-shared --enable-static --prefix=$(BUILDDIR) && make && make install
@@ -41,7 +41,7 @@ lib/libmpir.a include/mpir.h include/mpirxx.h lib/libgmp.a include/gmp.h: $(MPIR
 	mkdir -p .downloads && cd .downloads && wget --continue http://www.mpfr.org/mpfr-current/$(MPFR).tar.bz2
 
 $(MPFR): .downloads/$(MPFR).tar.bz2
-	tar jxvf $<
+	tar jxf $<
 
 lib/libmpfr.a include/mpfr.h: $(MPFR) lib/libgmp.a
 	cd $< && CC="$(CC)" ./configure --disable-shared --with-gmp=$(BUILDDIR) --prefix=$(BUILDDIR) && make && make check && make install
@@ -50,7 +50,7 @@ lib/libmpfr.a include/mpfr.h: $(MPFR) lib/libgmp.a
 	mkdir -p .downloads && cd .downloads && wget --continue http://www.flintlib.org/$(FLINT).tar.gz
 
 $(FLINT): .downloads/$(FLINT).tar.gz
-	tar zxvf $<
+	tar zxf $<
 
 lib/libflint.a include/flint/flint.h include/flint/fmpz.h include/flint/fmpzxx.h: $(FLINT) lib/libmpfr.a
 	cd $< && CC="$(CC)" ./configure --with-mpir=$(BUILDDIR) --with-gmp=$(BUILDDIR) --disable-shared --enable-cxx --prefix=$(BUILDDIR) && make && make install
@@ -59,7 +59,7 @@ lib/libflint.a include/flint/flint.h include/flint/fmpz.h include/flint/fmpzxx.h
 	mkdir -p .downloads && cd .downloads && wget --continue http://www-polsys.lip6.fr/~jcf/FGb/C/@downloads/call_FGb6.maclinux.x64.tar.gz
 
 call_FGb: .downloads/call_FGb6.maclinux.x64.tar.gz
-	test -e $@ || tar zxvf $<
+	test -e $@ || tar zxf $<
 
 .downloads/$(GTEST_VERSION).zip:
 	mkdir -p .downloads && cd .downloads && wget --continue https://github.com/google/googletest/archive/$(GTEST_VERSION).zip
@@ -71,7 +71,7 @@ $(GTEST) $(GTEST)/include/gtest/gtest.h: .downloads/$(GTEST_VERSION).zip
 	mkdir -p .downloads && cd .downloads && wget --continue http://prdownloads.sourceforge.net/libpng/libpng-1.6.19.tar.gz
 
 $(PNG): .downloads/$(PNG).tar.gz
-	test -e $@ || tar zxvf $<
+	test -e $@ || tar zxf $<
 
 lib/libpng.a include/png.h: $(PNG)
 	cd $(PNG) && CC=$(CC) ./configure --prefix=$(BUILDDIR) --disable-shared && make && make install
