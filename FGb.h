@@ -15,7 +15,7 @@ extern "C" {
 #include "style.h"
 #include "Polynomial.h"
 
-template<class E = char, uint VC = 5>
+template<class E = char, uint VC = 74>
 struct FGbRunner {
   typedef Polynomial<Term<mpz_class, Monomial<E, VC, degrevlex> > > P;
   typedef Monomial<E, VC, degrevlex> M;
