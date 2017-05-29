@@ -8,6 +8,9 @@ case $UBUNTU_VERSION in
 	trusty)
 		UBUNTU1X=ubuntu14
 		;;
+	xenial)
+		UBUNTU1X=ubuntu16
+		;;
 esac
 
 echo "deb http://www.math.uiuc.edu/Macaulay2/Repositories/Ubuntu $UBUNTU_VERSION main" > /etc/apt/sources.list.d/macaulay2.list
@@ -22,12 +25,13 @@ add-apt-repository ppa:mc3man/trusty-media
 
 apt-get update
 apt-get dist-upgrade
-apt-get -y install vim make gcc g++ macaulay2 git gdb valgrind m4 unzip libboost1.54-dev ffmpeg zlib1g-dev
+apt-get -y install vim make gcc g++ git gdb m4 unzip libboost-dev ffmpeg zlib1g-dev criu
+#apt-get -y install macaulay2 valgrind
 #apt-get -y install sagemath-upstream-binary
 
 #mkswap -f /dev/sdb
 #swapon /dev/sdb
 
 su vagrant << EOF
-test -e moGVW || (git clone /vagrant moGVW && cd moGVW && git checkout master)
+test -e groebner || git clone https://github.com/pichtj/groebner.git
 EOF

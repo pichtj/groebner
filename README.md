@@ -38,10 +38,10 @@ This should download and compile some libraries and eventually compile the progr
 
 ## Vagrant/Ubuntu 
 
-Running `vagrant up` in a checkout should create an Ubuntu 14.04 image with all necessary software installed. You can then enter the VM and start the build process:
+Running `vagrant up` in a checkout should create an Ubuntu 16.04 image with all necessary software installed. You can then enter the VM and start the build process:
 
 ```
 vagrant ssh
-cd moGVW
+cd groebner
 make
 ```
