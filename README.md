@@ -45,3 +45,11 @@ vagrant ssh
 cd groebner
 make
 ```
+
+### Adding time stamps to the log output of FGb
+
+In order to add timestamps to the FGb log output, run it as
+
+```
+LD_PRELOAD=./intercept.so ./FGb <polynomial file>
+```

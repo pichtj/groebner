@@ -14,7 +14,7 @@ FLINT := flint-2.5.2
 MPFR := mpfr-3.1.5
 PNG := libpng-1.6.19
 
-all: test moGVW F5 FGb interreduce
+all: test moGVW F5 FGb interreduce intercept.so
 
 moGVW: moGVW.o Monomial.o Ideal.o Polynomial.o debug.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
@@ -115,3 +115,6 @@ interreduce: interreduce.o Monomial.o Ideal.o Polynomial.o debug.o
 
 %.mp4:
 	ffmpeg -framerate 25 -pattern_type glob -i '$**.png' -vf scale='flags=neighbor:w=trunc((iw+1)/2)*2:h=trunc((ih+1)/2)*2' -c:v libx264 -pix_fmt yuv420p $@
+
+%.so: %.c
+	$(CC) $(CFLAGS) -fPIC -shared -Wl,--no-as-needed -ldl -o $@ $<
