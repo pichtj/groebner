@@ -59,7 +59,7 @@ typename C::value_type gcd(const C& c) {
 }
 
 template<class C>
-size_t log2(const C& c) {
+size_t log_2(const C& c) {
   size_t result = 0;
   auto d = c - 1;
   while (d > 0) {
@@ -70,14 +70,14 @@ size_t log2(const C& c) {
 }
 
 template<>
-inline size_t log2(const mpz_class& c) {
+inline size_t log_2(const mpz_class& c) {
   if (c == 0 || c == 1) return 0;
   mpz_class d = c - 1;
   return mpz_sizeinbase(d.get_mpz_t(), 2);
 }
 
 template<>
-inline size_t log2(const flint::fmpzxx& c) {
+inline size_t log_2(const flint::fmpzxx& c) {
   if (c == 0 || c == 1) return 0;
   flint::fmpzxx d = c;
   d -= flint::fmpzxx(1);
