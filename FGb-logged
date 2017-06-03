@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd $(dirname $0)
+if [ "$1" == "" ]; then
+    echo "Usage: $0 <poly>"
+    exit 1
+fi
+LD_PRELOAD=./intercept.so setsid ./FGb $* < /dev/null &> $(basename $*).out
