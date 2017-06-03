@@ -21,3 +21,4 @@ libpng-*
 .downloads
 bin
 tmp
+intercept.so
