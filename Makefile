@@ -14,7 +14,7 @@ FLINT := flint-2.5.2
 MPFR := mpfr-3.1.5
 PNG := libpng-1.6.19
 
-all: test moGVW F5 FGb interreduce intercept.so
+all: moGVW F5 FGb interreduce intercept.so test
 
 moGVW: moGVW.o Monomial.o Ideal.o Polynomial.o debug.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
