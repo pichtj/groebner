@@ -12,7 +12,7 @@ void log_memory_status() {
     if (7 != fscanf(f,"%ld %ld %ld %ld %ld %ld %ld", &size, &resident, &share, &text, &lib, &data, &dt)) return;
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    fprintf(stderr, "\n%ld.%06ld %ld %ld %ld %ld %ld %ld %ld", ts.tv_sec, ts.tv_nsec, size, resident, share, text, lib, data, dt);
+    fprintf(stderr, "\n%ld.%09ld %ld %ld %ld %ld %ld %ld %ld", ts.tv_sec, ts.tv_nsec, size, resident, share, text, lib, data, dt);
     fclose(f);
 }
 
@@ -34,7 +34,7 @@ int fflush(FILE* stream) {
         log_memory_status();
         struct timespec ts;
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-        fprintf(stream, "\n%ld.%06ld ", ts.tv_sec, ts.tv_nsec);
+        fprintf(stream, "\n%ld.%09ld ", ts.tv_sec, ts.tv_nsec);
     }
     return real_fflush(stream);
 }
