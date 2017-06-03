@@ -5,4 +5,4 @@ if [ "$1" == "" ]; then
     echo "Usage: $0 <poly>"
     exit 1
 fi
-LD_PRELOAD=./intercept.so setsid ./FGb $* < /dev/null &> $(basename $*).out
+LD_PRELOAD=./intercept.so exec setsid ./FGb $* < /dev/null &> $(basename $*).out
