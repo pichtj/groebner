@@ -1,6 +1,6 @@
 BUILDDIR := $(shell pwd)
-CC := $(shell which gcc-7 || echo gcc)
-CXX := $(shell which g++-7 || echo g++)
+CC := $(shell which gcc-7 || which gcc-4.8 || echo gcc)
+CXX := $(shell which g++-7 || which g++-4.8 || echo g++)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
 CXXFLAGS := -std=c++11 -m64 -O3 -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp $(shell $(CC) -v 2>&1 | grep gcc >/dev/null && echo -fopenmp) -pthread -lpng -lz
