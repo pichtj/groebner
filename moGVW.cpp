@@ -3,6 +3,7 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "integral.h"
 #include "moGVW.h"
 #include "CachedMonomial.h"
 #include "Ideal.h"
@@ -10,7 +11,7 @@
 int main(int argc, char* argv[]) {
   get_var_name = var_name;
 
-  typedef Polynomial<Term<int, Monomial<char, 64, degrevlex> > > P;
+  typedef Polynomial<Term<flint::fmpzxx, Monomial<char, 64, degrevlex> > > P;
 
   std::vector<P> input;
   if (argc > 0) {

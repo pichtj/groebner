@@ -3,6 +3,7 @@
 
 #include <flint/fmpzxx.h>
 
+#include "integral.h"
 #include "F5.h"
 #include "Ideal.h"
 

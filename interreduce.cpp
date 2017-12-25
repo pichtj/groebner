@@ -3,6 +3,7 @@
 
 #include <flint/fmpzxx.h>
 
+#include "integral.h"
 #include "GbRunner.h"
 #include "Ideal.h"
 

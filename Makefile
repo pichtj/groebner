@@ -1,12 +1,12 @@
 BUILDDIR := $(shell pwd)
+CC := $(shell which gcc-7 || echo gcc)
+CXX := $(shell which g++-7 || echo g++)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
 CXXFLAGS := -std=c++11 -m64 -O3 -Wall
-LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp $(gcc -v 2>&1 | grep GCC >/dev/null && echo -fopenmp) -pthread -lpng -lz
+LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp $(shell $(CC) -v 2>&1 | grep gcc >/dev/null && echo -fopenmp) -pthread -lpng -lz
 FGB_LDFLAGS := -L$(FGB_LIBDIR) $(shell uname | grep Linux >/dev/null && echo -Wl,-allow-multiple-definition) -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
 CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -DINFO
 FGB_CPPFLAGS := -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -Wno-write-strings -Wno-unused-but-set-variable -Wno-unused-function
-CC := $(shell which gcc-7 || echo gcc)
-CXX := $(shell which g++-7 || echo g++)
 MPIR := mpir-3.0.0
 GTEST_VERSION := release-1.7.0
 GTEST := googletest-$(GTEST_VERSION)
@@ -26,7 +26,7 @@ clean:
 	rm -rf moGVW *.o *.dSYM test-runner FGb F5 gmon.out
 
 distclean: clean
-	rm -rf include lib share $(MPIR) $(MPFR) $(FLINT) googletest-$(GTEST_VERSION) call_FGb
+	rm -rf include lib share bin $(MPIR) $(MPFR) $(FLINT) googletest-$(GTEST_VERSION) call_FGb
 
 .downloads/$(MPIR).tar.bz2:
 	mkdir -p .downloads && cd .downloads && wget --continue http://mpir.org/$(MPIR).tar.bz2

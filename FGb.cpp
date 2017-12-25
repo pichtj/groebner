@@ -3,6 +3,7 @@
 
 #include <mpirxx.h>
 
+#include "integral.h"
 #include "FGb.h"
 #include "Ideal.h"
 
