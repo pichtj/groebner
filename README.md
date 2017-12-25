@@ -23,10 +23,8 @@ This repository contains algorithms for groebner basis computation:
 Currently, groebner only compiles with gcc, so install that first. E.g. with `homebrew`:
 
 ```
-brew install gcc --without-multilib
+brew install gcc
 ```
-
-`--without-multilib` is needed to avoid an issue with static linking and `-fopenmp`.
 
 Then, start the build process:
 
