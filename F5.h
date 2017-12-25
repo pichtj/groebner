@@ -41,7 +41,6 @@ struct F5Runner : public GbRunner {
   P normalForm(P p, uint k) {
     DD("p = " << p << ", G[" << k << "] = ", G[k]);
     DD("L = ", L);
-    M level = p.lm();
 
     auto t = p.begin();
     while (t != p.end()) {

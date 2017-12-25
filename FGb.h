@@ -4,8 +4,49 @@
 #define LIBMODE 2
 
 #include "gmp.h"
+
 extern "C" {
+#define CALL_FGB_DO_NOT_DEFINE
 #include "call_fgb.h"
+
+void info_Maple(const char* s) {
+  if (FGb_verb_info) {
+    fprintf(stderr, "%s", s);
+    fflush(stderr);
+  }
+}
+
+void FGb_int_error_Maple(const char* s) {
+  fprintf(stderr, "%s", s);
+  fflush(stderr);
+  exit(3);
+}
+
+void FGb_error_Maple(const char* s) {
+  FGb_int_error_Maple(s);
+}
+
+void init_FGb_Integers() {
+  FGB(init_urgent)(4, 2, "DRLDRL", 100000, 0); /* Do not change the following parameters
+					      4 is the number of bytes of each coefficients
+					        so the maximal prime is <2^32
+					      2 is the number of bytes of each exponent :
+					        it means that each exponent should be < 2^15 */
+  FGB(init)(1, 1, 0, log_output);/* do not change */
+  FGB(reset_coeffs)(1); /* We compute in Q[x1,x2,x3,x4,x5,x6] */
+}
+
+extern int FGb_int_internal_threads(int tr0);
+extern int FGb_internal_threads(int tr0);
+void threads_FGb(int t) {
+  I32 code = FGb_int_internal_threads(t);
+  code = FGb_internal_threads(t);
+}
+
+void FGb_checkInterrupt() {}
+void FGb_int_checkInterrupt() {}
+void FGb_push_gmp_alloc_fnct(void* (* alloc_func)(size_t), void* (* realloc_func)(void*, size_t, size_t), void (* free_func)(void*, size_t)) {}
+void FGb_pop_gmp_alloc_fnct() {}
 }
 
 #include <vector>
@@ -83,6 +124,7 @@ struct FGbRunner {
   }
 
   std::vector<P> fgb(const std::vector<P>& input) {
+    FGb_verb_info = 1;
     FGB(saveptr)();
     init_FGb_Integers();
     std::vector<std::string> var_names_as_string(M::VAR_COUNT);
