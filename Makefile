@@ -117,4 +117,4 @@ interreduce: interreduce.o Monomial.o Ideal.o Polynomial.o debug.o integral.o
 	ffmpeg -framerate 25 -pattern_type glob -i '$**.png' -vf scale='flags=neighbor:w=trunc((iw+1)/2)*2:h=trunc((ih+1)/2)*2' -c:v libx264 -pix_fmt yuv420p $@
 
 %.so: %.c
-	$(CC) $(CFLAGS) -fPIC -shared $(shell uname | grep Linux &>/dev/null && echo -Wl,--no-as-needed) -ldl -o $@ $<
+	$(CC) $(CFLAGS) -fPIC -shared $(shell uname | grep Linux >/dev/null && echo -Wl,--no-as-needed) -ldl -o $@ $<
