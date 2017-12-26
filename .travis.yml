@@ -11,7 +11,7 @@ addons:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install yasm; fi
 script:
-  - for D in $(echo $PATH | tr : \\n); do ls $D/gcc-* ; done ; make
+  - compgen -c gcc ; make
 dist: trusty
 cache:
   directories:
