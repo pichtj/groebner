@@ -68,7 +68,7 @@ $(GTEST) $(GTEST)/include/gtest/gtest.h: .downloads/$(GTEST_VERSION).zip
 	test -e $@ || unzip $<
 
 .downloads/$(PNG).tar.gz:
-	mkdir -p .downloads && cd .downloads && wget --continue http://prdownloads.sourceforge.net/libpng/libpng-1.6.19.tar.gz
+	mkdir -p .downloads && cd .downloads && wget --continue http://prdownloads.sourceforge.net/libpng/$(PNG).tar.gz
 
 $(PNG): .downloads/$(PNG).tar.gz
 	test -e $@ || tar zxf $<
