@@ -9,7 +9,8 @@ addons:
     packages:
       - libboost1.54-dev yasm zlib1g-dev
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc yasm; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install yasm || brew upgrade yasm || true; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc || brew upgrade gcc || true; fi
 script:
   - compgen -c gcc ; make
 dist: trusty
