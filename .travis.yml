@@ -17,3 +17,6 @@ dist: trusty
 cache:
   directories:
   - .downloads
+matrix:
+  allow_failures:
+    - osx
