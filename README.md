@@ -20,10 +20,11 @@ This repository contains algorithms for groebner basis computation:
 
 ## Mac OS X
 
-Currently, groebner only compiles with gcc, so install that first. E.g. with `homebrew`:
+Currently, groebner only compiles with gcc, so install that first. 
+To install gcc and other build requirements with `homebrew`:
 
 ```
-brew install gcc
+brew install gcc yasm
 ```
 
 Then, start the build process:
