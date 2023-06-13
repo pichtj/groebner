@@ -11,7 +11,7 @@ MPIR := mpir-3.0.0
 GTEST_VERSION := release-1.7.0
 GTEST := googletest-$(GTEST_VERSION)
 FLINT := flint-2.5.2
-MPFR := mpfr-4.0.0
+MPFR := mpfr-4.2.0
 PNG := libpng-1.6.34
 
 all: moGVW F5 FGb interreduce intercept.so test
