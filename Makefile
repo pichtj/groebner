@@ -29,7 +29,7 @@ distclean: clean
 	rm -rf include lib share bin $(MPIR) $(MPFR) $(FLINT) googletest-$(GTEST_VERSION) call_FGb
 
 .downloads/$(MPIR).tar.bz2:
-	mkdir -p .downloads && cd .downloads && wget --continue http://mpir.org/$(MPIR).tar.bz2
+	mkdir -p .downloads && cd .downloads && wget --continue	https://web.archive.org/web/20220204054313/http://mpir.org/$(MPIR).tar.bz2
 
 $(MPIR): .downloads/$(MPIR).tar.bz2
 	tar jxf $<
