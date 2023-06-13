@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
   typedef Polynomial<Term<flint::fmpzxx, Monomial<char, 64, degrevlex> > > P;
 
   std::vector<P> input;
-  if (argc > 0) {
+  if (argc > 1) {
     std::ifstream in_file(argv[1]);
     input = read_input<P>(in_file);
   } else {
