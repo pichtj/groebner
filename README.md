@@ -25,6 +25,7 @@ To build using docker, run:
 ```
 docker build -t groebner .
 docker run -it --rm -v $(pwd):/groebner /bin/bash
+make
 ```
 
 ## Mac OS X
