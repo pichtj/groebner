@@ -18,6 +18,15 @@ This repository contains algorithms for groebner basis computation:
 
 # Installation 
 
+## Docker ubuntu:xenial
+
+To build using docker, run:
+
+```
+docker build -t groebner .
+docker run -it --rm -v $(pwd):/groebner /bin/bash
+```
+
 ## Mac OS X
 
 Currently, groebner only compiles with gcc, so install that first. 
