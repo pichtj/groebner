@@ -27,7 +27,7 @@ clean:
 	rm -rf moGVW *.o *.dSYM test-runner FGb F5 gmon.out
 
 distclean: clean
-	rm -rf include lib share bin $(MPIR) $(MPFR) $(FLINT) $(GTEST) call_FGb
+	rm -rf include lib share bin $(MPIR) $(MPFR) $(FLINT) $(GTEST) $(PNG) call_FGb
 
 .downloads/$(MPIR).tar.bz2:
 	mkdir -p .downloads && cd .downloads && wget --continue	https://web.archive.org/web/20220204054313/http://mpir.org/$(MPIR).tar.bz2
