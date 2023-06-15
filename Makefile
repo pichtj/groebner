@@ -1,18 +1,19 @@
 BUILDDIR := $(shell pwd)
 CC := $(shell echo gcc)
 CXX := $(shell echo g++)
+MPIR := mpir-3.0.0
+GTEST_VERSION := release-1.12.1
+GTEST := googletest-$(GTEST_VERSION)
+FLINT := flint-2.9.0
+MPFR := mpfr-4.2.0
+PNG := libpng-1.6.39
+
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
 CXXFLAGS := -std=c++11 -m64 -O3 -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp $(shell $(CC) -v 2>&1 | grep gcc >/dev/null && echo -fopenmp) -pthread -lpng -lz
 FGB_LDFLAGS := -L$(FGB_LIBDIR) $(shell uname | grep Linux >/dev/null && echo -Wl,-allow-multiple-definition) -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
 CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -DINFO
 FGB_CPPFLAGS := -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int -I$(BUILDDIR)/call_FGb/nv/maple/C -Wno-write-strings -Wno-unused-but-set-variable -Wno-unused-function
-MPIR := mpir-3.0.0
-GTEST_VERSION := release-1.7.0
-GTEST := googletest-$(GTEST_VERSION)
-FLINT := flint-2.9.0
-MPFR := mpfr-4.2.0
-PNG := libpng-1.6.39
 
 all: moGVW F5 FGb interreduce intercept.so test
 
@@ -26,7 +27,7 @@ clean:
 	rm -rf moGVW *.o *.dSYM test-runner FGb F5 gmon.out
 
 distclean: clean
-	rm -rf include lib share bin $(MPIR) $(MPFR) $(FLINT) googletest-$(GTEST_VERSION) call_FGb
+	rm -rf include lib share bin $(MPIR) $(MPFR) $(FLINT) $(GTEST) call_FGb
 
 .downloads/$(MPIR).tar.bz2:
 	mkdir -p .downloads && cd .downloads && wget --continue	https://web.archive.org/web/20220204054313/http://mpir.org/$(MPIR).tar.bz2
@@ -62,9 +63,9 @@ call_FGb: .downloads/call_FGb6.maclinux.x64.tar.gz
 	test -e $@ || tar zxf $<
 
 .downloads/$(GTEST_VERSION).zip:
-	mkdir -p .downloads && cd .downloads && wget --continue https://github.com/google/googletest/archive/$(GTEST_VERSION).zip
+	mkdir -p .downloads && cd .downloads && wget --continue https://github.com/google/googletest/archive/refs/tags/$(GTEST_VERSION).zip 
 
-$(GTEST) $(GTEST)/include/gtest/gtest.h: .downloads/$(GTEST_VERSION).zip
+$(GTEST): .downloads/$(GTEST_VERSION).zip
 	test -e $@ || unzip $<
 
 .downloads/$(PNG).tar.gz:
@@ -84,15 +85,12 @@ test: test-runner
 %Test.o: %Test.cpp %.h include/mpirxx.h include/flint/fmpzxx.h $(GTEST)/include/gtest/gtest.h lib/libpng.a
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -isystem $(GTEST)/include -o $@ $<
 
-gtest-all.o: $(GTEST)/src/gtest-all.cc
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -isystem $(GTEST)/include -I$(GTEST) -c $<
-
-gtest_main.o: $(GTEST)/src/gtest_main.cc
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -isystem $(GTEST)/include -I$(GTEST) -c $<
+lib/libgtest.a lib/libgtest_main.a: $(GTEST)
+	mkdir -p $(GTEST)/build && cd $(GTEST)/build && cmake .. -DBUILD_GMOCK=OFF --install-prefix=/groebner/ && make && make install
 
 TEST_OBJECTS := $(shell ls *Test.cpp | sed -e s/cpp$$/o/g)
 
-test-runner: $(TEST_OBJECTS) gtest-all.o gtest_main.o Monomial.o Ideal.o Polynomial.o debug.o integral.o
+test-runner: $(TEST_OBJECTS) lib/libgtest.a lib/libgtest_main.a Monomial.o Ideal.o Polynomial.o debug.o integral.o
 	$(CXX) $^ -o test-runner $(LDFLAGS) $(FGB_LDFLAGS)
 
 %.o: %.cpp %.h lib/libpng.a
