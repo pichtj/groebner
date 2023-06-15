@@ -1,6 +1,6 @@
 BUILDDIR := $(shell pwd)
-CC := $(shell which gcc-7 || which gcc-4.8 || echo gcc)
-CXX := $(shell which g++-7 || which g++-4.8 || echo g++)
+CC := $(shell echo gcc)
+CXX := $(shell echo g++)
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
 CXXFLAGS := -std=c++11 -m64 -O3 -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp $(shell $(CC) -v 2>&1 | grep gcc >/dev/null && echo -fopenmp) -pthread -lpng -lz
@@ -10,7 +10,7 @@ FGB_CPPFLAGS := -I$(BUILDDIR)/call_FGb/nv/protocol -I$(BUILDDIR)/call_FGb/nv/int
 MPIR := mpir-3.0.0
 GTEST_VERSION := release-1.7.0
 GTEST := googletest-$(GTEST_VERSION)
-FLINT := flint-2.5.2
+FLINT := flint-2.9.0
 MPFR := mpfr-4.2.0
 PNG := libpng-1.6.39
 
