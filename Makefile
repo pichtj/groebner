@@ -2,14 +2,14 @@ BUILDDIR := $(shell pwd)
 CC := $(shell echo gcc)
 CXX := $(shell echo g++)
 MPIR := mpir-3.0.0
-GTEST_VERSION := release-1.12.1
+GTEST_VERSION := 1.13.0
 GTEST := googletest-$(GTEST_VERSION)
 FLINT := flint-2.9.0
 MPFR := mpfr-4.2.0
 PNG := libpng-1.6.39
 
 FGB_LIBDIR := $(BUILDDIR)/call_FGb/nv/maple/C/$(shell uname | grep Linux >/dev/null && echo x64 || echo macosx)
-CXXFLAGS := -std=c++11 -m64 -O3 -Wall
+CXXFLAGS := -std=c++17 -m64 -O3 -Wall
 LDFLAGS := -L$(BUILDDIR)/lib -lflint -lmpir -lmpfr -lmpirxx -lgmp $(shell $(CC) -v 2>&1 | grep gcc >/dev/null && echo -fopenmp) -pthread -lpng -lz
 FGB_LDFLAGS := -L$(FGB_LIBDIR) $(shell uname | grep Linux >/dev/null && echo -Wl,-allow-multiple-definition) -lfgb -lfgbexp -lgb -lgbexp -lminpoly -lminpolyvgf -lgmp -lm
 CPPFLAGS := -I$(BUILDDIR)/include -I$(BUILDDIR)/include/flint -DINFO
@@ -63,9 +63,9 @@ call_FGb: .downloads/call_FGb6.maclinux.x64.tar.gz
 	test -e $@ || tar zxf $<
 
 .downloads/$(GTEST_VERSION).zip:
-	mkdir -p .downloads && cd .downloads && wget --continue https://github.com/google/googletest/archive/refs/tags/$(GTEST_VERSION).zip 
+	mkdir -p .downloads && cd .downloads && wget --continue https://github.com/google/googletest/archive/refs/tags/v$(GTEST_VERSION).zip
 
-$(GTEST): .downloads/$(GTEST_VERSION).zip
+$(GTEST): .downloads/v$(GTEST_VERSION).zip
 	test -e $@ || unzip $<
 
 .downloads/$(PNG).tar.gz:
