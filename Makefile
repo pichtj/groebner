@@ -62,7 +62,7 @@ lib/libflint.a include/flint/flint.h include/flint/fmpz.h include/flint/fmpzxx.h
 call_FGb: .downloads/call_FGb6.maclinux.x64.tar.gz
 	test -e $@ || tar zxf $<
 
-.downloads/$(GTEST_VERSION).zip:
+.downloads/v$(GTEST_VERSION).zip:
 	mkdir -p .downloads && cd .downloads && wget --continue https://github.com/google/googletest/archive/refs/tags/v$(GTEST_VERSION).zip
 
 $(GTEST): .downloads/v$(GTEST_VERSION).zip
@@ -82,10 +82,10 @@ libs: lib/libmpir.a lib/libflint.a lib/libpng.a
 test: test-runner
 	./test-runner
 
-%Test.o: %Test.cpp %.h include/mpirxx.h include/flint/fmpzxx.h $(GTEST)/include/gtest/gtest.h lib/libpng.a
+%Test.o: %Test.cpp %.h include/mpirxx.h include/flint/fmpzxx.h include/gtest/gtest.h lib/libpng.a
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -isystem $(GTEST)/include -o $@ $<
 
-lib/libgtest.a lib/libgtest_main.a: $(GTEST)
+lib/libgtest.a lib/libgtest_main.a include/gtest/gtest.h: $(GTEST)
 	mkdir -p $(GTEST)/build && cd $(GTEST)/build && cmake .. -DBUILD_GMOCK=OFF --install-prefix=/groebner/ && make && make install
 
 TEST_OBJECTS := $(shell ls *Test.cpp | sed -e s/cpp$$/o/g)
