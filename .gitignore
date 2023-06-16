@@ -13,7 +13,7 @@ mpfr-*
 flint-*
 share
 .vagrant
-googletest-release-*
+googletest-*
 test-runner
 gmon.out
 call_FGb
