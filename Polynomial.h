@@ -85,6 +85,16 @@ public:
     }
     return r;
   }
+  This dehomogenize(const M& t) {
+    if (isZero()) return *this;
+    This r;
+    for (const auto& term : *this) {
+      T hterm(term);
+      while (t.divides(hterm.m())) hterm /= t;
+      r += hterm;
+    }
+    return r;
+  }
   This& operator+=(const C& c) { *this += T(c); return *this; }
   This operator+(const C& c) const { This r = *this; r += c; return r; }
   This& operator-=(const C& c) { C d = c; d *= -1; *this += d; return *this; }

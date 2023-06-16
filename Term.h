@@ -49,6 +49,12 @@ public:
     }
     return *this;
   }
+  This& operator/=(const M& m) {
+    if (!isZero()) {
+      exp /= m;
+    }
+    return *this;
+  }
   This operator-() const { This r = *this; r *= -1; return r; }
   C c() const { return coeff; }
   C& c() { return coeff; }

@@ -309,6 +309,13 @@ struct F5Runner : public GbRunner {
     }
   }
 
+  void dehomogenize(std::vector<P>& f) {
+    auto t = M::x(M::VAR_COUNT - 1);
+    for (auto& p : f) {
+      p = p.dehomogenize(t);
+    }
+  }
+
   std::vector<P> f5(const std::vector<P>& input) {
     f = input;
     homogenize(f);
@@ -343,6 +350,8 @@ struct F5Runner : public GbRunner {
     interreduce(result);
     I("Sorting result");
     std::sort(result.begin(), result.end());
+    I("Dehomogenizing");
+    dehomogenize(result);
     return result;
   }
 
